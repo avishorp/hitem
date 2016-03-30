@@ -14,32 +14,6 @@
 #define TIMER_INTERVAL_RELOAD   40035 /* =(255*157) */
 #define DUTYCYCLE_GRANULARITY   157
 
-void SetupTimerPWMMode(unsigned long ulBase, unsigned long ulTimer,
-                       unsigned long ulConfig, unsigned char ucInvert)
-{
-    //
-    // Set GPT - Configured Timer in PWM mode.
-    //
-    MAP_TimerConfigure(ulBase,ulConfig);
-    MAP_TimerPrescaleSet(ulBase,ulTimer,0);
-
-    //
-    // Inverting the timer output if required
-    //
-    MAP_TimerControlLevel(ulBase,ulTimer,ucInvert);
-
-    //
-    // Load value set to ~0.5 ms time period
-    //
-    MAP_TimerLoadSet(ulBase,ulTimer,TIMER_INTERVAL_RELOAD);
-
-    //
-    // Match value set so as to output level 0
-    //
-    MAP_TimerMatchSet(ulBase,ulTimer,TIMER_INTERVAL_RELOAD);
-
-}
-
 void UpdateDutyCycle(unsigned long ulBase, unsigned long ulTimer,
                      unsigned char ucLevel)
 {
@@ -52,26 +26,31 @@ void UpdateDutyCycle(unsigned long ulBase, unsigned long ulTimer,
 
 void LEDInit()
 {
-	// Green - PWM5
-	SetupTimerPWMMode(TIMERA2_BASE, TIMER_B,
-			(TIMER_CFG_SPLIT_PAIR | TIMER_CFG_B_PWM), 1);
+	// Green - PWM5 (Timer2/B)
+    MAP_TimerConfigure(TIMERA2_BASE, (TIMER_CFG_SPLIT_PAIR | TIMER_CFG_B_PWM));
+    MAP_TimerPrescaleSet(TIMERA2_BASE, TIMER_B, 0);
+    MAP_TimerLoadSet(TIMERA2_BASE, TIMER_B, TIMER_INTERVAL_RELOAD);
+    MAP_TimerMatchSet(TIMERA2_BASE, TIMER_B, TIMER_INTERVAL_RELOAD);
+    MAP_TimerControlLevel(TIMERA2_BASE, TIMER_B, 1);
 
 	MAP_TimerEnable(TIMERA2_BASE, TIMER_B);
 
-	//  Blue - PWM6
-	SetupTimerPWMMode(TIMERA3_BASE, TIMER_A,
-	        (TIMER_CFG_SPLIT_PAIR | TIMER_CFG_A_PWM), 1);
+	//  Blue - PWM6 (Timer3/A) & Red - PWM7 (Timer3/B)
+    MAP_TimerConfigure(TIMERA3_BASE, (TIMER_CFG_SPLIT_PAIR | TIMER_CFG_B_PWM | TIMER_CFG_A_PWM));
+    MAP_TimerPrescaleSet(TIMERA3_BASE, TIMER_A, 0);
+    MAP_TimerPrescaleSet(TIMERA3_BASE, TIMER_B, 0);
+    MAP_TimerLoadSet(TIMERA3_BASE, TIMER_A, TIMER_INTERVAL_RELOAD);
+    MAP_TimerLoadSet(TIMERA3_BASE, TIMER_B, TIMER_INTERVAL_RELOAD);
+    MAP_TimerMatchSet(TIMERA3_BASE, TIMER_A, TIMER_INTERVAL_RELOAD);
+    MAP_TimerMatchSet(TIMERA3_BASE, TIMER_B, TIMER_INTERVAL_RELOAD);
+    MAP_TimerControlLevel(TIMERA3_BASE, TIMER_A, 1);
+    MAP_TimerControlLevel(TIMERA3_BASE, TIMER_B, 1);
+
 
 	MAP_TimerEnable(TIMERA3_BASE, TIMER_A);
-
-	// Red - PWM7
-	SetupTimerPWMMode(TIMERA3_BASE, TIMER_B,
-			(TIMER_CFG_SPLIT_PAIR | TIMER_CFG_B_PWM), 1);
-
 	MAP_TimerEnable(TIMERA3_BASE, TIMER_B);
-
-
 }
+
 void LEDSetColor(int color, int intensity)
 {
 	// Calculate the PWM values
@@ -84,3 +63,4 @@ void LEDSetColor(int color, int intensity)
     UpdateDutyCycle(TIMERA3_BASE, TIMER_A, blue);
     UpdateDutyCycle(TIMERA3_BASE, TIMER_B, red);
 }
+

@@ -27,7 +27,9 @@
 
 extern void (* const g_pfnVectors[])(void);
 
-#define MESSAGE "Hello CC3200 world!\n\r"
+// Local Forwards
+
+#define WELCOME_MESSAGE ">>>> hit'em! <<<<\n\r"
 
 static void BoardInit(void)
 {
@@ -50,24 +52,19 @@ int main(void) {
 
     // Initialize the console output
     ConsoleInit();
+    ConsolePrint(WELCOME_MESSAGE);
 
     // Initialize the leds
     LEDInit();
 
     // LED test
     LEDSetColor(COLOR_RED, 70);
-    UtilsDelay(6000000);
+    UtilsDelay(3000000);
     LEDSetColor(COLOR_GREEN, 70);
-    UtilsDelay(6000000);
+    UtilsDelay(3000000);
     LEDSetColor(COLOR_BLUE, 70);
-    UtilsDelay(6000000);
+    UtilsDelay(3000000);
     LEDSetColor(COLOR_NONE, 70);
-while(1);
-    int j;
-    for(j = 0; j < 255; j+=10) {
-    	UpdateDutyCycle(TIMERA3_BASE, TIMER_A, j);
-        UtilsDelay(3000000);
-    }
 
    while(1) {
 	   int i;
