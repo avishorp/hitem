@@ -17,22 +17,17 @@
 #include "prcm.h"
 #include "utils.h"
 #include "gpio.h"
+#include "timer.h"
 
 #include "pinmux/pin_mux_config.h"
 #include "hw_memmap.h"
 
 #include "console.h"
+#include "led.h"
 
 extern void (* const g_pfnVectors[])(void);
 
-#ifdef STRESS
-#define MESSAGE "Thie is a very very very very very very very very very very very very very very very very very " \
-		 	    "very very very very very very very very very very very very very very very very very very very " \
-		 	    "very very very very very very very very very very very very very very very very very very very " \
-				"long message"
-#else
 #define MESSAGE "Hello CC3200 world!\n\r"
-#endif
 
 static void BoardInit(void)
 {
@@ -56,6 +51,23 @@ int main(void) {
     // Initialize the console output
     ConsoleInit();
 
+    // Initialize the leds
+    LEDInit();
+
+    // LED test
+    LEDSetColor(COLOR_RED, 70);
+    UtilsDelay(6000000);
+    LEDSetColor(COLOR_GREEN, 70);
+    UtilsDelay(6000000);
+    LEDSetColor(COLOR_BLUE, 70);
+    UtilsDelay(6000000);
+    LEDSetColor(COLOR_NONE, 70);
+while(1);
+    int j;
+    for(j = 0; j < 255; j+=10) {
+    	UpdateDutyCycle(TIMERA3_BASE, TIMER_A, j);
+        UtilsDelay(3000000);
+    }
 
    while(1) {
 	   int i;

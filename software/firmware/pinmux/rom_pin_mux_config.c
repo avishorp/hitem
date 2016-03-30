@@ -36,7 +36,7 @@
 //
 //*****************************************************************************
 
-// This file was automatically generated on 3/29/2016 at 10:44:35 AM
+// This file was automatically generated on 3/30/2016 at 12:13:05 PM
 // by TI PinMux version 
 //
 //*****************************************************************************
@@ -59,8 +59,6 @@ void PinMuxConfig(void)
     //
     // Set unused pins to PIN_MODE_0 with the exception of JTAG pins 16,17,19,20
     //
-    MAP_PinModeSet(PIN_01, PIN_MODE_0);
-    MAP_PinModeSet(PIN_02, PIN_MODE_0);
     MAP_PinModeSet(PIN_05, PIN_MODE_0);
     MAP_PinModeSet(PIN_06, PIN_MODE_0);
     MAP_PinModeSet(PIN_07, PIN_MODE_0);
@@ -74,14 +72,30 @@ void PinMuxConfig(void)
     MAP_PinModeSet(PIN_61, PIN_MODE_0);
     MAP_PinModeSet(PIN_62, PIN_MODE_0);
     MAP_PinModeSet(PIN_63, PIN_MODE_0);
-    MAP_PinModeSet(PIN_64, PIN_MODE_0);
     
     //
     // Enable Peripheral Clocks 
     //
+    MAP_PRCMPeripheralClkEnable(PRCM_TIMERA2, PRCM_RUN_MODE_CLK);
+    MAP_PRCMPeripheralClkEnable(PRCM_TIMERA3, PRCM_RUN_MODE_CLK);
     MAP_PRCMPeripheralClkEnable(PRCM_ADC, PRCM_RUN_MODE_CLK);
     MAP_PRCMPeripheralClkEnable(PRCM_GPIOA0, PRCM_RUN_MODE_CLK);
     MAP_PRCMPeripheralClkEnable(PRCM_UARTA0, PRCM_RUN_MODE_CLK);
+
+    //
+    // Configure PIN_64 for TimerPWM5 GT_PWM05
+    //
+    MAP_PinTypeTimer(PIN_64, PIN_MODE_3);
+
+    //
+    // Configure PIN_02 for TimerPWM7 GT_PWM07
+    //
+    MAP_PinTypeTimer(PIN_02, PIN_MODE_3);
+
+    //
+    // Configure PIN_01 for TimerPWM6 GT_PWM06
+    //
+    MAP_PinTypeTimer(PIN_01, PIN_MODE_3);
 
     //
     // Configure PIN_58 for ADC0 ADC_CH1

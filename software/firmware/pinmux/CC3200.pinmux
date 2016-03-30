@@ -11,10 +11,32 @@
 			"warningText": "",
 			"errorDetailsText": [],
 			"warningDetailsText": [],
-			"gpioPinsUsed": 6,
+			"gpioPinsUsed": 9,
 			"gpioPinsTotal": 25
 		},
 		"devicePinMap": {
+			"3": {
+				"nameDecoratorText": "3",
+				"assignedToName": "GT_PWM06",
+				"errorText": "",
+				"warningText": "",
+				"warningDetailsText": [],
+				"errorDetailsText": [],
+				"requirementName": "LED3",
+				"requirementId": "MyTimerPWM9",
+				"interfacePin": "GT_PWM"
+			},
+			"4": {
+				"nameDecoratorText": "4",
+				"assignedToName": "GT_PWM07",
+				"errorText": "",
+				"warningText": "",
+				"warningDetailsText": [],
+				"errorDetailsText": [],
+				"requirementName": "LED2",
+				"requirementId": "MyTimerPWM8",
+				"interfacePin": "GT_PWM"
+			},
 			"44": {
 				"nameDecoratorText": "44",
 				"assignedToName": "GPIO00",
@@ -80,6 +102,17 @@
 				"requirementName": "ADC",
 				"requirementId": "MyADC1",
 				"interfacePin": "CH3"
+			},
+			"54": {
+				"nameDecoratorText": "54",
+				"assignedToName": "GT_PWM05",
+				"errorText": "",
+				"warningText": "",
+				"warningDetailsText": [],
+				"errorDetailsText": [],
+				"requirementName": "LED1",
+				"requirementId": "MyTimerPWM7",
+				"interfacePin": "GT_PWM"
 			}
 		},
 		"powerDomainSettings": {},
@@ -94,12 +127,166 @@
 					"warningText": "",
 					"errorDetailsText": [],
 					"warningDetailsText": [],
-					"gpioPinsUsed": 0
+					"gpioPinsUsed": 3
 				},
 				"name": "TimerPWM",
 				"id": "TimerPWM",
-				"requirements": [],
-				"requirementsNameIndex": 7
+				"requirements": [
+					{
+						"used": true,
+						"solution": {
+							"nameDecoratorText": "",
+							"assignedToName": "",
+							"errorText": "",
+							"warningText": "",
+							"errorDetailsText": [],
+							"warningDetailsText": [],
+							"gpioPinsUsed": 1
+						},
+						"id": "MyTimerPWM7",
+						"name": "LED1",
+						"selectedInstance": "Any",
+						"selectedVoltage": "Any",
+						"selectedUseCase": "TimerPWM",
+						"pinRequirements": [
+							{
+								"used": true,
+								"solution": {
+									"nameDecoratorText": "GT_PWM05",
+									"assignedToName": "54",
+									"errorText": "",
+									"warningText": "",
+									"errorDetailsText": [],
+									"warningDetailsText": []
+								},
+								"assignedToName": "54",
+								"type": "Single",
+								"name": "GT_PWM",
+								"interfacePinName": "GT_PWM"
+							}
+						],
+						"peripheralSolution": {
+							"nameDecoratorText": "",
+							"assignedToName": "TimerPWM5",
+							"errorText": "",
+							"warningText": "",
+							"errorDetailsText": [],
+							"warningDetailsText": []
+						},
+						"voltageSolution": {
+							"nameDecoratorText": "",
+							"assignedToName": "",
+							"errorText": "",
+							"warningText": "",
+							"errorDetailsText": [],
+							"warningDetailsText": []
+						},
+						"interfaceName": "TimerPWM"
+					},
+					{
+						"used": true,
+						"solution": {
+							"nameDecoratorText": "",
+							"assignedToName": "",
+							"errorText": "",
+							"warningText": "",
+							"errorDetailsText": [],
+							"warningDetailsText": [],
+							"gpioPinsUsed": 1
+						},
+						"id": "MyTimerPWM8",
+						"name": "LED2",
+						"selectedInstance": "Any",
+						"selectedVoltage": "Any",
+						"selectedUseCase": "TimerPWM",
+						"pinRequirements": [
+							{
+								"used": true,
+								"solution": {
+									"nameDecoratorText": "GT_PWM07",
+									"assignedToName": "4",
+									"errorText": "",
+									"warningText": "",
+									"errorDetailsText": [],
+									"warningDetailsText": []
+								},
+								"assignedToName": "4",
+								"type": "Single",
+								"name": "GT_PWM",
+								"interfacePinName": "GT_PWM"
+							}
+						],
+						"peripheralSolution": {
+							"nameDecoratorText": "",
+							"assignedToName": "TimerPWM7",
+							"errorText": "",
+							"warningText": "",
+							"errorDetailsText": [],
+							"warningDetailsText": []
+						},
+						"voltageSolution": {
+							"nameDecoratorText": "",
+							"assignedToName": "",
+							"errorText": "",
+							"warningText": "",
+							"errorDetailsText": [],
+							"warningDetailsText": []
+						},
+						"interfaceName": "TimerPWM"
+					},
+					{
+						"used": true,
+						"solution": {
+							"nameDecoratorText": "",
+							"assignedToName": "",
+							"errorText": "",
+							"warningText": "",
+							"errorDetailsText": [],
+							"warningDetailsText": [],
+							"gpioPinsUsed": 1
+						},
+						"id": "MyTimerPWM9",
+						"name": "LED3",
+						"selectedInstance": "Any",
+						"selectedVoltage": "Any",
+						"selectedUseCase": "TimerPWM",
+						"pinRequirements": [
+							{
+								"used": true,
+								"solution": {
+									"nameDecoratorText": "GT_PWM06",
+									"assignedToName": "3",
+									"errorText": "",
+									"warningText": "",
+									"errorDetailsText": [],
+									"warningDetailsText": []
+								},
+								"assignedToName": "3",
+								"type": "Single",
+								"name": "GT_PWM",
+								"interfacePinName": "GT_PWM"
+							}
+						],
+						"peripheralSolution": {
+							"nameDecoratorText": "",
+							"assignedToName": "TimerPWM6",
+							"errorText": "",
+							"warningText": "",
+							"errorDetailsText": [],
+							"warningDetailsText": []
+						},
+						"voltageSolution": {
+							"nameDecoratorText": "",
+							"assignedToName": "",
+							"errorText": "",
+							"warningText": "",
+							"errorDetailsText": [],
+							"warningDetailsText": []
+						},
+						"interfaceName": "TimerPWM"
+					}
+				],
+				"requirementsNameIndex": 10
 			},
 			"Camera": {
 				"used": true,
