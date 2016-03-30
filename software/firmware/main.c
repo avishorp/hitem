@@ -28,20 +28,11 @@
 extern void (* const g_pfnVectors[])(void);
 
 // Local Forwards
+static void BoardInit(void);
+void MainLoop();
+
 
 #define WELCOME_MESSAGE ">>>> hit'em! <<<<\n\r"
-
-static void BoardInit(void)
-{
-	// Initialize interrupt table (see startup_ccs.c)
-    MAP_IntVTableBaseSet((unsigned long)&g_pfnVectors[0]);
-
-    // Enable Processor
-    MAP_IntMasterEnable();
-    MAP_IntEnable(FAULT_SYSTICK);
-
-    PRCMCC3200MCUInit();
-}
 
 int main(void) {
     // Board Initialization
@@ -66,14 +57,37 @@ int main(void) {
     UtilsDelay(3000000);
     LEDSetColor(COLOR_NONE, 70);
 
-   while(1) {
-	   int i;
+    // Initialize SimpleLink
+    long lRet = -1;
+    lRet = sl_Start(0, 0, 0);
+    if (lRet) {
+    	ConsolePrint("SimpleLink initialized\n\r");
+    }
+    else {
+    	ConsolePrint("! [FATAL] SimpleLink initialization failed\n\r");
+    	LEDSetColor(COLOR_RED, 40);
 
-	   ConsolePrint(MESSAGE);
-	   GPIOPinWrite(GPIOA0_BASE, 0x01, 1);
-	   for(i=0; i < 10000000; i++);
-	   GPIOPinWrite(GPIOA0_BASE, 0x01, 0);
-	   for(i=0; i < 5000000; i++);
-   }
+    	// If the initialization failed, we have no point doing anything else!
+    	while(1);
+    }
 
+    // All initialization done! Start running.
+    MainLoop();
 }
+
+void MainLoop() {
+	while(1);
+}
+
+static void BoardInit(void)
+{
+	// Initialize interrupt table (see startup_ccs.c)
+    MAP_IntVTableBaseSet((unsigned long)&g_pfnVectors[0]);
+
+    // Enable Processor
+    MAP_IntMasterEnable();
+    MAP_IntEnable(FAULT_SYSTICK);
+
+    PRCMCC3200MCUInit();
+}
+
