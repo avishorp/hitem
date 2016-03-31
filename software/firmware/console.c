@@ -2,7 +2,9 @@
 // LICENSE: GPLv3
 
 #include <stdlib.h>
+#include <stdio.h>
 #include <string.h>
+#include <stdarg.h>
 
 // Driverlib includes
 #include "hw_types.h"
@@ -80,6 +82,52 @@ void ConsolePrint(const char* pStr)
 	MAP_UARTIntEnable(CONSOLE, UART_INT_TX);
 
 }
+
+int ConsolePrintf(const char *pcFormat, ...)
+{
+	int iRet = 0;
+	char *pcBuff, *pcTemp;
+	int iSize = 256;
+
+	va_list list;
+	pcBuff = (char*)malloc(iSize);
+	if (pcBuff == NULL)
+	{
+		ConsolePrint("XXXXX");
+		return -1;
+	}
+
+	while(1)
+	{
+      va_start(list,pcFormat);
+      iRet = vsnprintf(pcBuff,iSize,pcFormat,list);
+      va_end(list);
+      if(iRet > -1 && iRet < iSize)
+      {
+          break;
+      }
+      else
+      {
+          iSize*=2;
+          if((pcTemp=realloc(pcBuff,iSize))==NULL)
+          {
+              iRet = -1;
+              break;
+          }
+          else
+          {
+              pcBuff=pcTemp;
+          }
+
+      }
+	}
+
+	ConsolePrint(pcBuff);
+	free(pcBuff);
+
+  return iRet;
+}
+
 
 void _ConsoleProcessTX()
 {

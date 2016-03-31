@@ -3,6 +3,7 @@
 // License: GPL v3
 
 #include <stdlib.h>
+#include <stdio.h>
 #include <string.h>
 
 // Simplelink includes
@@ -27,9 +28,32 @@
 
 extern void (* const g_pfnVectors[])(void);
 
+// Application specific status/error codes
+typedef enum{
+ /* Choosing this number to avoid overlap with host-driver's error codes */
+    DEVICE_NOT_IN_STATION_MODE = -0x7D0,
+    DEVICE_START_FAILED = DEVICE_NOT_IN_STATION_MODE - 1,
+    INVALID_HEX_STRING = DEVICE_START_FAILED - 1,
+    TCP_RECV_ERROR = INVALID_HEX_STRING - 1,
+    TCP_SEND_ERROR = TCP_RECV_ERROR - 1,
+    FILE_NOT_FOUND_ERROR = TCP_SEND_ERROR - 1,
+    INVALID_SERVER_RESPONSE = FILE_NOT_FOUND_ERROR - 1,
+    FORMAT_NOT_SUPPORTED = INVALID_SERVER_RESPONSE - 1,
+    FILE_OPEN_FAILED = FORMAT_NOT_SUPPORTED - 1,
+    FILE_WRITE_ERROR = FILE_OPEN_FAILED - 1,
+    INVALID_FILE = FILE_WRITE_ERROR - 1,
+    SERVER_CONNECTION_FAILED = INVALID_FILE - 1,
+    GET_HOST_IP_FAILED = SERVER_CONNECTION_FAILED  - 1,
+
+    STATUS_CODE_MAX = -0xBB8
+}e_AppStatusCodes;
+
+
 // Local Forwards
-static void BoardInit(void);
+static void BoardInit();
+void SimpleLinkInit();
 void MainLoop();
+void FatalError(const char* message);
 
 
 #define WELCOME_MESSAGE ">>>> hit'em! <<<<\n\r"
@@ -57,19 +81,9 @@ int main(void) {
     UtilsDelay(3000000);
     LEDSetColor(COLOR_NONE, 70);
 
-    // Initialize SimpleLink
-    long lRet = -1;
-    lRet = sl_Start(0, 0, 0);
-    if (lRet) {
-    	ConsolePrint("SimpleLink initialized\n\r");
-    }
-    else {
-    	ConsolePrint("! [FATAL] SimpleLink initialization failed\n\r");
-    	LEDSetColor(COLOR_RED, 40);
 
-    	// If the initialization failed, we have no point doing anything else!
-    	while(1);
-    }
+    // Initialize SimpleLink
+    SimpleLinkInit();
 
     // All initialization done! Start running.
     MainLoop();
@@ -79,7 +93,7 @@ void MainLoop() {
 	while(1);
 }
 
-static void BoardInit(void)
+static void BoardInit()
 {
 	// Initialize interrupt table (see startup_ccs.c)
     MAP_IntVTableBaseSet((unsigned long)&g_pfnVectors[0]);
@@ -91,3 +105,162 @@ static void BoardInit(void)
     PRCMCC3200MCUInit();
 }
 
+// Initialize SimpleLink and reset its state
+//
+// - Set the mode to STATION
+// - Configures connection policy to Auto and AutoSmartConfig
+// - Deletes all the stored profiles
+// - Enables DHCP
+// - Disables Scan policy
+// - Sets Tx power to maximum
+// - Sets power policy to normal
+// - Unregister mDNS services
+// - Remove all filters
+void SimpleLinkInit()
+{
+    SlVersionFull   ver = {0};
+    _WlanRxFilterOperationCommandBuff_t  RxFilterIdMask = {0};
+
+    unsigned char ucVal = 1;
+    unsigned char ucConfigOpt = 0;
+    unsigned char ucConfigLen = 0;
+    unsigned char ucPower = 0;
+
+    long lRetVal = -1;
+    long lMode = -1;
+
+    lMode = sl_Start(0, 0, 0);
+    if (lMode < 0)
+    	FatalError("sl_Start");
+
+    // If the device is not in station-mode, try configuring it in station-mode
+    if (ROLE_STA != lMode)
+    {
+        if (ROLE_AP == lMode)
+        {
+            // If the device is in AP mode, we need to wait for this event
+            // before doing anything
+        	// TODO: Check if needed
+//            while(!IS_IP_ACQUIRED(g_ulStatus))
+//            {
+//            }
+        }
+
+        // Switch to STA role and restart
+        lRetVal = sl_WlanSetMode(ROLE_STA);
+        if (lRetVal < 0)
+        	FatalError("sl_WlanSetMode");
+
+        lRetVal = sl_Stop(0xFF);
+        if (lRetVal < 0)
+        	FatalError("sl_Stop");
+
+        lRetVal = sl_Start(0, 0, 0);
+        if (lRetVal < 0)
+        	FatalError("sl_Start");
+
+        // Check if the device is in station again
+        if (ROLE_STA != lRetVal)
+        {
+            // We don't want to proceed if the device is not coming up in STA-mode
+        	FatalError("Faild setting the device mode to STA");
+        }
+    }
+
+    // Get the device's version-information
+    ucConfigOpt = SL_DEVICE_GENERAL_VERSION;
+    ucConfigLen = sizeof(ver);
+    lRetVal = sl_DevGet(SL_DEVICE_GENERAL_CONFIGURATION, &ucConfigOpt,
+                                &ucConfigLen, (unsigned char *)(&ver));
+    if (lRetVal < 0)
+    	FatalError("Could not get device version");
+
+    ConsolePrintf("Host Driver Version: %s\n\r", SL_DRIVER_VERSION);
+    ConsolePrintf("Build Version %d.%d.%d.%d.31.%d.%d.%d.%d.%d.%d.%d.%d\n\r",
+    ver.NwpVersion[0],ver.NwpVersion[1],ver.NwpVersion[2],ver.NwpVersion[3],
+    ver.ChipFwAndPhyVersion.FwVersion[0],ver.ChipFwAndPhyVersion.FwVersion[1],
+    ver.ChipFwAndPhyVersion.FwVersion[2],ver.ChipFwAndPhyVersion.FwVersion[3],
+    ver.ChipFwAndPhyVersion.PhyVersion[0],ver.ChipFwAndPhyVersion.PhyVersion[1],
+    ver.ChipFwAndPhyVersion.PhyVersion[2],ver.ChipFwAndPhyVersion.PhyVersion[3]);
+
+    // Set connection policy to Auto + SmartConfig
+    //      (Device's default connection policy)
+    lRetVal = sl_WlanPolicySet(SL_POLICY_CONNECTION,
+                                SL_CONNECTION_POLICY(1, 0, 0, 0, 1), NULL, 0);
+    if (lRetVal < 0)
+    	FatalError("sl_WlanPolicySet");
+
+    // Remove all profiles
+    lRetVal = sl_WlanProfileDel(0xFF);
+    if (lRetVal < 0)
+    	FatalError("sl_WlanProfileDel");
+/*
+    //
+    // Device in station-mode. Disconnect previous connection if any
+    // The function returns 0 if 'Disconnected done', negative number if already
+    // disconnected Wait for 'disconnection' event if 0 is returned, Ignore
+    // other return-codes
+    //
+    lRetVal = sl_WlanDisconnect();
+    if(0 == lRetVal)
+    {
+        // Wait
+        while(IS_CONNECTED(g_ulStatus))
+        {
+#ifndef SL_PLATFORM_MULTI_THREADED
+              _SlNonOsMainLoopTask();
+#endif
+        }
+    }
+*/
+    // Enable DHCP client
+    lRetVal = sl_NetCfgSet(SL_IPV4_STA_P2P_CL_DHCP_ENABLE,1,1,&ucVal);
+    if (lRetVal < 0)
+    	FatalError("sl_NetCfgSet");
+
+    // Disable scan
+    ucConfigOpt = SL_SCAN_POLICY(0);
+    lRetVal = sl_WlanPolicySet(SL_POLICY_SCAN , ucConfigOpt, NULL, 0);
+    if (lRetVal < 0)
+    	FatalError("sl_WlanPolicySet");
+
+    // Set Tx power level for station mode
+    // Number between 0-15, as dB offset from max power - 0 will set max power
+    ucPower = 0;
+    lRetVal = sl_WlanSet(SL_WLAN_CFG_GENERAL_PARAM_ID,
+            WLAN_GENERAL_PARAM_OPT_STA_TX_POWER, 1, (unsigned char *)&ucPower);
+    if (lRetVal < 0)
+    	FatalError("sl_WlanSet");
+
+    // Set PM policy to normal
+    lRetVal = sl_WlanPolicySet(SL_POLICY_PM , SL_NORMAL_POLICY, NULL, 0);
+    if (lRetVal < 0)
+    	FatalError("sl_WlanPolicySet");
+
+    // Unregister mDNS services
+    lRetVal = sl_NetAppMDNSUnRegisterService(0, 0);
+    if (lRetVal < 0)
+    	FatalError("sl_NetAppMDNSUnRegisterService");
+
+    // Remove  all 64 filters (8*8)
+    memset(RxFilterIdMask.FilterIdMask, 0xFF, 8);
+    lRetVal = sl_WlanRxFilterSet(SL_REMOVE_RX_FILTER, (_u8 *)&RxFilterIdMask,
+                       sizeof(_WlanRxFilterOperationCommandBuff_t));
+    if (lRetVal < 0)
+    	FatalError("sl_WlanRxFilterSet");
+
+    ConsolePrint("SimpleLink Initialized successfully\n\r");
+
+}
+
+void FatalError(const char* message)
+{
+	char fmsg[128];
+	sprintf(fmsg, "!!! [FATAL] %s\n\r", message);
+	ConsolePrint(fmsg);
+	LEDSetColor(COLOR_RED, 40);
+
+	// Stop here.
+	while(1);
+
+}
