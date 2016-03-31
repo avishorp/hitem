@@ -15,16 +15,6 @@ void SimpleLinkSockEventHandler(SlSockEvent_t* pSockEvent)
 
 }
 
-void SimpleLinkWlanEventHandler(SlWlanEvent_t *pWlanEvent)
-{
-
-}
-
-void SimpleLinkNetAppEventHandler(SlNetAppEvent_t *pNetAppEvent)
-{
-
-}
-
 
 // HTTP Server callback - not used
 void SimpleLinkHttpServerCallback(SlHttpServerEvent_t *pHttpEvent,

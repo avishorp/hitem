@@ -26,6 +26,7 @@
 #include "console.h"
 #include "led.h"
 #include "config.h"
+#include "mainloop.h"
 
 extern void (* const g_pfnVectors[])(void);
 
@@ -92,11 +93,16 @@ int main(void) {
     SimpleLinkInit();
 
     // All initialization done! Start running.
+    MainLoopInit(ConfigGet());
+
+    // Start the main application loop
     MainLoop();
 }
 
 void MainLoop() {
-	while(1);
+	while(1) {
+		MainLoopExec();
+	}
 }
 
 static void BoardInit()
@@ -254,6 +260,9 @@ void SimpleLinkInit()
                        sizeof(_WlanRxFilterOperationCommandBuff_t));
     if (lRetVal < 0)
     	FatalError("sl_WlanRxFilterSet");
+
+    sl_Stop(0xff);
+    sl_Start(0,0,0);
 
     ConsolePrint("SimpleLink Initialized successfully\n\r");
 

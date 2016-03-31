@@ -1,5 +1,8 @@
 // Hit'em unit-specific configuration
 
+#ifndef __CONFIG_H__
+#define __CONFIG_H__
+
 #define PERSONALITY_HAT     1
 #define PERSONALITY_HAMMER  2
 
@@ -12,3 +15,6 @@ typedef struct {
 
 long ConfigInit();
 const appConfig_t* ConfigGet();
+
+
+#endif
