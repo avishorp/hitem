@@ -1,0 +1,6 @@
+{
+	"discovery": {
+		"port": 24333,
+		"magic": "HTEM"
+	}
+}

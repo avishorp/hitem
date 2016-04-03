@@ -1,0 +1,22 @@
+{
+  "name": "hitem_host",
+  "version": "0.1.0",
+  "description": "Hit'em host server",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/avishorp/hitem.git"
+  },
+  "author": "Avishay Orpaz <avishorp@gmail.com>",
+  "license": "GPL-3.0",
+  "bugs": {
+    "url": "https://github.com/avishorp/hitem/issues"
+  },
+  "homepage": "https://github.com/avishorp/hitem#readme",
+  "dependencies": {
+    "bunyan": "^1.8.0"
+  }
+}
