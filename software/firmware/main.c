@@ -30,26 +30,6 @@
 
 extern void (* const g_pfnVectors[])(void);
 
-// Application specific status/error codes
-typedef enum{
- /* Choosing this number to avoid overlap with host-driver's error codes */
-    DEVICE_NOT_IN_STATION_MODE = -0x7D0,
-    DEVICE_START_FAILED = DEVICE_NOT_IN_STATION_MODE - 1,
-    INVALID_HEX_STRING = DEVICE_START_FAILED - 1,
-    TCP_RECV_ERROR = INVALID_HEX_STRING - 1,
-    TCP_SEND_ERROR = TCP_RECV_ERROR - 1,
-    FILE_NOT_FOUND_ERROR = TCP_SEND_ERROR - 1,
-    INVALID_SERVER_RESPONSE = FILE_NOT_FOUND_ERROR - 1,
-    FORMAT_NOT_SUPPORTED = INVALID_SERVER_RESPONSE - 1,
-    FILE_OPEN_FAILED = FORMAT_NOT_SUPPORTED - 1,
-    FILE_WRITE_ERROR = FILE_OPEN_FAILED - 1,
-    INVALID_FILE = FILE_WRITE_ERROR - 1,
-    SERVER_CONNECTION_FAILED = INVALID_FILE - 1,
-    GET_HOST_IP_FAILED = SERVER_CONNECTION_FAILED  - 1,
-
-    STATUS_CODE_MAX = -0xBB8
-}e_AppStatusCodes;
-
 
 // Local Forwards
 static void BoardInit();
@@ -102,6 +82,7 @@ int main(void) {
 void MainLoop() {
 	while(1) {
 		MainLoopExec();
+		sl_Task();
 	}
 }
 
@@ -178,6 +159,8 @@ void SimpleLinkInit()
         	FatalError("Faild setting the device mode to STA");
         }
     }
+
+
 
     // Get the device's version-information
     ucConfigOpt = SL_DEVICE_GENERAL_VERSION;
@@ -261,21 +244,7 @@ void SimpleLinkInit()
     if (lRetVal < 0)
     	FatalError("sl_WlanRxFilterSet");
 
-    sl_Stop(0xff);
-    sl_Start(0,0,0);
-
     ConsolePrint("SimpleLink Initialized successfully\n\r");
 
 }
 
-void FatalError(const char* message)
-{
-	char fmsg[128];
-	sprintf(fmsg, "!!! [FATAL] %s\n\r", message);
-	ConsolePrint(fmsg);
-	LEDSetColor(COLOR_RED, 40);
-
-	// Stop here.
-	while(1);
-
-}

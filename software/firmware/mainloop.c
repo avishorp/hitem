@@ -8,6 +8,7 @@
 
 #include "mainloop.h"
 #include "console.h"
+#include "error.h"
 
 //typedef struct appState_t;
 typedef struct appState_t* (*stateHandler_t)();
@@ -46,17 +47,14 @@ DEF_STATE(SENDDISCOVERY)  // Send discovery message
 #define SET_STATUS(b) g_ulStatus = (g_ulStatus | (1 << b))
 #define CLEAR_STATUS(b) g_ulStatus = (g_ulStatus & ~(1 << b))
 
-#ifdef DEBUG_STATE
-#define NEXT_STATE(s) ConsolePrintf("Switch to state: %s", s); g_eState = s
-#else
-#define NEXT_STATE(s) g_eState = s
-#endif
-
 // Global Variables
 pAppState_t* g_stateTable;
 static appState_t* g_tState;
 static unsigned long g_ulStatus;
 static const appConfig_t* g_tConfig;
+static _i16 g_iDiscoverySocket;
+static _i16 g_iCmdSocket;
+static _i16 g_iSyncSocket;
 
 // Functions
 void MainLoopInit(const appConfig_t* config)
@@ -71,6 +69,27 @@ void MainLoopInit(const appConfig_t* config)
 	g_stateTable[1] = STATE_WAITCONNECT;
 	g_stateTable[2] = STATE_WAITFORIP;
 	g_stateTable[3] = STATE_SENDDISCOVERY;
+
+	// Create sockets
+	SlSockNonblocking_t nb;
+	nb.NonblockingEnabled = 1;
+
+	g_iDiscoverySocket = sl_Socket(AF_INET, SOCK_DGRAM, 0);
+	if (g_iDiscoverySocket < 0)
+		FatalError("Discovery socket creation failed: %d", g_iDiscoverySocket);
+	sl_SetSockOpt(g_iDiscoverySocket, SL_SOL_SOCKET, SL_SO_NONBLOCKING, &nb, sizeof(SlSockNonblocking_t));
+
+	g_iCmdSocket = sl_Socket(AF_INET, SOCK_STREAM, 0);
+	if (g_iCmdSocket < 0)
+		FatalError("Command socket creation failed: %d", g_iCmdSocket);
+	sl_SetSockOpt(g_iCmdSocket, SL_SOL_SOCKET, SL_SO_NONBLOCKING, &nb, sizeof(SlSockNonblocking_t));
+
+
+	g_iSyncSocket = sl_Socket(AF_INET, SOCK_DGRAM, 0);
+	if (g_iSyncSocket < 0)
+		FatalError("Sync socket creation failed: %d", g_iSyncSocket);
+	sl_SetSockOpt(g_iSyncSocket, SL_SOL_SOCKET, SL_SO_NONBLOCKING, &nb, sizeof(SlSockNonblocking_t));
+
 }
 
 void MainLoopExec()
@@ -128,7 +147,8 @@ STATE_HANDLER(WAITCONNECT)
 
 STATE_HANDLER(WAITFORIP)
 {
-	return 0;
+	if (GET_STATUS(STATUS_IPACQUIRED))
+		return STATE_SENDDISCOVERY;
 }
 
 STATE_HANDLER(SENDDISCOVERY)
@@ -142,8 +162,6 @@ STATE_HANDLER(SENDDISCOVERY)
 
 void SimpleLinkWlanEventHandler(SlWlanEvent_t *pWlanEvent)
 {
-	ConsolePrintf("WLANevent....\n\r");
-
     switch(pWlanEvent->Event)
     {
         case SL_WLAN_CONNECT_EVENT:
@@ -176,12 +194,11 @@ void SimpleLinkWlanEventHandler(SlWlanEvent_t *pWlanEvent)
 //*****************************************************************************
 void SimpleLinkNetAppEventHandler(SlNetAppEvent_t *pNetAppEvent)
 {
-	ConsolePrintf("event....\n\r");
     switch(pNetAppEvent->Event)
     {
         case SL_NETAPP_IPV4_IPACQUIRED_EVENT:
         {
-        	CLEAR_STATUS(STATUS_IPACQUIRED);
+        	SET_STATUS(STATUS_IPACQUIRED);
 
             //SlIpV4AcquiredAsync_t *pEventData = NULL;
 
@@ -189,7 +206,7 @@ void SimpleLinkNetAppEventHandler(SlNetAppEvent_t *pNetAppEvent)
             //pEventData = &pNetAppEvent->EventData.ipAcquiredV4;
 
             //Gateway IP address
-            ConsolePrintf("[NETAPP EVENT] IP Acquired: IP=%d.%d.%d.%d",
+            ConsolePrintf("[NETAPP EVENT] IP Acquired: IP=%d.%d.%d.%d\n\r",
             SL_IPV4_BYTE(pNetAppEvent->EventData.ipAcquiredV4.ip,3),
             SL_IPV4_BYTE(pNetAppEvent->EventData.ipAcquiredV4.ip,2),
             SL_IPV4_BYTE(pNetAppEvent->EventData.ipAcquiredV4.ip,1),
