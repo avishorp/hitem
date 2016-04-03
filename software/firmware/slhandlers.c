@@ -10,11 +10,6 @@ void SimpleLinkGeneralEventHandler(SlDeviceEvent_t *pDevEvent)
 //               pDevEvent->EventData.deviceEvent.sender);
 }
 
-void SimpleLinkSockEventHandler(SlSockEvent_t* pSockEvent)
-{
-
-}
-
 
 // HTTP Server callback - not used
 void SimpleLinkHttpServerCallback(SlHttpServerEvent_t *pHttpEvent,

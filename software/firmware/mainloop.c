@@ -61,6 +61,7 @@ static _i16 g_iSyncSocket;
 static _u32 g_iMyIP;
 
 static SlSockAddrIn_t g_tBroadcastAddr;
+static SlSockAddrIn_t g_tServerAddr;
 
 
 
@@ -133,10 +134,12 @@ void MainLoopExec()
 
 SlSecParams_t secParams = {0};
 
+// Connect to the WLAN
 STATE_HANDLER(DOCONNECT)
 {
 	ConsolePrintf("Trying to connect to %s\n\r", g_tConfig->sESSID);
 
+	memset(&g_tServerAddr, 0, sizeof(g_tServerAddr));
 
     secParams.Key = (signed char *)g_tConfig->sPassword;
     secParams.KeyLen = strlen(g_tConfig->sPassword);
@@ -150,6 +153,7 @@ STATE_HANDLER(DOCONNECT)
     return STATE_WAITCONNECT;
 }
 
+// Wait for WLAN connection to be established
 STATE_HANDLER(WAITCONNECT)
 {
 	if (GET_STATUS(STATUS_CONNECTED)) {
@@ -159,12 +163,14 @@ STATE_HANDLER(WAITCONNECT)
 	return 0;
 }
 
+// Wait for IP address to be acquired
 STATE_HANDLER(WAITFORIP)
 {
 	if (GET_STATUS(STATUS_IPACQUIRED))
 		return STATE_SENDDISCOVERY;
 }
 
+// Send a discovery request packet
 STATE_HANDLER(SENDDISCOVERY)
 {
 	static const char sDiscoveryMsg[] = "HTEM";
@@ -176,8 +182,24 @@ STATE_HANDLER(SENDDISCOVERY)
 	return STATE_WAITDISCOVERY;
 }
 
+// Wait for discovery response packet, and set the server
+// IP address accordingly
 STATE_HANDLER(WAITDISCOVERY)
 {
+	char rbuf[10];
+
+	_i16 asize = sizeof(SlSockAddrIn_t);
+	_i16 lRet = sl_RecvFrom(g_iDiscoverySocket, &rbuf, sizeof(rbuf), 0,
+			(SlSockAddr_t*)&g_tServerAddr, (SlSocklen_t*)&asize);
+
+	if (lRet > 0) {
+		ConsolePrintf("========Got %d bytes", lRet);
+	}
+	else if (l != SL_EAGAIN) {
+		// Something went wrong
+		ConsolePrintf("sl_RecvFrom returned %d\n\r", (int)lRet)
+	}
+
 	return 0;
 }
 
@@ -252,4 +274,8 @@ void SimpleLinkNetAppEventHandler(SlNetAppEvent_t *pNetAppEvent)
     }
 }
 
+void SimpleLinkSockEventHandler(SlSockEvent_t* pSockEvent)
+{
+	ConsolePrintf("[SOCK EVENT] %d\n\r", pSockEvent->Event);
+}
 
