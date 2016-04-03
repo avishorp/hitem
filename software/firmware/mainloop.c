@@ -37,8 +37,10 @@ DEF_STATE(DOCONNECT)     // Instruct SimpleLink to connect to the WiFi Network
 DEF_STATE(WAITCONNECT)   // Wait for WLAN connection to be established
 DEF_STATE(WAITFORIP)     // Wait for IP address
 DEF_STATE(SENDDISCOVERY)  // Send discovery message
+DEF_STATE(WAITDISCOVERY)  // Send discovery message
+
 //END_STATE_TABLE
-#define NUM_STATES 4
+#define NUM_STATES 5
 
 #define STATUS_CONNECTED  0
 #define STATUS_IPACQUIRED 1
@@ -48,6 +50,7 @@ DEF_STATE(SENDDISCOVERY)  // Send discovery message
 #define CLEAR_STATUS(b) g_ulStatus = (g_ulStatus & ~(1 << b))
 
 // Global Variables
+appConfig_t* g_tAppConfig;
 pAppState_t* g_stateTable;
 static appState_t* g_tState;
 static unsigned long g_ulStatus;
@@ -55,10 +58,16 @@ static const appConfig_t* g_tConfig;
 static _i16 g_iDiscoverySocket;
 static _i16 g_iCmdSocket;
 static _i16 g_iSyncSocket;
+static _u32 g_iMyIP;
+
+static SlSockAddrIn_t g_tBroadcastAddr;
+
+
 
 // Functions
 void MainLoopInit(const appConfig_t* config)
 {
+	g_tAppConfig = config;
 	g_tState = STATE_DOCONNECT;
 	g_ulStatus = 0;
 	g_tConfig = config;
@@ -69,6 +78,7 @@ void MainLoopInit(const appConfig_t* config)
 	g_stateTable[1] = STATE_WAITCONNECT;
 	g_stateTable[2] = STATE_WAITFORIP;
 	g_stateTable[3] = STATE_SENDDISCOVERY;
+	g_stateTable[4] = STATE_WAITDISCOVERY;
 
 	// Create sockets
 	SlSockNonblocking_t nb;
@@ -89,6 +99,10 @@ void MainLoopInit(const appConfig_t* config)
 	if (g_iSyncSocket < 0)
 		FatalError("Sync socket creation failed: %d", g_iSyncSocket);
 	sl_SetSockOpt(g_iSyncSocket, SL_SOL_SOCKET, SL_SO_NONBLOCKING, &nb, sizeof(SlSockNonblocking_t));
+
+	// Initialize static broadcast address
+	g_tBroadcastAddr.sin_family = SL_AF_INET;
+	g_tBroadcastAddr.sin_port = sl_Htons(config->iDiscPort);
 
 }
 
@@ -153,6 +167,17 @@ STATE_HANDLER(WAITFORIP)
 
 STATE_HANDLER(SENDDISCOVERY)
 {
+	static const char sDiscoveryMsg[] = "HTEM";
+
+	// Adjust broadcast address according to allocated IP
+	g_tBroadcastAddr.sin_addr.s_addr = sl_Htonl(g_iMyIP | (~g_tAppConfig->iNetmask));
+
+	sl_SendTo(g_iDiscoverySocket, sDiscoveryMsg, sizeof(sDiscoveryMsg), 0, (SlSockAddr_t*)&g_tBroadcastAddr, sizeof(SlSockAddrIn_t));
+	return STATE_WAITDISCOVERY;
+}
+
+STATE_HANDLER(WAITDISCOVERY)
+{
 	return 0;
 }
 
@@ -165,10 +190,12 @@ void SimpleLinkWlanEventHandler(SlWlanEvent_t *pWlanEvent)
     switch(pWlanEvent->Event)
     {
         case SL_WLAN_CONNECT_EVENT:
+        	ConsolePrint("[WLAN EVENT] Connected");
             SET_STATUS(STATUS_CONNECTED);
             break;
 
         case SL_WLAN_DISCONNECT_EVENT:
+        	ConsolePrint("[WLAN EVENT] Disonnected");
             CLEAR_STATUS(STATUS_CONNECTED);
             CLEAR_STATUS(STATUS_IPACQUIRED);
             break;
@@ -211,6 +238,8 @@ void SimpleLinkNetAppEventHandler(SlNetAppEvent_t *pNetAppEvent)
             SL_IPV4_BYTE(pNetAppEvent->EventData.ipAcquiredV4.ip,2),
             SL_IPV4_BYTE(pNetAppEvent->EventData.ipAcquiredV4.ip,1),
             SL_IPV4_BYTE(pNetAppEvent->EventData.ipAcquiredV4.ip,0));
+
+            g_iMyIP = pNetAppEvent->EventData.ipAcquiredV4.ip;
         }
         break;
 

@@ -5,8 +5,10 @@
 appConfig_t g_tempAppConfig = {
 		0, // lBoardBumber
 		PERSONALITY_HAMMER, // lPersonality
-		"hitem", // sESSID
-		"hitem", // sPassword
+		"xxxx", // sESSID
+		"xxxx", // sPassword
+		24333, // iDiscPort
+		0xffffff00 // iNetmask
 };
 
 
