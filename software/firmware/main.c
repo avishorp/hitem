@@ -19,6 +19,7 @@
 #include "utils.h"
 #include "gpio.h"
 #include "timer.h"
+#include "uart.h"
 
 #include "pinmux/pin_mux_config.h"
 #include "hw_memmap.h"
@@ -28,15 +29,18 @@
 #include "config.h"
 #include "mainloop.h"
 #include "time.h"
+#include "settings.h"
 
 extern void (* const g_pfnVectors[])(void);
-
 
 // Local Forwards
 static void BoardInit();
 void SimpleLinkInit();
 void MainLoop();
 void FatalError(const char* message);
+#ifdef LED_ADJUST_TEST
+void __LEDAdjust();
+#endif
 
 
 #define WELCOME_MESSAGE ">>>> hit'em! <<<<\n\r"
@@ -55,6 +59,9 @@ int main(void) {
     // Initialize the leds
     LEDInit();
 
+    // Initialize timing system
+    TimeInit();
+
     // LED test
     LEDSetColor(COLOR_RED, 70);
     UtilsDelay(3000000);
@@ -70,8 +77,6 @@ int main(void) {
     if (r < 0)
     	FatalError("Failed loading board configuraion");
 
-    // Initialize timing system
-    TimeInit();
 
     // Initialize SimpleLink
     SimpleLinkInit();
@@ -80,10 +85,13 @@ int main(void) {
     MainLoopInit(ConfigGet());
 
     // Start the main application loop
-TimeSetTimeout(0, 1000);
-TimeSetTimeout(1, 5000);
-
-    MainLoop();
+#ifdef LED_ADJUST_TEST
+    __LEDAdjust();
+#endif
+//LEDSetColor(COLOR_YELLOW, 30);
+//TimeSetTimeout(1, 2000);
+LEDSetPattern(PATTERN_BLIMP);
+	MainLoop();
 
 }
 
@@ -93,17 +101,12 @@ void MainLoop() {
 		MainLoopExec();
 		sl_Task();
 		TimeTask();
+		LEDTask();
 
-		////// TIMER TEST
-		if(TimeGetEvent(0)) {
-			ConsolePrint("Timer 0 expired\n\r");
-			TimeSetTimeout(0, 1000);
-		}
-		if(TimeGetEvent(1)) {
-			ConsolePrint("Timer 1 expired\n\r");
-			TimeSetTimeout(1, 500);
-		}
-
+		//if (TimeGetEvent(1)) {
+		//	LEDSetPattern(PATTERN_COLOR_CHIRP);
+		//	TimeSetTimeout(1, 4000);
+		//}
 	}
 }
 
@@ -268,4 +271,34 @@ void SimpleLinkInit()
     ConsolePrint("SimpleLink Initialized successfully\n\r");
 
 }
+
+#ifdef LED_ADJUST_TEST
+void __LEDAdjust()
+{
+	int r, g, b;
+	char ch;
+	r = 0;
+	g = 0;
+	b = 0;
+	ConsolePrint("**** LED Color Adjustment ****\n\r");
+	ConsolePrint("R - Q (+) A (-)\n\r");
+	ConsolePrint("G - W (+) S (-)\n\r");
+	ConsolePrint("B - E (+) D (-)\n\r\n\r");
+
+	while(1) {
+		LEDSetColor(RGB(r, g, b), 100);
+		ConsolePrintf("R=%d G=%d B=%d\n\r", r, g, b);
+
+		ch = MAP_UARTCharGet(CONSOLE);
+		if (ch == 'q') r += 5;
+		if (ch == 'a') r -= 5;
+		if (ch == 'w') g += 5;
+		if (ch == 's') g -= 5;
+		if (ch == 'e') b += 5;
+		if (ch == 'd') b -= 5;
+
+	}
+
+}
+#endif
 

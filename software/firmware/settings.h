@@ -1,5 +1,8 @@
 // Application Settings
 
+#ifndef __SETTINGS_H__
+#define __SETTINGS_H__
+
 // System Clock [Hz]
 #define SYSCLK               80000000
 
@@ -9,4 +12,6 @@
 #define CONSOLE_PERIPH       PRCM_UARTA0
 #define CONSOLE_BUFFER_SIZE  128
 #define CONSOLE_TRUNCATE_SYM '$'
+
+#endif
 

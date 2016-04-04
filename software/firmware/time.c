@@ -54,7 +54,7 @@ void TimeInit()
 	MAP_TimerIntEnable(SYSTIMER_BASE, TIMER_TIMA_TIMEOUT);
 
 	// Enable the timer
-	MAP_TimerEnable(SYSTIMER_BASE, TIMER_A);
+	MAP_TimerEnable(SYSTIMER_BASE, TIMER_BOTH);
 }
 
 void TimeTask()
