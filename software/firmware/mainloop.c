@@ -195,9 +195,9 @@ STATE_HANDLER(WAITDISCOVERY)
 	if (lRet > 0) {
 		ConsolePrintf("========Got %d bytes", lRet);
 	}
-	else if (l != SL_EAGAIN) {
+	else if (lRet != SL_EAGAIN) {
 		// Something went wrong
-		ConsolePrintf("sl_RecvFrom returned %d\n\r", (int)lRet)
+		ConsolePrintf("sl_RecvFrom returned %d\n\r", (int)lRet);
 	}
 
 	return 0;

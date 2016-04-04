@@ -27,6 +27,7 @@
 #include "led.h"
 #include "config.h"
 #include "mainloop.h"
+#include "time.h"
 
 extern void (* const g_pfnVectors[])(void);
 
@@ -69,6 +70,9 @@ int main(void) {
     if (r < 0)
     	FatalError("Failed loading board configuraion");
 
+    // Initialize timing system
+    TimeInit();
+
     // Initialize SimpleLink
     SimpleLinkInit();
 
@@ -76,13 +80,30 @@ int main(void) {
     MainLoopInit(ConfigGet());
 
     // Start the main application loop
+TimeSetTimeout(0, 1000);
+TimeSetTimeout(1, 5000);
+
     MainLoop();
+
 }
 
 void MainLoop() {
 	while(1) {
+		// Cooperative task invocation
 		MainLoopExec();
 		sl_Task();
+		TimeTask();
+
+		////// TIMER TEST
+		if(TimeGetEvent(0)) {
+			ConsolePrint("Timer 0 expired\n\r");
+			TimeSetTimeout(0, 1000);
+		}
+		if(TimeGetEvent(1)) {
+			ConsolePrint("Timer 1 expired\n\r");
+			TimeSetTimeout(1, 500);
+		}
+
 	}
 }
 
