@@ -88,9 +88,6 @@ int main(void) {
 #ifdef LED_ADJUST_TEST
     __LEDAdjust();
 #endif
-//LEDSetColor(COLOR_YELLOW, 30);
-//TimeSetTimeout(1, 2000);
-LEDSetPattern(PATTERN_BLIMP);
 	MainLoop();
 
 }
@@ -102,11 +99,6 @@ void MainLoop() {
 		sl_Task();
 		TimeTask();
 		LEDTask();
-
-		//if (TimeGetEvent(1)) {
-		//	LEDSetPattern(PATTERN_COLOR_CHIRP);
-		//	TimeSetTimeout(1, 4000);
-		//}
 	}
 }
 

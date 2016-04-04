@@ -9,6 +9,7 @@
 #include "mainloop.h"
 #include "console.h"
 #include "error.h"
+#include "led.h"
 
 //typedef struct appState_t;
 typedef struct appState_t* (*stateHandler_t)();
@@ -150,6 +151,8 @@ STATE_HANDLER(DOCONNECT)
     if (lRetVal < 0)
     	ConsolePrintf("Error %d", lRetVal);
 
+    LEDSetPattern(PATTERN_RED_BLUE);
+
     return STATE_WAITCONNECT;
 }
 
@@ -179,6 +182,9 @@ STATE_HANDLER(SENDDISCOVERY)
 	g_tBroadcastAddr.sin_addr.s_addr = sl_Htonl(g_iMyIP | (~g_tAppConfig->iNetmask));
 
 	sl_SendTo(g_iDiscoverySocket, sDiscoveryMsg, sizeof(sDiscoveryMsg), 0, (SlSockAddr_t*)&g_tBroadcastAddr, sizeof(SlSockAddrIn_t));
+
+    LEDSetPattern(PATTERN_RED_GREEN);
+
 	return STATE_WAITDISCOVERY;
 }
 
