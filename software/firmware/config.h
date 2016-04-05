@@ -13,6 +13,7 @@ typedef struct {
 	char sPassword[20];     // WLAN Password
 	unsigned long iDiscPort;// Discovery port number
 	unsigned long iNetmask; // Network mask
+	unsigned long iSrvPort; // Endpoint server port
 } appConfig_t;
 
 long ConfigInit();

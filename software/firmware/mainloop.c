@@ -10,6 +10,9 @@
 #include "console.h"
 #include "error.h"
 #include "led.h"
+#include "protocol.h"
+
+#define DISCOVERY_MAGIC "HTEM"
 
 //typedef struct appState_t;
 typedef struct appState_t* (*stateHandler_t)();
@@ -39,9 +42,12 @@ DEF_STATE(WAITCONNECT)   // Wait for WLAN connection to be established
 DEF_STATE(WAITFORIP)     // Wait for IP address
 DEF_STATE(SENDDISCOVERY)  // Send discovery message
 DEF_STATE(WAITDISCOVERY)  // Send discovery message
+DEF_STATE(DOCONNECTSRV)   // Connect the server
+DEF_STATE(DOWELCOME)      // Send welcome message
+DEF_STATE(READY)          // Ready state
 
 //END_STATE_TABLE
-#define NUM_STATES 5
+#define NUM_STATES 8
 
 #define STATUS_CONNECTED  0
 #define STATUS_IPACQUIRED 1
@@ -81,6 +87,9 @@ void MainLoopInit(const appConfig_t* config)
 	g_stateTable[2] = STATE_WAITFORIP;
 	g_stateTable[3] = STATE_SENDDISCOVERY;
 	g_stateTable[4] = STATE_WAITDISCOVERY;
+	g_stateTable[5] = STATE_DOCONNECTSRV;
+	g_stateTable[6] = STATE_DOWELCOME;
+	g_stateTable[7] = STATE_READY;
 
 	// Create sockets
 	SlSockNonblocking_t nb;
@@ -176,7 +185,7 @@ STATE_HANDLER(WAITFORIP)
 // Send a discovery request packet
 STATE_HANDLER(SENDDISCOVERY)
 {
-	static const char sDiscoveryMsg[] = "HTEM";
+	static const char sDiscoveryMsg[] = DISCOVERY_MAGIC;
 
 	// Adjust broadcast address according to allocated IP
 	g_tBroadcastAddr.sin_addr.s_addr = sl_Htonl(g_iMyIP | (~g_tAppConfig->iNetmask));
@@ -199,7 +208,13 @@ STATE_HANDLER(WAITDISCOVERY)
 			(SlSockAddr_t*)&g_tServerAddr, (SlSocklen_t*)&asize);
 
 	if (lRet > 0) {
-		ConsolePrintf("========Got %d bytes", lRet);
+		ConsolePrintf("Got: %s\n\r", rbuf);
+		if ((lRet >= strlen(DISCOVERY_MAGIC)) && (strncmp(rbuf, DISCOVERY_MAGIC, strlen(DISCOVERY_MAGIC))==0)) {
+			// Return packet is valid
+			// Adjust server port
+			g_tServerAddr.sin_port = sl_Htons(g_tAppConfig->iSrvPort);
+			return STATE_DOCONNECTSRV;
+		}
 	}
 	else if (lRet != SL_EAGAIN) {
 		// Something went wrong
@@ -208,6 +223,50 @@ STATE_HANDLER(WAITDISCOVERY)
 
 	return 0;
 }
+
+STATE_HANDLER(DOCONNECTSRV)
+{
+	// Connect the command socket
+	long lRet = sl_Connect(g_iCmdSocket, (SlSockAddr_t*)&g_tServerAddr, sizeof(SlSockAddrIn_t));
+	if (lRet == SL_EALREADY)
+		return 0; // Will try again
+
+	else if ((lRet == SL_ETIMEDOUT) || (lRet == SL_ECONNREFUSED))
+		// Refused - return to discovery
+		return STATE_SENDDISCOVERY;
+
+	else if (lRet < 0)
+		FatalError("sl_Connect: %d\n\r", lRet);
+
+	return STATE_DOWELCOME;
+}
+
+STATE_HANDLER(DOWELCOME)
+{
+	long lRet = ProtocolSendWelcome(g_iCmdSocket);
+	if (lRet < 0) {
+		ConsolePrintf("Failed sending welcome message: %d\n\r", lRet);
+		return 0;
+	}
+
+	return STATE_READY;
+}
+
+STATE_HANDLER(READY)
+{
+	char buf[10];
+
+	// Receive data from socket
+	long lRet = sl_Recv(g_iCmdSocket, buf, sizeof(buf), 0);
+	if (lRet > 0) {
+		ProtocolParse(buf, lRet);
+	}
+	else if (lRet != SL_EAGAIN) {
+		ConsolePrintf("sl_Recv: %d\n\r");
+	}
+	return 0;
+}
+
 
 /////////////////////////////////////////////////////////////////////
 ///////////////////// SimpleLink Event Handlers /////////////////////
@@ -218,12 +277,12 @@ void SimpleLinkWlanEventHandler(SlWlanEvent_t *pWlanEvent)
     switch(pWlanEvent->Event)
     {
         case SL_WLAN_CONNECT_EVENT:
-        	ConsolePrint("[WLAN EVENT] Connected");
+        	ConsolePrint("[WLAN EVENT] Connected\n\r");
             SET_STATUS(STATUS_CONNECTED);
             break;
 
         case SL_WLAN_DISCONNECT_EVENT:
-        	ConsolePrint("[WLAN EVENT] Disonnected");
+        	ConsolePrint("[WLAN EVENT] Disonnected\n\r");
             CLEAR_STATUS(STATUS_CONNECTED);
             CLEAR_STATUS(STATUS_IPACQUIRED);
             break;

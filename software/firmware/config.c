@@ -8,7 +8,8 @@ appConfig_t g_tempAppConfig = {
 		"xxxx", // sESSID
 		"xxxx", // sPassword
 		24333, // iDiscPort
-		0xffffff00 // iNetmask
+		0xffffff00, // iNetmask,
+		24334  // iSrvPort
 };
 
 
