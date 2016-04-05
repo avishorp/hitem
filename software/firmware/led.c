@@ -183,9 +183,14 @@ void LEDInit()
 
 void LEDSetColor(color_t color, int intensity)
 {
+	// Set the color
 	g_iForegroundColor = color;
 	g_iForegroundIntensity = intensity;
 
+	// Disable possibly pending pattern
+	g_pCurrentPattern = 0;
+
+	// Set the actual LED drive
 	_LEDSetColorWorker(color, intensity);
 }
 

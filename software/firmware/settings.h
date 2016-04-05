@@ -13,5 +13,7 @@
 #define CONSOLE_BUFFER_SIZE  128
 #define CONSOLE_TRUNCATE_SYM '$'
 
+#define DISCOVERY_TIMEOUT    1000  // The period, in mS, in which repeated discovery
+								   // messages are sent
 #endif
 

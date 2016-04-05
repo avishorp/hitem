@@ -11,6 +11,8 @@
 #include "error.h"
 #include "led.h"
 #include "protocol.h"
+#include "time.h"
+#include "settings.h"
 
 #define DISCOVERY_MAGIC "HTEM"
 
@@ -91,6 +93,8 @@ void MainLoopInit(const appConfig_t* config)
 	g_stateTable[6] = STATE_DOWELCOME;
 	g_stateTable[7] = STATE_READY;
 
+	g_iCmdSocket = -1;
+
 	// Create sockets
 	SlSockNonblocking_t nb;
 	nb.NonblockingEnabled = 1;
@@ -99,12 +103,6 @@ void MainLoopInit(const appConfig_t* config)
 	if (g_iDiscoverySocket < 0)
 		FatalError("Discovery socket creation failed: %d", g_iDiscoverySocket);
 	sl_SetSockOpt(g_iDiscoverySocket, SL_SOL_SOCKET, SL_SO_NONBLOCKING, &nb, sizeof(SlSockNonblocking_t));
-
-	g_iCmdSocket = sl_Socket(AF_INET, SOCK_STREAM, 0);
-	if (g_iCmdSocket < 0)
-		FatalError("Command socket creation failed: %d", g_iCmdSocket);
-	sl_SetSockOpt(g_iCmdSocket, SL_SOL_SOCKET, SL_SO_NONBLOCKING, &nb, sizeof(SlSockNonblocking_t));
-
 
 	g_iSyncSocket = sl_Socket(AF_INET, SOCK_DGRAM, 0);
 	if (g_iSyncSocket < 0)
@@ -194,6 +192,8 @@ STATE_HANDLER(SENDDISCOVERY)
 
     LEDSetPattern(PATTERN_RED_GREEN);
 
+    TimeSetTimeout(1, DISCOVERY_TIMEOUT);
+
 	return STATE_WAITDISCOVERY;
 }
 
@@ -208,7 +208,6 @@ STATE_HANDLER(WAITDISCOVERY)
 			(SlSockAddr_t*)&g_tServerAddr, (SlSocklen_t*)&asize);
 
 	if (lRet > 0) {
-		ConsolePrintf("Got: %s\n\r", rbuf);
 		if ((lRet >= strlen(DISCOVERY_MAGIC)) && (strncmp(rbuf, DISCOVERY_MAGIC, strlen(DISCOVERY_MAGIC))==0)) {
 			// Return packet is valid
 			// Adjust server port
@@ -216,7 +215,12 @@ STATE_HANDLER(WAITDISCOVERY)
 			return STATE_DOCONNECTSRV;
 		}
 	}
-	else if (lRet != SL_EAGAIN) {
+	else if (lRet == SL_EAGAIN) {
+		// Check that timeout hasn't occured
+		if (TimeGetEvent(1))
+			return STATE_SENDDISCOVERY;
+	}
+	else {
 		// Something went wrong
 		ConsolePrintf("sl_RecvFrom returned %d\n\r", (int)lRet);
 	}
@@ -226,6 +230,18 @@ STATE_HANDLER(WAITDISCOVERY)
 
 STATE_HANDLER(DOCONNECTSRV)
 {
+	// Create the endpoint command socket
+
+	if (g_iCmdSocket == -1) {
+		SlSockNonblocking_t nb;
+		nb.NonblockingEnabled = 1;
+
+		g_iCmdSocket = sl_Socket(AF_INET, SOCK_STREAM, 0);
+		if (g_iCmdSocket < 0)
+			FatalError("Command socket creation failed: %d", g_iCmdSocket);
+		sl_SetSockOpt(g_iCmdSocket, SL_SOL_SOCKET, SL_SO_NONBLOCKING, &nb, sizeof(SlSockNonblocking_t));
+	}
+
 	// Connect the command socket
 	long lRet = sl_Connect(g_iCmdSocket, (SlSockAddr_t*)&g_tServerAddr, sizeof(SlSockAddrIn_t));
 	if (lRet == SL_EALREADY)
@@ -243,6 +259,7 @@ STATE_HANDLER(DOCONNECTSRV)
 
 STATE_HANDLER(DOWELCOME)
 {
+	LEDSetColor(COLOR_NONE, 0);
 	long lRet = ProtocolSendWelcome(g_iCmdSocket);
 	if (lRet < 0) {
 		ConsolePrintf("Failed sending welcome message: %d\n\r", lRet);
@@ -261,8 +278,14 @@ STATE_HANDLER(READY)
 	if (lRet > 0) {
 		ProtocolParse(buf, lRet);
 	}
+	else if (lRet == 0) {
+		// Socket disconnected
+		sl_Close(g_iCmdSocket);
+		g_iCmdSocket = -1;
+		return STATE_SENDDISCOVERY;
+	}
 	else if (lRet != SL_EAGAIN) {
-		ConsolePrintf("sl_Recv: %d\n\r");
+		ConsolePrintf("sl_Recv: %d\n\r", lRet);
 	}
 	return 0;
 }
