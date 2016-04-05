@@ -28,7 +28,7 @@
 #define MSG_TYPE_INDICATE  3
 #define MSG_TYPE_SYNC_RSP  4
 
-typedef struct {
+typedef struct  {
 	_u8 prolog;
 	_u8 type;
 	union {
@@ -39,14 +39,14 @@ typedef struct {
 		struct {
 			_u8 endpoint_id;
 			_u8 endpoint_personality;
-			_u8 padding[2];
+			//_u8 padding[2];
 		} welcome;
 
 		// SET_COLOR payload
 		struct {
 			_u8 color_code;
 			_u8 intensity;
-			_u8 padding[2];
+			//_u8 padding[2];
 		} set_color;
 
 		// INDICATE payload
@@ -59,7 +59,7 @@ typedef struct {
 		_u32 timestamp;
 	} payload;
 	_u8 checksum;
-} message_t;
+} __attribute__((packed)) message_t;
 
 #define MESSAGE_LENGTH (sizeof(message_t))
 
