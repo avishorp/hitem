@@ -2,5 +2,8 @@
 	"discovery": {
 		"port": 24333,
 		"magic": "HTEM"
+	},
+	"endpoint": {
+		"port": 24334
 	}
 }

@@ -2,6 +2,7 @@
 
 const config = require('./config.json')
 const discovery = require('./discovery')
+const epserver = require('./epserver')
 const bunyan = require('bunyan')
 
 // Main
@@ -14,4 +15,7 @@ const bunyan = require('bunyan')
 		
 	// Discovery service
 	discovery(config.discovery, logger)
+	
+	// Endpoint server
+	const eps = epserver(config.endpoint, logger)
 //})()
