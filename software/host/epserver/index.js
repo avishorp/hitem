@@ -10,6 +10,18 @@ const SRBuffer = require('./shiftreg')
 const MESSAGE_LENGTH = 7
 const MSG_PROLOG = 0x85
 
+const MESSAGE_TYPE_WELCOME = 1
+const MESSAGE_TYPE_SET_COLOR = 2
+const MESSAGE_TYPE_INDICATE = 3
+const MESSAGE_TYPE_SYNC_RSP = 4
+
+const MESSAGE_OFFSET_TYPE = 1
+const MESSAGE_OFFSET_WELCOME_NUM = 2
+const MESSAGE_OFFSET_WELCOME_PERSONALITY = 3
+
+const PERSONALITY_HAT = 1
+const PERSONALITY_HAMMER = 2
+
 function ProtocolParser() {
 	stream.Writable.call(this)
 	this.msg = new SRBuffer(7)
@@ -25,7 +37,7 @@ ProtocolParser.prototype._write = function(chunk, encoding, done) {
 		if (this.msg.buffer[0]==MSG_PROLOG) {
 			const checksum = this._checksum(this.msg.buffer)
 			if (this.msg.buffer[MESSAGE_LENGTH-1] != checksum)
-				this.emit('checksum_error')
+				this.emit('error', 'Incorrect checksum')
 			else 
 				this._doMessageParsing(this.msg.buffer)
 		}	
@@ -33,7 +45,21 @@ ProtocolParser.prototype._write = function(chunk, encoding, done) {
 }
 
 ProtocolParser.prototype._doMessageParsing = function(message) {
-	
+	const type = message.readInt8(MESSAGE_OFFSET_TYPE)
+	if (type === MESSAGE_TYPE_WELCOME) {
+		const body = {
+			boardNum: message.readInt8(MESSAGE_OFFSET_WELCOME_NUM),
+			personality: message.readInt8(MESSAGE_OFFSET_WELCOME_PERSONALITY)==PERSONALITY_HAMMER?
+				'hammer' : 'hat'
+		}
+		this.emit('welcome', body)
+	}
+	else if (type === MESSAGE_TYPE_SYNC_RSP) {
+		// TODO
+	}
+	else
+		this.emit('error', util.format('Incorrect message type: %d', type))
+			
 }
 
 ProtocolParser.prototype._checksum = function(buf) {
@@ -59,9 +85,11 @@ module.exports = function(options, logger) {
 		const parser = new ProtocolParser()
 		socket.pipe(parser)
 		
-		parser.on('checksum_error', () => {
-			logger.warning("Checksum error from " + socket.remoteAddress)
+		parser.on('error', (desc) => {
+			logger.warning(util.format("Parse error on %s: %s", socket.remoteAddress, desc))
 		})
+		
+		parser.on('welcome', d => { console.log(d)} )
 	})
 	
 	// Start listening
