@@ -8,6 +8,8 @@
 
 typedef unsigned long systime_t;
 
+#define NULL_TIME ((systime_t)(-1))
+
 // Initialize the timing system
 void TimeInit();
 void TimeTask();

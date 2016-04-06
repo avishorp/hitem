@@ -10,10 +10,14 @@
 #define CONSOLE_BAUD_RATE    115200
 #define CONSOLE              UARTA0_BASE
 #define CONSOLE_PERIPH       PRCM_UARTA0
-#define CONSOLE_BUFFER_SIZE  128
+#define CONSOLE_BUFFER_SIZE  1024
 #define CONSOLE_TRUNCATE_SYM '$'
 
 #define DISCOVERY_TIMEOUT    1000  // The period, in mS, in which repeated discovery
 								   // messages are sent
+#define WLAN_TIMEOUT         20000 // The time, in mS, the unit waits for WLAN connection
+
+#define NO_UDP_SYNC_REQ
+
 #endif
 

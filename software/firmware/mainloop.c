@@ -13,6 +13,7 @@
 #include "protocol.h"
 #include "time.h"
 #include "settings.h"
+#include "time.h"
 
 #define DISCOVERY_MAGIC "HTEM"
 
@@ -73,6 +74,9 @@ static _u32 g_iMyIP;
 static SlSockAddrIn_t g_tBroadcastAddr;
 static SlSockAddrIn_t g_tServerAddr;
 
+systime_t g_iSyncTime;
+systime_t g_iSyncTimeSched;
+
 
 
 // Functions
@@ -82,6 +86,7 @@ void MainLoopInit(const appConfig_t* config)
 	g_tState = STATE_DOCONNECT;
 	g_ulStatus = 0;
 	g_tConfig = config;
+	g_iSyncTimeSched = NULL_TIME;
 
 	// TODO: Must do it more elegantly
 	g_stateTable = (pAppState_t*)malloc(sizeof(appState_t)*NUM_STATES);
@@ -96,6 +101,7 @@ void MainLoopInit(const appConfig_t* config)
 	g_stateTable[8] = STATE_CLEANUP;
 
 	g_iCmdSocket = -1;
+	g_iSyncSocket = -1;
 
 	// Create sockets
 	SlSockNonblocking_t nb;
@@ -105,11 +111,6 @@ void MainLoopInit(const appConfig_t* config)
 	if (g_iDiscoverySocket < 0)
 		FatalError("Discovery socket creation failed: %d", g_iDiscoverySocket);
 	sl_SetSockOpt(g_iDiscoverySocket, SL_SOL_SOCKET, SL_SO_NONBLOCKING, &nb, sizeof(SlSockNonblocking_t));
-
-	g_iSyncSocket = sl_Socket(AF_INET, SOCK_DGRAM, 0);
-	if (g_iSyncSocket < 0)
-		FatalError("Sync socket creation failed: %d", g_iSyncSocket);
-	sl_SetSockOpt(g_iSyncSocket, SL_SOL_SOCKET, SL_SO_NONBLOCKING, &nb, sizeof(SlSockNonblocking_t));
 
 	// Initialize static broadcast address
 	g_tBroadcastAddr.sin_family = SL_AF_INET;
@@ -244,11 +245,26 @@ STATE_HANDLER(DOCONNECTSRV)
 	if (!GET_STATUS(STATUS_CONNECTED))
 		return STATE_CLEANUP;
 
-	// Create the endpoint command socket
+	SlSockNonblocking_t nb;
+	nb.NonblockingEnabled = 1;
 
+#ifndef NO_UDP_SYNC_REQ
+	// Create the endpoint sync request socket
+	if (g_iSyncSocket == -1) {
+		g_iSyncSocket = sl_Socket(AF_INET, SOCK_DGRAM, 0);
+		if (g_iSyncSocket < 0)
+			FatalError("Sync socket creation failed: %d", g_iSyncSocket);
+		sl_SetSockOpt(g_iSyncSocket, SL_SOL_SOCKET, SL_SO_NONBLOCKING, &nb, sizeof(SlSockNonblocking_t));
+
+		SlSockAddrIn_t addr;
+		memset(&addr, 0, sizeof(SlSockAddrIn_t));
+		addr.sin_family = AF_INET;
+		addr.sin_port = sl_Htons(g_tAppConfig->iSrvPort);
+	}
+#endif
+
+	// Create the endpoint command socket
 	if (g_iCmdSocket == -1) {
-		SlSockNonblocking_t nb;
-		nb.NonblockingEnabled = 1;
 
 		g_iCmdSocket = sl_Socket(AF_INET, SOCK_STREAM, 0);
 		if (g_iCmdSocket < 0)
@@ -293,7 +309,7 @@ STATE_HANDLER(READY)
 
 	char buf[10];
 
-	// Receive data from socket
+	// Receive data from command socket
 	long lRet = sl_Recv(g_iCmdSocket, buf, sizeof(buf), 0);
 	if (lRet > 0) {
 		ProtocolParse(buf, lRet);
@@ -302,11 +318,42 @@ STATE_HANDLER(READY)
 		// Socket disconnected
 		sl_Close(g_iCmdSocket);
 		g_iCmdSocket = -1;
+
+		sl_Close(g_iSyncSocket);
+		g_iSyncSocket = -1;
+
 		return STATE_SENDDISCOVERY;
 	}
 	else if (lRet != SL_EAGAIN) {
-		ConsolePrintf("sl_Recv: %d\n\r", lRet);
+		ConsolePrintf("sl_Recv [g_iCmdSocket]: %d\n\r", lRet);
 	}
+
+#ifndef NO_UDP_SYNC_REQ
+	// Receive data from sync socket
+	lRet = sl_Recv(g_iSyncSocket, buf, sizeof(buf), 0);
+	if (lRet > 0) {
+		ConsolePrint("***SYNC***\n\r");
+	}
+	else if (lRet != SL_EAGAIN) {
+		ConsolePrintf("sl_Recv [g_iSyncSocket]: %d\n\r", lRet);
+	}
+#endif
+
+	// Handle sync requests
+	systime_t syncTime = ProtocolGetSyncTime();
+	if (syncTime != NULL_TIME) {
+		// Schedule the send time to +10mS
+		g_iSyncTime = syncTime;
+		g_iSyncTimeSched = TimeGetSystime() + 10;
+
+		ConsolePrintf("Now is %d scheduled to %d\n\r", TimeGetSystime(), g_iSyncTimeSched);
+	}
+	if (TimeGetSystime() > g_iSyncTimeSched) {
+		if (ProtocolSendSyncResp(g_iCmdSocket, g_iSyncTime) >= 0)
+			g_iSyncTimeSched = NULL_TIME;
+	}
+
+
 	return 0;
 }
 
@@ -316,6 +363,10 @@ STATE_HANDLER(CLEANUP)
 	if (g_iCmdSocket > 0) {
 		sl_Close(g_iCmdSocket);
 		g_iCmdSocket = -1;
+	}
+	if (g_iSyncSocket > 0) {
+		sl_Close(g_iSyncSocket);
+		g_iSyncSocket = -1;
 	}
 
 	// Disconnect from WLAN

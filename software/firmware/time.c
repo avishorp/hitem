@@ -12,12 +12,10 @@
 #include "prcm.h"
 #include "timer.h"
 #include "utils.h"
+#include "settings.h"
 
 #define SYSTIMER_BASE TIMERA2_BASE
-#define SYS_CLOCK 80000000
 #define TIMER_PRESCALAR 2
-
-#define NULL_TIME ((systime_t)(-1))
 
 // Globals
 systime_t g_iTimer[NUM_TIMERS];
@@ -46,7 +44,7 @@ void TimeInit()
 	// Configure SYSTIMER to act as a 16 bit timer with prescalar 2 and
 	// overflow every 1mS
 	MAP_TimerConfigure(SYSTIMER_BASE, TIMER_CFG_SPLIT_PAIR|TIMER_CFG_B_PWM|TIMER_CFG_A_PERIODIC); // Timer B is used for the LED PWD!
-	MAP_TimerLoadSet(SYSTIMER_BASE, TIMER_A, SYS_CLOCK / TIMER_PRESCALAR / 1000);
+	MAP_TimerLoadSet(SYSTIMER_BASE, TIMER_A, SYSCLK / TIMER_PRESCALAR / 1000);
 	MAP_TimerPrescaleSet(SYSTIMER_BASE, TIMER_A, TIMER_PRESCALAR-1);
 
 	// Register and enable the timer interrupt

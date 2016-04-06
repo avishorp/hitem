@@ -21,12 +21,14 @@
 #define __PROTOCOL_H__
 
 #include <simplelink.h>
+#include "time.h"
 
 #define MSG_PROLOG 0x85
 #define MSG_TYPE_WELCOME   1
 #define MSG_TYPE_SET_COLOR 2
 #define MSG_TYPE_INDICATE  3
 #define MSG_TYPE_SYNC_RSP  4
+#define MSG_TYPE_SYNC_REQ  5
 
 typedef struct  {
 	_u8 prolog;
@@ -66,7 +68,8 @@ typedef struct  {
 void ProtocolInit();
 void ProtocolParse(const char* buf, int len);
 _i16 ProtocolSendWelcome(_i16 sock);
-_i16 ProtocolSendSyncResp(_i16 sock);
+_i16 ProtocolSendSyncResp(_i16 sock, systime_t stime);
+systime_t ProtocolGetSyncTime();
 
 
 

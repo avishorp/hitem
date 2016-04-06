@@ -4,6 +4,7 @@
 #include "config.h"
 #include "led.h"
 #include "console.h"
+#include "time.h"
 
 // Color table
 const color_t g_iColorTable[] = {
@@ -26,11 +27,13 @@ _u8 _CalcChecksum(const message_t* msg);
 void _ProcessIngressMessage(const message_t* msg);
 
 // Globals
-_u8 g_cMessageBuffer[MESSAGE_LENGTH];
+static _u8 g_cMessageBuffer[MESSAGE_LENGTH];
+static systime_t g_iSyncTime;
 
 void ProtocolInit()
 {
-
+	memset(&g_cMessageBuffer, 0, MESSAGE_LENGTH);
+	g_iSyncTime = NULL_TIME;
 }
 
 void ProtocolParse(const char* buf, int len)
@@ -77,9 +80,27 @@ _i16 ProtocolSendWelcome(_i16 sock)
 	return sl_Send(sock, &msg, sizeof(message_t), 0);
 }
 
-_i16 ProtocolSendSyncResp(_i16 sock)
+_i16 ProtocolSendSyncResp(_i16 sock, systime_t time)
 {
-	return 0;
+	message_t msg;
+
+	// Prepare the message
+	memset(&msg, 0, sizeof(message_t));
+	msg.prolog = MSG_PROLOG;
+	msg.type = MSG_TYPE_SYNC_RSP;
+	msg.payload.timestamp = time;
+	msg.checksum = _CalcChecksum(&msg);
+
+	// Send it
+	return sl_Send(sock, &msg, sizeof(message_t), 0);
+}
+
+systime_t ProtocolGetSyncTime()
+{
+	systime_t t = g_iSyncTime;
+	g_iSyncTime = NULL_TIME;
+
+	return t;
 }
 
 _u8 _CalcChecksum(const message_t* msg)
@@ -108,6 +129,10 @@ void _ProcessIngressMessage(const message_t* msg)
 			LEDSetPattern(pcd);
 		else
 			ConsolePrintf("Invalid pattern code received: %d\n\r", pcd);
+	}
+	else if (msg->type == MSG_TYPE_SYNC_REQ) {
+		// Sync request - generate sync response
+		g_iSyncTime = TimeGetSystime();
 	}
 	else
 		ConsolePrintf("Invalid message type received: %d\n\r", msg->type);

@@ -30,6 +30,7 @@
 #include "mainloop.h"
 #include "time.h"
 #include "settings.h"
+#include "gpio.h"
 
 extern void (* const g_pfnVectors[])(void);
 
@@ -61,6 +62,9 @@ int main(void) {
 
     // Initialize timing system
     TimeInit();
+
+    // Initialize the protocol handler
+    ProtocolInit();
 
     // LED test
     LEDSetColor(COLOR_RED, 70);
