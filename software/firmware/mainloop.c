@@ -47,14 +47,15 @@ DEF_STATE(WAITDISCOVERY)  // Send discovery message
 DEF_STATE(DOCONNECTSRV)   // Connect the server
 DEF_STATE(DOWELCOME)      // Send welcome message
 DEF_STATE(READY)          // Ready state
+DEF_STATE(CLEANUP)        // Clean opened data and then retry connecting
 
 //END_STATE_TABLE
-#define NUM_STATES 8
+#define NUM_STATES 9
 
 #define STATUS_CONNECTED  0
 #define STATUS_IPACQUIRED 1
 
-#define GET_STATUS(b) g_ulStatus = (g_ulStatus & (1 << b))
+#define GET_STATUS(b) (g_ulStatus & (1 << b))
 #define SET_STATUS(b) g_ulStatus = (g_ulStatus | (1 << b))
 #define CLEAR_STATUS(b) g_ulStatus = (g_ulStatus & ~(1 << b))
 
@@ -92,6 +93,7 @@ void MainLoopInit(const appConfig_t* config)
 	g_stateTable[5] = STATE_DOCONNECTSRV;
 	g_stateTable[6] = STATE_DOWELCOME;
 	g_stateTable[7] = STATE_READY;
+	g_stateTable[8] = STATE_CLEANUP;
 
 	g_iCmdSocket = -1;
 
@@ -176,6 +178,9 @@ STATE_HANDLER(WAITCONNECT)
 // Wait for IP address to be acquired
 STATE_HANDLER(WAITFORIP)
 {
+	if (!GET_STATUS(STATUS_CONNECTED))
+		return STATE_CLEANUP;
+
 	if (GET_STATUS(STATUS_IPACQUIRED))
 		return STATE_SENDDISCOVERY;
 }
@@ -183,6 +188,9 @@ STATE_HANDLER(WAITFORIP)
 // Send a discovery request packet
 STATE_HANDLER(SENDDISCOVERY)
 {
+	if (!GET_STATUS(STATUS_CONNECTED))
+		return STATE_CLEANUP;
+
 	static const char sDiscoveryMsg[] = DISCOVERY_MAGIC;
 
 	// Adjust broadcast address according to allocated IP
@@ -201,6 +209,9 @@ STATE_HANDLER(SENDDISCOVERY)
 // IP address accordingly
 STATE_HANDLER(WAITDISCOVERY)
 {
+	if (!GET_STATUS(STATUS_CONNECTED))
+		return STATE_CLEANUP;
+
 	char rbuf[10];
 
 	_i16 asize = sizeof(SlSockAddrIn_t);
@@ -230,6 +241,9 @@ STATE_HANDLER(WAITDISCOVERY)
 
 STATE_HANDLER(DOCONNECTSRV)
 {
+	if (!GET_STATUS(STATUS_CONNECTED))
+		return STATE_CLEANUP;
+
 	// Create the endpoint command socket
 
 	if (g_iCmdSocket == -1) {
@@ -259,6 +273,9 @@ STATE_HANDLER(DOCONNECTSRV)
 
 STATE_HANDLER(DOWELCOME)
 {
+	if (!GET_STATUS(STATUS_CONNECTED))
+		return STATE_CLEANUP;
+
 	LEDSetColor(COLOR_NONE, 0);
 	long lRet = ProtocolSendWelcome(g_iCmdSocket);
 	if (lRet < 0) {
@@ -271,6 +288,9 @@ STATE_HANDLER(DOWELCOME)
 
 STATE_HANDLER(READY)
 {
+	if (!GET_STATUS(STATUS_CONNECTED))
+		return STATE_CLEANUP;
+
 	char buf[10];
 
 	// Receive data from socket
@@ -288,6 +308,21 @@ STATE_HANDLER(READY)
 		ConsolePrintf("sl_Recv: %d\n\r", lRet);
 	}
 	return 0;
+}
+
+STATE_HANDLER(CLEANUP)
+{
+	// If sockets are open, close them
+	if (g_iCmdSocket > 0) {
+		sl_Close(g_iCmdSocket);
+		g_iCmdSocket = -1;
+	}
+
+	// Disconnect from WLAN
+	sl_WlanDisconnect();
+
+	// Retry connection
+	return STATE_DOCONNECT;
 }
 
 

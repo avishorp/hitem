@@ -42,12 +42,20 @@ void ProtocolParse(const char* buf, int len)
 			g_cMessageBuffer[j] = g_cMessageBuffer[j+1];
 		g_cMessageBuffer[len-1] = buf[i];
 
+		//ConsolePrintf("buf: %2x %2x %2x %2x %2x %2x %2x\n\r",
+		//	g_cMessageBuffer[0], g_cMessageBuffer[1], g_cMessageBuffer[2],
+		//	g_cMessageBuffer[3], g_cMessageBuffer[4], g_cMessageBuffer[5], g_cMessageBuffer[6]);
+
 		// Check the validity of the message
-		message_t* msg = (message_t*)buf;
+		message_t* msg = (message_t*)g_cMessageBuffer;
 		_u8 checksum = _CalcChecksum(msg);
-		if ((msg->prolog == MSG_PROLOG) && (msg->checksum == checksum)) {
-			// Valid message
-			_ProcessIngressMessage(msg);
+		if (msg->prolog == MSG_PROLOG) {
+			if (msg->checksum == checksum) {
+				// Valid message
+				_ProcessIngressMessage(msg);
+			}
+			else
+				ConsolePrintf("Received massage with invalid checksum: expected %d, got %d\n\r", checksum, msg->checksum);
 		}
 	}
 }
@@ -89,7 +97,7 @@ void _ProcessIngressMessage(const message_t* msg)
 	if (msg->type == MSG_TYPE_SET_COLOR) {
 		_u8 cc = msg->payload.set_color.color_code;
 		if (cc <= (NUM_COLORS-1))
-			LEDSetColor(cc, msg->payload.set_color.intensity);
+			LEDSetColor(g_iColorTable[cc], msg->payload.set_color.intensity);
 		else
 			ConsolePrintf("Invalid color code received: %d\n\r");
 	}
