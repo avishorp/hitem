@@ -11,10 +11,12 @@ const MESSAGE_TYPE_WELCOME = 1
 const MESSAGE_TYPE_SET_COLOR = 2
 const MESSAGE_TYPE_INDICATE = 3
 const MESSAGE_TYPE_SYNC_RSP = 4
+const MESSAGE_TYPE_SYNC_REQ = 5
 
 const MESSAGE_OFFSET_TYPE = 1
 const MESSAGE_OFFSET_WELCOME_NUM = 2
 const MESSAGE_OFFSET_WELCOME_PERSONALITY = 3
+const MESSAGE_OFFSET_SYNC_TIMESTAMP = 2
 
 const PERSONALITY_HAT = 1
 const PERSONALITY_HAMMER = 2
@@ -48,6 +50,7 @@ function ProtocolParser() {
 util.inherits(ProtocolParser, stream.Writable)
 
 ProtocolParser.prototype._write = function(chunk, encoding, done) {
+	//console.log(chunk)
 	for(let b of chunk) {
 		this.msg.lshift(b)
 		
@@ -60,6 +63,8 @@ ProtocolParser.prototype._write = function(chunk, encoding, done) {
 				this._doMessageParsing(this.msg.buffer)
 		}	
 	}
+	
+	done()
 }
 
 
@@ -74,7 +79,8 @@ ProtocolParser.prototype._doMessageParsing = function(message) {
 		this.emit('welcome', body)
 	}
 	else if (type === MESSAGE_TYPE_SYNC_RSP) {
-		// TODO
+		const timestamp = message.readUInt32LE(MESSAGE_OFFSET_SYNC_TIMESTAMP);
+		this.emit('sync_resp', timestamp)
 	}
 	else
 		this.emit('error', util.format('Incorrect message type: %d', type))
@@ -87,7 +93,7 @@ ProtocolParser.prototype._checksum = function(buf) {
 	for(i=0; i < buf.length-1; i++)
 		checksum += buf[i]
 		
-	return checksum
+	return (checksum & 0xff)
 }
 
 ProtocolParser.prototype.setColor = function(color, intensity) {
@@ -106,6 +112,15 @@ ProtocolParser.prototype.setIndication = function(indication) {
 	msg[0] = MSG_PROLOG
 	msg[1] = MESSAGE_TYPE_INDICATE
 	msg[2] = Indications[indication]
+	msg[MESSAGE_LENGTH-1] = this._checksum(msg)
+	
+	this.emit('send_command', msg)
+}
+
+ProtocolParser.prototype.syncReq = function() {
+	let msg = new Buffer(MESSAGE_LENGTH)
+	msg[0] = MSG_PROLOG
+	msg[1] = MESSAGE_TYPE_SYNC_REQ
 	msg[MESSAGE_LENGTH-1] = this._checksum(msg)
 	
 	this.emit('send_command', msg)
