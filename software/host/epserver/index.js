@@ -8,12 +8,23 @@ const util = require('util')
 const ProtocolParser = require('./parser')
 
 
-module.exports = function(options, logger) {
+const EPManager = function() {
+}
+
+function EPManager(options, logger) {
 	logger.info("Starting")
+
+	this.units = {}
+	this.lastHitTime = 0
+	
+	//this.on('welcome', this.handleWelcome)
+	//this.on('sync_resp', this.handleSyncResp)
+	//this.on('hit')	
 	
 	// Create a server object
 	const srv = net.createServer(function(socket) {
-		logger.info("New connection from " + socket.remoteAddress)
+		const EPAddr = socket.remoteAddress
+		logger.info("New connection from " + EPAddr)
 		
 		socket.on('end', () => {
 			logger.info("Unit disconnected")
@@ -22,21 +33,29 @@ module.exports = function(options, logger) {
 		const parser = new ProtocolParser()
 		socket.pipe(parser)
 		
+		// Emitted by the parser when it wants to send a packet to
+		// the endpoint
 		parser.on('send_command', msg => {
 			 socket.write(msg)
 			 })
 		
+		// Emitted by the parser when it encounters an error
 		parser.on('error', (desc) => {
-			logger.warn(util.format("Parse error on %s: %s", socket.remoteAddress, desc))
+			logger.warn(util.format("Parse error on %s: %s", EPAddr, desc))
 		})
 		
+		// Emitted by the parser when a "WELCOME" message is received from the endpoint
 		parser.on('welcome', ep => {
 			logger.info(util.format("Unit no. %d of type %s has joined", ep.boardNum,
 				ep.personality==='hammer' ? "HAMMER" : "HAT"))
-			 parser.setColor('white', 50)
+			 parser.setIndication('blimp')
+			 this.handleWelcome(EPAddr, parser, ep)
 		})
 		
-		parser.on('sync_resp', d => { console.log(d) })
+		// Emitted by the parser when a sync response message is received
+		parser.on('sync_resp', timestamp => {
+			this.handleSyncResponse()
+		})
 		
 		setTimeout(_ => {parser.setIndication('chirp')}, 3000)
 		setTimeout(_ => {parser.syncReq()}, 8000)
