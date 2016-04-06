@@ -11,11 +11,11 @@ const bunyan = require('bunyan')
 	const logger = bunyan.createLogger({
 		name: "hitem"
 		})
-	logger.info('Starting')
+	logger.info("Hit'em server starting")
 		
 	// Discovery service
-	discovery(config.discovery, logger)
+	discovery(config.discovery, logger.child({'component': 'Discovery'}))
 	
 	// Endpoint server
-	const eps = epserver(config.endpoint, logger)
+	const eps = epserver(config.endpoint, logger.child({'component': 'EPServer'}))
 //})()
