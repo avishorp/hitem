@@ -19,6 +19,27 @@ const MESSAGE_OFFSET_WELCOME_PERSONALITY = 3
 const PERSONALITY_HAT = 1
 const PERSONALITY_HAMMER = 2
 
+const Colors = {
+	'none': 0,
+	'red': 1,
+	'green': 2,
+	'blue': 3,
+	'orange': 4,
+	'purple': 5,
+	'lgtgreen': 6,
+	'turkiz': 7,
+	'yellow': 8,
+	'white': 9,
+	'pink': 10
+}
+
+const Indications = {
+	'red_pulse': 2,
+	'green_pulse': 3,
+	'blimp': 4,
+	'chirp': 5
+}
+
 function ProtocolParser() {
 	stream.Writable.call(this)
 	this.msg = new SRBuffer(7)
@@ -40,6 +61,7 @@ ProtocolParser.prototype._write = function(chunk, encoding, done) {
 		}	
 	}
 }
+
 
 ProtocolParser.prototype._doMessageParsing = function(message) {
 	const type = message.readInt8(MESSAGE_OFFSET_TYPE)
@@ -66,6 +88,27 @@ ProtocolParser.prototype._checksum = function(buf) {
 		checksum += buf[i]
 		
 	return checksum
+}
+
+ProtocolParser.prototype.setColor = function(color, intensity) {
+	let msg = new Buffer(MESSAGE_LENGTH)
+	msg[0] = MSG_PROLOG
+	msg[1] = MESSAGE_TYPE_SET_COLOR
+	msg[2] = Colors[color]
+	msg[3] = intensity
+	msg[MESSAGE_LENGTH-1] = this._checksum(msg)
+	
+	this.emit('send_command', msg)
+}
+
+ProtocolParser.prototype.setIndication = function(indication) {
+	let msg = new Buffer(MESSAGE_LENGTH)
+	msg[0] = MSG_PROLOG
+	msg[1] = MESSAGE_TYPE_INDICATE
+	msg[2] = Indications[indication]
+	msg[MESSAGE_LENGTH-1] = this._checksum(msg)
+	
+	this.emit('send_command', msg)
 }
 
 module.exports = ProtocolParser
