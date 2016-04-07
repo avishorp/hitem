@@ -95,6 +95,22 @@ _i16 ProtocolSendSyncResp(_i16 sock, systime_t time)
 	return sl_Send(sock, &msg, sizeof(message_t), 0);
 }
 
+_i16 ProtocolSendHit(_i16 sock, systime_t time)
+{
+	message_t msg;
+
+	// Prepare the message
+	memset(&msg, 0, sizeof(message_t));
+	msg.prolog = MSG_PROLOG;
+	msg.type = MSG_TYPE_HIT;
+	msg.payload.timestamp = time;
+	msg.checksum = _CalcChecksum(&msg);
+
+	// Send it
+	return sl_Send(sock, &msg, sizeof(message_t), 0);
+}
+
+
 systime_t ProtocolGetSyncTime()
 {
 	systime_t t = g_iSyncTime;

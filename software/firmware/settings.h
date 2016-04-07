@@ -13,6 +13,15 @@
 #define CONSOLE_BUFFER_SIZE  1024
 #define CONSOLE_TRUNCATE_SYM '$'
 
+#define ADC_CHANNEL_PIEZO    ADC_CH_1
+#define ADC_CHANNEL_VSENSE   ADC_CH_3
+
+// The sensitivity to hit
+#define HIT_THRESHOLD 2500
+#define HIT_DEBOUNCE_A  2
+#define HIT_DEBOUNCE_B  200
+
+
 #define DISCOVERY_TIMEOUT    1000  // The period, in mS, in which repeated discovery
 								   // messages are sent
 #define WLAN_TIMEOUT         20000 // The time, in mS, the unit waits for WLAN connection

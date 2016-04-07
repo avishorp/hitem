@@ -20,6 +20,7 @@
 #include "gpio.h"
 #include "timer.h"
 #include "uart.h"
+#include "analog.h"
 
 #include "pinmux/pin_mux_config.h"
 #include "hw_memmap.h"
@@ -31,6 +32,7 @@
 #include "time.h"
 #include "settings.h"
 #include "gpio.h"
+#include "adc.h"
 
 extern void (* const g_pfnVectors[])(void);
 
@@ -38,7 +40,11 @@ extern void (* const g_pfnVectors[])(void);
 static void BoardInit();
 void SimpleLinkInit();
 void MainLoop();
-void FatalError(const char* message);
+void ADCInit();
+void ADCTask();
+int HitGetEvent();
+
+
 #ifdef LED_ADJUST_TEST
 void __LEDAdjust();
 #endif
@@ -65,6 +71,9 @@ int main(void) {
 
     // Initialize the protocol handler
     ProtocolInit();
+
+    // Initialize ADC Module
+    AnalogInit();
 
     // LED test
     LEDSetColor(COLOR_RED, 70);
@@ -103,6 +112,19 @@ void MainLoop() {
 		sl_Task();
 		TimeTask();
 		LEDTask();
+		AnalogTask();
+
+#ifdef DEBUG_PRINT_ADC
+		zz = (zz + 1) % 3000;
+		if (zz == 0) {
+			int level = ADCFIFOLvlGet(ADC_BASE, ADC_CHANNEL_PIEZO);
+			int value = -1;
+			if (level > 0)
+				value = (ADCFIFORead(ADC_BASE, ADC_CHANNEL_PIEZO) >> 2);
+			ConsolePrintf("ADC lvl=%d val=%d\n\r", level, value);
+		}
+#endif
+
 	}
 }
 
@@ -267,6 +289,8 @@ void SimpleLinkInit()
     ConsolePrint("SimpleLink Initialized successfully\n\r");
 
 }
+
+
 
 #ifdef LED_ADJUST_TEST
 void __LEDAdjust()

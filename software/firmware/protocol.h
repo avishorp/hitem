@@ -29,6 +29,7 @@
 #define MSG_TYPE_INDICATE  3
 #define MSG_TYPE_SYNC_RSP  4
 #define MSG_TYPE_SYNC_REQ  5
+#define MSG_TYPE_HIT       6
 
 typedef struct  {
 	_u8 prolog;
@@ -57,7 +58,7 @@ typedef struct  {
 			_u8 padding[3];
 		} indicate;
 
-		// SYNC_RSP payload
+		// SYNC_RSP/HIT payload
 		_u32 timestamp;
 	} payload;
 	_u8 checksum;
@@ -69,6 +70,7 @@ void ProtocolInit();
 void ProtocolParse(const char* buf, int len);
 _i16 ProtocolSendWelcome(_i16 sock);
 _i16 ProtocolSendSyncResp(_i16 sock, systime_t stime);
+_i16 ProtocolSendHit(_i16 sock, systime_t time);
 systime_t ProtocolGetSyncTime();
 
 

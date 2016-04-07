@@ -14,6 +14,7 @@
 #include "time.h"
 #include "settings.h"
 #include "time.h"
+#include "analog.h"
 
 #define DISCOVERY_MAGIC "HTEM"
 
@@ -55,6 +56,7 @@ DEF_STATE(CLEANUP)        // Clean opened data and then retry connecting
 
 #define STATUS_CONNECTED  0
 #define STATUS_IPACQUIRED 1
+#define STATUS_HIT        2
 
 #define GET_STATUS(b) (g_ulStatus & (1 << b))
 #define SET_STATUS(b) g_ulStatus = (g_ulStatus | (1 << b))
@@ -102,15 +104,7 @@ void MainLoopInit(const appConfig_t* config)
 
 	g_iCmdSocket = -1;
 	g_iSyncSocket = -1;
-
-	// Create sockets
-	SlSockNonblocking_t nb;
-	nb.NonblockingEnabled = 1;
-
-	g_iDiscoverySocket = sl_Socket(AF_INET, SOCK_DGRAM, 0);
-	if (g_iDiscoverySocket < 0)
-		FatalError("Discovery socket creation failed: %d", g_iDiscoverySocket);
-	sl_SetSockOpt(g_iDiscoverySocket, SL_SOL_SOCKET, SL_SO_NONBLOCKING, &nb, sizeof(SlSockNonblocking_t));
+	g_iDiscoverySocket = -1;
 
 	// Initialize static broadcast address
 	g_tBroadcastAddr.sin_family = SL_AF_INET;
@@ -192,6 +186,17 @@ STATE_HANDLER(SENDDISCOVERY)
 	if (!GET_STATUS(STATUS_CONNECTED))
 		return STATE_CLEANUP;
 
+	// Create socket
+	if (g_iDiscoverySocket < 0) {
+		SlSockNonblocking_t nb;
+		nb.NonblockingEnabled = 1;
+
+		g_iDiscoverySocket = sl_Socket(AF_INET, SOCK_DGRAM, 0);
+		if (g_iDiscoverySocket < 0)
+			FatalError("Discovery socket creation failed: %d", g_iDiscoverySocket);
+		sl_SetSockOpt(g_iDiscoverySocket, SL_SOL_SOCKET, SL_SO_NONBLOCKING, &nb, sizeof(SlSockNonblocking_t));
+	}
+
 	static const char sDiscoveryMsg[] = DISCOVERY_MAGIC;
 
 	// Adjust broadcast address according to allocated IP
@@ -245,6 +250,14 @@ STATE_HANDLER(DOCONNECTSRV)
 	if (!GET_STATUS(STATUS_CONNECTED))
 		return STATE_CLEANUP;
 
+	// Close the discovery socket
+	if (g_iDiscoverySocket >= 0) {
+		long l = sl_Close(g_iDiscoverySocket);
+		g_iDiscoverySocket = -1;
+		if (l < 0)
+			ConsolePrintf("Discovery socket close failed: %d\n\r", l);
+	}
+
 	SlSockNonblocking_t nb;
 	nb.NonblockingEnabled = 1;
 
@@ -279,7 +292,7 @@ STATE_HANDLER(DOCONNECTSRV)
 
 	else if ((lRet == SL_ETIMEDOUT) || (lRet == SL_ECONNREFUSED))
 		// Refused - return to discovery
-		return STATE_SENDDISCOVERY;
+		{ConsolePrint("1");return STATE_SENDDISCOVERY;}
 
 	else if (lRet < 0)
 		FatalError("sl_Connect: %d\n\r", lRet);
@@ -319,10 +332,10 @@ STATE_HANDLER(READY)
 		sl_Close(g_iCmdSocket);
 		g_iCmdSocket = -1;
 
-		sl_Close(g_iSyncSocket);
-		g_iSyncSocket = -1;
+		//sl_Close(g_iSyncSocket);
+		//g_iSyncSocket = -1;
 
-		return STATE_SENDDISCOVERY;
+		ConsolePrint("2");return STATE_SENDDISCOVERY;
 	}
 	else if (lRet != SL_EAGAIN) {
 		ConsolePrintf("sl_Recv [g_iCmdSocket]: %d\n\r", lRet);
@@ -351,6 +364,12 @@ STATE_HANDLER(READY)
 	if (TimeGetSystime() > g_iSyncTimeSched) {
 		if (ProtocolSendSyncResp(g_iCmdSocket, g_iSyncTime) >= 0)
 			g_iSyncTimeSched = NULL_TIME;
+	}
+
+	// Handle hit detection
+	systime_t hitTime = AnalogGetHitTime();
+	if (hitTime != NULL_TIME) {
+		ProtocolSendHit(g_iCmdSocket, hitTime);
 	}
 
 
