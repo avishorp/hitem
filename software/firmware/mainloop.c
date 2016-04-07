@@ -6,6 +6,16 @@
 // Simplelink includes
 #include "simplelink.h"
 
+// Peripheral Lib includes
+#include "hw_types.h"
+#include "hw_memmap.h"
+#include "rom_map.h"
+#include "utils.h"
+#include "pin.h"
+#include "gpio.h"
+#include "prcm.h"
+
+// Local includes
 #include "mainloop.h"
 #include "console.h"
 #include "error.h"
@@ -50,9 +60,10 @@ DEF_STATE(DOCONNECTSRV)   // Connect the server
 DEF_STATE(DOWELCOME)      // Send welcome message
 DEF_STATE(READY)          // Ready state
 DEF_STATE(CLEANUP)        // Clean opened data and then retry connecting
+DEF_STATE(SLEEP)          // Go to sleep
 
 //END_STATE_TABLE
-#define NUM_STATES 9
+#define NUM_STATES 10
 
 #define STATUS_CONNECTED  0
 #define STATUS_IPACQUIRED 1
@@ -63,7 +74,7 @@ DEF_STATE(CLEANUP)        // Clean opened data and then retry connecting
 #define CLEAR_STATUS(b) g_ulStatus = (g_ulStatus & ~(1 << b))
 
 // Global Variables
-appConfig_t* g_tAppConfig;
+appConfig_t const *g_tAppConfig;
 pAppState_t* g_stateTable;
 static appState_t* g_tState;
 static unsigned long g_ulStatus;
@@ -79,6 +90,9 @@ static SlSockAddrIn_t g_tServerAddr;
 systime_t g_iSyncTime;
 systime_t g_iSyncTimeSched;
 
+// Local forwards
+void SocketCleanup();
+void PinInterruptHandler();
 
 
 // Functions
@@ -101,6 +115,7 @@ void MainLoopInit(const appConfig_t* config)
 	g_stateTable[6] = STATE_DOWELCOME;
 	g_stateTable[7] = STATE_READY;
 	g_stateTable[8] = STATE_CLEANUP;
+	g_stateTable[9] = STATE_SLEEP;
 
 	g_iCmdSocket = -1;
 	g_iSyncSocket = -1;
@@ -157,6 +172,8 @@ STATE_HANDLER(DOCONNECT)
 
     LEDSetPattern(PATTERN_RED_BLUE);
 
+    TimeSetTimeout(1, 10000);
+
     return STATE_WAITCONNECT;
 }
 
@@ -166,6 +183,10 @@ STATE_HANDLER(WAITCONNECT)
 	if (GET_STATUS(STATUS_CONNECTED)) {
 		ConsolePrint("Connected\n\r");
 		return STATE_WAITFORIP;
+	}
+	else if (TimeGetEvent(1)) {
+		// Connection timeout - go to sleep
+		return STATE_SLEEP;
 	}
 	return 0;
 }
@@ -178,6 +199,8 @@ STATE_HANDLER(WAITFORIP)
 
 	if (GET_STATUS(STATUS_IPACQUIRED))
 		return STATE_SENDDISCOVERY;
+
+	return 0;
 }
 
 // Send a discovery request packet
@@ -292,7 +315,7 @@ STATE_HANDLER(DOCONNECTSRV)
 
 	else if ((lRet == SL_ETIMEDOUT) || (lRet == SL_ECONNREFUSED))
 		// Refused - return to discovery
-		{ConsolePrint("1");return STATE_SENDDISCOVERY;}
+		return STATE_SENDDISCOVERY;
 
 	else if (lRet < 0)
 		FatalError("sl_Connect: %d\n\r", lRet);
@@ -335,7 +358,7 @@ STATE_HANDLER(READY)
 		//sl_Close(g_iSyncSocket);
 		//g_iSyncSocket = -1;
 
-		ConsolePrint("2");return STATE_SENDDISCOVERY;
+		return STATE_SENDDISCOVERY;
 	}
 	else if (lRet != SL_EAGAIN) {
 		ConsolePrintf("sl_Recv [g_iCmdSocket]: %d\n\r", lRet);
@@ -378,21 +401,52 @@ STATE_HANDLER(READY)
 
 STATE_HANDLER(CLEANUP)
 {
-	// If sockets are open, close them
-	if (g_iCmdSocket > 0) {
-		sl_Close(g_iCmdSocket);
-		g_iCmdSocket = -1;
-	}
-	if (g_iSyncSocket > 0) {
-		sl_Close(g_iSyncSocket);
-		g_iSyncSocket = -1;
-	}
+	SocketCleanup();
 
 	// Disconnect from WLAN
 	sl_WlanDisconnect();
 
 	// Retry connection
 	return STATE_DOCONNECT;
+}
+
+STATE_HANDLER(SLEEP)
+{
+	int i;
+	for(i = 100; i > 0; i -= 10) {
+		LEDSetColor(COLOR_RED, i);
+	    UtilsDelay(1500000);
+	}
+	LEDSetColor(COLOR_NONE, 0);
+	SocketCleanup();
+
+	// Stop SimpLink
+	sl_Stop(0);
+
+	// Change the PIEZO pin to digital input, and enable its interrupt
+    MAP_PinTypeGPIO(PIN_59, PIN_MODE_0, false);
+    MAP_GPIODirModeSet(GPIOA0_BASE, 0x10, GPIO_DIR_MODE_IN);
+    MAP_GPIOIntRegister(GPIOA0_BASE, PinInterruptHandler);
+    MAP_GPIOIntTypeSet(GPIOA0_BASE, 0x10, GPIO_RISING_EDGE);
+    MAP_GPIOIntEnable(GPIOA0_BASE, GPIO_INT_PIN_4);
+
+    MAP_PRCMLPDSWakeUpGPIOSelect(PRCM_LPDS_GPIO4, PRCM_LPDS_RISE_EDGE);
+    MAP_PRCMLPDSWakeupSourceEnable(PRCM_LPDS_GPIO);
+
+	// Enter sleep
+	//MAP_PRCMSleepEnter();
+	MAP_PRCMLPDSEnter();
+/*
+	// Disable the pin interrupt and return the pin to ADC mode
+	MAP_GPIOIntDisable(GPIOA0_BASE, 0xff);
+	MAP_PinTypeADC(PIN_58, PIN_MODE_255);
+
+	for(i = 0; i < 100; i += 10) {
+		LEDSetColor(COLOR_RED, i);
+	    UtilsDelay(1500000);
+	}
+*/
+	return 0;
 }
 
 
@@ -472,3 +526,28 @@ void SimpleLinkSockEventHandler(SlSockEvent_t* pSockEvent)
 	ConsolePrintf("[SOCK EVENT] %d\n\r", pSockEvent->Event);
 }
 
+//////////////////////////////////////////////////
+/////////////////////  Misc  /////////////////////
+//////////////////////////////////////////////////
+void SocketCleanup()
+{
+	// If sockets are open, close them
+	if (g_iCmdSocket > 0) {
+		sl_Close(g_iCmdSocket);
+		g_iCmdSocket = -1;
+	}
+	if (g_iSyncSocket > 0) {
+		sl_Close(g_iSyncSocket);
+		g_iSyncSocket = -1;
+	}
+	if (g_iDiscoverySocket > 0) {
+		sl_Close(g_iSyncSocket);
+		g_iDiscoverySocket = -1;
+	}
+}
+
+void PinInterruptHandler()
+{
+	LEDSetColor(COLOR_WHITE, 50);
+	MAP_GPIOIntClear(GPIOA0_BASE, 0xff);
+}
