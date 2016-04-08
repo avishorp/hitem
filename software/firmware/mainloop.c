@@ -423,29 +423,16 @@ STATE_HANDLER(SLEEP)
 	// Stop SimpLink
 	sl_Stop(0);
 
-	// Change the PIEZO pin to digital input, and enable its interrupt
-    MAP_PinTypeGPIO(PIN_59, PIN_MODE_0, false);
-    MAP_GPIODirModeSet(GPIOA0_BASE, 0x10, GPIO_DIR_MODE_IN);
-    MAP_GPIOIntRegister(GPIOA0_BASE, PinInterruptHandler);
-    MAP_GPIOIntTypeSet(GPIOA0_BASE, 0x10, GPIO_RISING_EDGE);
-    MAP_GPIOIntEnable(GPIOA0_BASE, GPIO_INT_PIN_4);
+	// Set-up GPIO pin 4 as a wake-up source
+    PRCMHibernateWakeupSourceEnable(PRCM_HIB_GPIO4);
+    PRCMHibernateWakeUpGPIOSelect(PRCM_HIB_GPIO4, PRCM_HIB_RISE_EDGE);
 
-    MAP_PRCMLPDSWakeUpGPIOSelect(PRCM_LPDS_GPIO4, PRCM_LPDS_RISE_EDGE);
-    MAP_PRCMLPDSWakeupSourceEnable(PRCM_LPDS_GPIO);
+    ConsolePrintf("Going to sleep...\n\r");
+    UtilsDelay(100000);
 
-	// Enter sleep
-	//MAP_PRCMSleepEnter();
-	MAP_PRCMLPDSEnter();
-/*
-	// Disable the pin interrupt and return the pin to ADC mode
-	MAP_GPIOIntDisable(GPIOA0_BASE, 0xff);
-	MAP_PinTypeADC(PIN_58, PIN_MODE_255);
+	// This is the place from which no CC3200 has ever returned
+    PRCMHibernateEnter();
 
-	for(i = 0; i < 100; i += 10) {
-		LEDSetColor(COLOR_RED, i);
-	    UtilsDelay(1500000);
-	}
-*/
 	return 0;
 }
 

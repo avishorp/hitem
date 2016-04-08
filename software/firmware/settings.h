@@ -24,7 +24,7 @@
 
 #define DISCOVERY_TIMEOUT    1000  // The period, in mS, in which repeated discovery
 								   // messages are sent
-#define WLAN_TIMEOUT         20000 // The time, in mS, the unit waits for WLAN connection
+#define WLAN_TIMEOUT         40000 // The time, in mS, the unit waits for WLAN connection
 
 #define NO_UDP_SYNC_REQ
 
