@@ -19,14 +19,14 @@
 // The sensitivity to hit
 #define HIT_THRESHOLD 2500
 #define HIT_DEBOUNCE_A  2
-#define HIT_DEBOUNCE_B  5000
+#define HIT_DEBOUNCE_B  3000
 
 
 #define DISCOVERY_TIMEOUT    1000  // The period, in mS, in which repeated discovery
 								   // messages are sent
 #define WLAN_TIMEOUT         40000 // The time, in mS, the unit waits for WLAN connection
 
-#define NO_UDP_SYNC_REQ
+//#define NO_UDP_SYNC_REQ
 
 #endif
 

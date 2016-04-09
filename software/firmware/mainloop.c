@@ -292,7 +292,9 @@ STATE_HANDLER(DOCONNECTSRV)
 		SlSockAddrIn_t addr;
 		memset(&addr, 0, sizeof(SlSockAddrIn_t));
 		addr.sin_family = AF_INET;
-		addr.sin_port = sl_Htons(g_tAppConfig->iSrvPort);
+		addr.sin_port = sl_Htons(ConfigGet()->iSrvPort);
+
+		sl_Bind(g_iSyncSocket, (SlSockAddr_t*)&addr, sizeof(SlSockAddrIn_t));
 	}
 #endif
 
@@ -362,17 +364,18 @@ STATE_HANDLER(READY)
 	}
 
 #ifndef NO_UDP_SYNC_REQ
-	// Receive data from sync socket
+	// Handle UDP Sync request
 	lRet = sl_Recv(g_iSyncSocket, buf, sizeof(buf), 0);
 	if (lRet > 0) {
-		ConsolePrint("***SYNC***\n\r");
+		// Wer'e not even checking the content of the message
+		ProtocolSendSyncResp(g_iCmdSocket, TimeGetSystime());
 	}
 	else if (lRet != SL_EAGAIN) {
 		ConsolePrintf("sl_Recv [g_iSyncSocket]: %d\n\r", lRet);
 	}
 #endif
 
-	// Handle sync requests
+	// Handle TCP sync requests
 	systime_t syncTime = ProtocolGetSyncTime();
 	if (syncTime != NULL_TIME) {
 		// Schedule the send time to +10mS

@@ -33,6 +33,7 @@ void AnalogInit()
 
 }
 
+int g;
 void AnalogTask()
 {
 	// Hit sensor (Piezo)
@@ -40,6 +41,13 @@ void AnalogTask()
 	int level = MAP_ADCFIFOLvlGet(ADC_BASE, ADC_CHANNEL_PIEZO);
 	if (level > 0) {
 		int value = (MAP_ADCFIFORead(ADC_BASE, ADC_CHANNEL_PIEZO) >> 2);
+
+#if 0
+		g = (g + 1) % 2000;
+		if (g == 0)
+			ConsolePrintf("ADC=%d\n\r", value);
+#endif
+
 		if (value > HIT_THRESHOLD) {
 			if (g_tHitDetect.mode == 0) {
 				g_tHitDetect.timestamp = TimeGetSystime();
