@@ -13,7 +13,7 @@
 #define CONSOLE_BUFFER_SIZE  1024
 #define CONSOLE_TRUNCATE_SYM '$'
 
-#define ADC_CHANNEL_PIEZO    ADC_CH_1
+#define ADC_CHANNEL_PIEZO    ADC_CH_2
 #define ADC_CHANNEL_VSENSE   ADC_CH_3
 
 // The sensitivity to hit
