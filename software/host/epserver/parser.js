@@ -13,12 +13,14 @@ const MESSAGE_TYPE_INDICATE = 3
 const MESSAGE_TYPE_SYNC_RSP = 4
 const MESSAGE_TYPE_SYNC_REQ = 5
 const MESSAGE_TYPE_HIT      = 6
+const MESSAGE_TYPE_BATTERY  = 7
 
 const MESSAGE_OFFSET_TYPE = 1
 const MESSAGE_OFFSET_WELCOME_NUM = 2
 const MESSAGE_OFFSET_WELCOME_PERSONALITY = 3
 const MESSAGE_OFFSET_SYNC_TIMESTAMP = 2
 const MESSAGE_OFFSET_HIT_TIMESTAMP = 2
+const MESSAGE_OFFSET_BATTERY = 2
 
 const PERSONALITY_HAT = 1
 const PERSONALITY_HAMMER = 2
@@ -60,7 +62,7 @@ ProtocolParser.prototype._write = function(chunk, encoding, done) {
 		if (this.msg.buffer[0]==MSG_PROLOG) {
 			const checksum = this._checksum(this.msg.buffer)
 			if (this.msg.buffer[MESSAGE_LENGTH-1] != checksum)
-				this.emit('error', {
+				this.emit('parse_error', {
 					description: 'Incorrect checksum',
 					message: this.msg.buffer 
 				})
@@ -87,12 +89,16 @@ ProtocolParser.prototype._doMessageParsing = function(message) {
 		const timestamp = message.readUInt32LE(MESSAGE_OFFSET_SYNC_TIMESTAMP);
 		this.emit('sync_resp', timestamp)
 	}
-	else if (type == MESSAGE_TYPE_HIT) {
+	else if (type === MESSAGE_TYPE_HIT) {
 		const timestamp = message.readUInt32LE(MESSAGE_OFFSET_SYNC_TIMESTAMP);
 		this.emit('hit', timestamp)		
 	}
+	else if (type === MESSAGE_TYPE_BATTERY) {
+		const level = message.readUInt32LE(MESSAGE_OFFSET_BATTERY);
+		this.emit('battery', level)				
+	}
 	else
-		this.emit('error', {
+		this.emit('parse_error', {
 			description: util.format('Incorrect message type: %d', type),
 			message: message
 			})

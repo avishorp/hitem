@@ -14,6 +14,7 @@ function EPManager(options, logger) {
 
 	this.units = {}
 	this.lastHitTime = 0
+	this.logger = logger
 	
 	// Create a server object
 	const srv = net.createServer(socket => {
@@ -34,7 +35,7 @@ function EPManager(options, logger) {
 			 })
 		
 		// Emitted by the parser when it encounters an error
-		parser.on('error', (desc) => {
+		parser.on('parse_error', (desc) => {
 			logger.warn(util.format("Parse error on %s: %s (Message: %s)", 
 				EPAddr, desc.description, util.inspect(desc.message)))
 		})
@@ -57,23 +58,13 @@ function EPManager(options, logger) {
 			this.handleHit(timestamp)
 		})
 
-		// Pipe all the traffic to the parser
-		socket.pipe(parser)
+		// Emitted by the parses when a battery level indication is reveived
+		parser.on('battery', level => this.handleBattery(level))
 				
-		//setInterval(_ => {parser.syncReq()}, 2000)
-		
-		//const syncSocket = dgram.createSocket('udp4')
-		//syncSocket.setBroadcast(true)
-		//setInterval(() => {
-		//	// Every second, send a UDP sync request
-		//	syncSocket.send("SYNC", 0, 4, options.port, "10.42.0.255")
-		//}, 1000)
-		//let d = dgram.createSocket('udp4')
-		//d.bind(8000, '0.0.0.0')
-		
-		//d.setBroadcast(true)
-		//d.sendto("sync", 0, 4, 24334, '10.42.0.255')
-		//d.setBroadcast(true)
+		socket.on('error', err => this.handleError(socket, err))
+
+		// Pipe all the traffic to the parser
+		socket.pipe(parser)				
 	})
 	
 	// Start listening
@@ -95,5 +86,16 @@ EPManager.prototype.handleHit = function(timestamp)
 	console.log('hit at ' + timestamp)
 }
 
+
+EPManager.prototype.handleError = function(socket, err)
+{
+	this.logger.info(util.format("Socket error: %s, closing", err.description))
+	socket.close()
+}
+
+EPManager.prototype.handleBattery = function(level)
+{
+	this.logger.info(util.format("Battery level is %dmV", level))
+}
 
 module.exports = EPManager
