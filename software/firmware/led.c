@@ -127,7 +127,7 @@ const pattern_t g_tLEDPatterns[] = {
 		{
 				g_tPatternChirp,   	        // schedule
 				PLEN(g_tPatternChirp),      // length
-				0,                          // repetitive
+				1,                          // repetitive
 				70                          // intensity
 		},
 
