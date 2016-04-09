@@ -14,6 +14,7 @@
 #include "rom_map.h"
 #include "utils.h"
 #include "prcm.h"
+#include "adc.h"
 
 // Simplelink includes
 #include "simplelink.h"
@@ -60,6 +61,10 @@ void DoSleep()
 
 	// Stop SimpLink
 	sl_Stop(0);
+
+	// Disable the ADC (it interferes with the wake up GPIO)
+	MAP_ADCDisable(ADC_BASE);
+
 
 	// Set-up GPIO pin 4 as a wake-up source
     PRCMHibernateWakeupSourceEnable(PRCM_HIB_GPIO4);

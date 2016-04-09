@@ -19,7 +19,7 @@
 // The sensitivity to hit
 #define HIT_THRESHOLD 2500
 #define HIT_DEBOUNCE_A  2
-#define HIT_DEBOUNCE_B  200
+#define HIT_DEBOUNCE_B  5000
 
 
 #define DISCOVERY_TIMEOUT    1000  // The period, in mS, in which repeated discovery
