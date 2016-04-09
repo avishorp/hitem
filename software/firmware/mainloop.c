@@ -25,6 +25,7 @@
 #include "settings.h"
 #include "time.h"
 #include "analog.h"
+#include "config.h"
 
 #define DISCOVERY_MAGIC "HTEM"
 
@@ -74,11 +75,9 @@ DEF_STATE(SLEEP)          // Go to sleep
 #define CLEAR_STATUS(b) g_ulStatus = (g_ulStatus & ~(1 << b))
 
 // Global Variables
-appConfig_t const *g_tAppConfig;
 pAppState_t* g_stateTable;
 static appState_t* g_tState;
 static unsigned long g_ulStatus;
-static const appConfig_t* g_tConfig;
 static _i16 g_iDiscoverySocket;
 static _i16 g_iCmdSocket;
 static _i16 g_iSyncSocket;
@@ -98,10 +97,8 @@ void PinInterruptHandler();
 // Functions
 void MainLoopInit(const appConfig_t* config)
 {
-	g_tAppConfig = config;
 	g_tState = STATE_DOCONNECT;
 	g_ulStatus = 0;
-	g_tConfig = config;
 	g_iSyncTimeSched = NULL_TIME;
 
 	// TODO: Must do it more elegantly
@@ -123,7 +120,7 @@ void MainLoopInit(const appConfig_t* config)
 
 	// Initialize static broadcast address
 	g_tBroadcastAddr.sin_family = SL_AF_INET;
-	g_tBroadcastAddr.sin_port = sl_Htons(config->iDiscPort);
+	g_tBroadcastAddr.sin_port = sl_Htons(ConfigGet()->iDiscPort);
 
 }
 
@@ -157,16 +154,16 @@ SlSecParams_t secParams = {0};
 // Connect to the WLAN
 STATE_HANDLER(DOCONNECT)
 {
-	ConsolePrintf("Trying to connect to %s\n\r", g_tConfig->sESSID);
+	ConsolePrintf("Trying to connect to %s\n\r", ConfigGet()->sESSID);
 
 	memset(&g_tServerAddr, 0, sizeof(g_tServerAddr));
 
-    secParams.Key = (signed char *)g_tConfig->sPassword;
-    secParams.KeyLen = strlen(g_tConfig->sPassword);
+    secParams.Key = (signed char *)(ConfigGet()->sPassword);
+    secParams.KeyLen = strlen(ConfigGet()->sPassword);
     secParams.Type = SL_SEC_TYPE_WPA_WPA2;
 
-    long lRetVal = sl_WlanConnect((signed char *)g_tConfig->sESSID,
-                           strlen((const char *)g_tConfig->sESSID), 0, &secParams, 0);
+    long lRetVal = sl_WlanConnect((signed char *)(ConfigGet()->sESSID),
+                           strlen((const char *)(ConfigGet()->sESSID)), 0, &secParams, 0);
     if (lRetVal < 0)
     	ConsolePrintf("Error %d", lRetVal);
 
@@ -223,7 +220,7 @@ STATE_HANDLER(SENDDISCOVERY)
 	static const char sDiscoveryMsg[] = DISCOVERY_MAGIC;
 
 	// Adjust broadcast address according to allocated IP
-	g_tBroadcastAddr.sin_addr.s_addr = sl_Htonl(g_iMyIP | (~g_tAppConfig->iNetmask));
+	g_tBroadcastAddr.sin_addr.s_addr = sl_Htonl(g_iMyIP | (~(ConfigGet()->iNetmask)));
 
 	sl_SendTo(g_iDiscoverySocket, sDiscoveryMsg, sizeof(sDiscoveryMsg), 0, (SlSockAddr_t*)&g_tBroadcastAddr, sizeof(SlSockAddrIn_t));
 
@@ -251,7 +248,7 @@ STATE_HANDLER(WAITDISCOVERY)
 		if ((lRet >= strlen(DISCOVERY_MAGIC)) && (strncmp(rbuf, DISCOVERY_MAGIC, strlen(DISCOVERY_MAGIC))==0)) {
 			// Return packet is valid
 			// Adjust server port
-			g_tServerAddr.sin_port = sl_Htons(g_tAppConfig->iSrvPort);
+			g_tServerAddr.sin_port = sl_Htons(ConfigGet()->iSrvPort);
 			return STATE_DOCONNECTSRV;
 		}
 	}

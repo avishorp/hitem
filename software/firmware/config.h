@@ -10,10 +10,10 @@ typedef struct {
 	long lBoardNumber;      // Board serial number
 	long lPersonaliry;      // Unit personality
 	char sESSID[30];        // WLAN ESSID
-	char sPassword[20];     // WLAN Password
+	char sPassword[30];     // WLAN Password
 	unsigned long iDiscPort;// Discovery port number
-	unsigned long iNetmask; // Network mask
 	unsigned long iSrvPort; // Endpoint server port
+	unsigned long iNetmask; // Network mask
 } appConfig_t;
 
 long ConfigInit();

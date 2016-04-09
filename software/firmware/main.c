@@ -84,15 +84,11 @@ int main(void) {
     UtilsDelay(3000000);
     LEDSetColor(COLOR_NONE, 70);
 
-
-    // Load configuration
-    long r = ConfigInit();
-    if (r < 0)
-    	FatalError("Failed loading board configuraion");
-
-
     // Initialize SimpleLink
     SimpleLinkInit();
+
+    // Load configuration
+    ConfigInit();
 
     // All initialization done! Start running.
     MainLoopInit(ConfigGet());
