@@ -2,7 +2,7 @@
 
 const config = require('./config.json')
 const discovery = require('./discovery')
-const epserver = require('./epserver')
+const EPServer = require('./epserver')
 const bunyan = require('bunyan')
 
 // Main
@@ -17,5 +17,5 @@ const bunyan = require('bunyan')
 	discovery(config.discovery, logger.child({'component': 'Discovery'}))
 	
 	// Endpoint server
-	const eps = epserver(config.endpoint, logger.child({'component': 'EPServer'}))
+	const eps = new EPServer(config.endpoint, logger.child({'component': 'EPServer'}))
 //})()

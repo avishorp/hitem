@@ -8,8 +8,6 @@ const util = require('util')
 const ProtocolParser = require('./parser')
 
 
-const EPManager = function() {
-}
 
 function EPManager(options, logger) {
 	logger.info("Starting")
@@ -17,12 +15,8 @@ function EPManager(options, logger) {
 	this.units = {}
 	this.lastHitTime = 0
 	
-	//this.on('welcome', this.handleWelcome)
-	//this.on('sync_resp', this.handleSyncResp)
-	//this.on('hit')	
-	
 	// Create a server object
-	const srv = net.createServer(function(socket) {
+	const srv = net.createServer(socket => {
 		const EPAddr = socket.remoteAddress
 		logger.info("New connection from " + EPAddr)
 		
@@ -31,7 +25,7 @@ function EPManager(options, logger) {
 		})
 		
 		const parser = new ProtocolParser()
-		socket.pipe(parser)
+
 		
 		// Emitted by the parser when it wants to send a packet to
 		// the endpoint
@@ -41,7 +35,8 @@ function EPManager(options, logger) {
 		
 		// Emitted by the parser when it encounters an error
 		parser.on('error', (desc) => {
-			logger.warn(util.format("Parse error on %s: %s", EPAddr, desc))
+			logger.warn(util.format("Parse error on %s: %s (Message: %s)", 
+				EPAddr, desc.description, util.inspect(desc.message)))
 		})
 		
 		// Emitted by the parser when a "WELCOME" message is received from the endpoint
@@ -54,11 +49,18 @@ function EPManager(options, logger) {
 		
 		// Emitted by the parser when a sync response message is received
 		parser.on('sync_resp', timestamp => {
-			this.handleSyncResponse()
+			this.handleSyncResponse(timestamp)
 		})
 		
-		setTimeout(_ => {parser.setIndication('chirp')}, 3000)
-		setTimeout(_ => {parser.syncReq()}, 8000)
+		// Emitted by the parser when the unit is hit
+		parser.on('hit', timestamp => {
+			this.handleHit(timestamp)
+		})
+
+		// Pipe all the traffic to the parser
+		socket.pipe(parser)
+				
+		//setInterval(_ => {parser.syncReq()}, 2000)
 		
 		//const syncSocket = dgram.createSocket('udp4')
 		//syncSocket.setBroadcast(true)
@@ -66,11 +68,32 @@ function EPManager(options, logger) {
 		//	// Every second, send a UDP sync request
 		//	syncSocket.send("SYNC", 0, 4, options.port, "10.42.0.255")
 		//}, 1000)
+		//let d = dgram.createSocket('udp4')
+		//d.bind(8000, '0.0.0.0')
+		
+		//d.setBroadcast(true)
+		//d.sendto("sync", 0, 4, 24334, '10.42.0.255')
+		//d.setBroadcast(true)
 	})
 	
 	// Start listening
 	srv.listen(options.port)
 }
 
+EPManager.prototype.handleWelcome = function(addr, parser, ep)
+{
+	
+}
+
+EPManager.prototype.handleSyncResponse = function(timestamp)
+{
+	console.log('Sync response ' + timestamp)	
+}
+
+EPManager.prototype.handleHit = function(timestamp)
+{
+	console.log('hit at ' + timestamp)
+}
 
 
+module.exports = EPManager
