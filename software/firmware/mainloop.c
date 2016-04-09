@@ -412,26 +412,9 @@ STATE_HANDLER(CLEANUP)
 
 STATE_HANDLER(SLEEP)
 {
-	int i;
-	for(i = 100; i > 0; i -= 10) {
-		LEDSetColor(COLOR_RED, i);
-	    UtilsDelay(1500000);
-	}
-	LEDSetColor(COLOR_NONE, 0);
 	SocketCleanup();
 
-	// Stop SimpLink
-	sl_Stop(0);
-
-	// Set-up GPIO pin 4 as a wake-up source
-    PRCMHibernateWakeupSourceEnable(PRCM_HIB_GPIO4);
-    PRCMHibernateWakeUpGPIOSelect(PRCM_HIB_GPIO4, PRCM_HIB_RISE_EDGE);
-
-    ConsolePrintf("Going to sleep...\n\r");
-    UtilsDelay(100000);
-
-	// This is the place from which no CC3200 has ever returned
-    PRCMHibernateEnter();
+	DoSleep();
 
 	return 0;
 }

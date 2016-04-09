@@ -3,11 +3,20 @@
 #include <stdio.h>
 #include <stdarg.h>
 
+// Local includes
 #include "error.h"
 #include "console.h"
 #include "led.h"
 
+// Peripheral Lib includes
+#include "hw_types.h"
+#include "hw_memmap.h"
+#include "rom_map.h"
 #include "utils.h"
+#include "prcm.h"
+
+// Simplelink includes
+#include "simplelink.h"
 
 void FatalError(const char *pcFormat, ...)
 {
@@ -28,11 +37,37 @@ void FatalError(const char *pcFormat, ...)
 	ConsolePrint(emsg);
 
     // Stop the processing and blink the red LED
-    while(1) {
+	int i;
+   for(i=0; i < 30; i++) {
     	LEDSetColor(COLOR_RED, 40);
         UtilsDelay(5000000);
     	LEDSetColor(COLOR_NONE, 40);
         UtilsDelay(5000000);
     }
+
+   // Go to sleep
+   DoSleep();
 }
 
+void DoSleep()
+{
+	int i;
+	for(i = 100; i > 0; i -= 10) {
+		LEDSetColor(COLOR_RED, i);
+	    UtilsDelay(1500000);
+	}
+	LEDSetColor(COLOR_NONE, 0);
+
+	// Stop SimpLink
+	sl_Stop(0);
+
+	// Set-up GPIO pin 4 as a wake-up source
+    PRCMHibernateWakeupSourceEnable(PRCM_HIB_GPIO4);
+    PRCMHibernateWakeUpGPIOSelect(PRCM_HIB_GPIO4, PRCM_HIB_RISE_EDGE);
+
+    ConsolePrintf("Going to sleep...\n\r");
+    UtilsDelay(100000);
+
+	// This is the place from which no CC3200 has ever returned
+    PRCMHibernateEnter();
+}
