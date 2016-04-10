@@ -2,8 +2,17 @@
 
 import React from 'react';
 import ReactDOM from 'react-dom';
-import MainScreen from './main-screen'
+import { createStore } from 'redux'
+import { Provider } from 'react-redux'
+import immutable from 'immutable'
+import reducer from './reducer'
+import Game from './game'
 
-//ReactDOM.render(<Main />,document.getElementById('app'));
-ReactDOM.render(<MainScreen/>,document.getElementById('app'));
+const store = createStore(reducer, immutable.Map())
+
+ReactDOM.render(
+    <Provider store={store}>
+        <Game/>
+    </Provider>
+    ,document.getElementById('app'));
 

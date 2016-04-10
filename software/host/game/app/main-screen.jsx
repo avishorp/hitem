@@ -1,6 +1,8 @@
 'use strict'
 
 import React from 'react';
+import { connect } from 'react-redux' 
+import Slot from './slot'
 
 const fontSize = "150px"
 
@@ -26,39 +28,24 @@ const messageAreaStyle = {
     backgroundColor: "red"
 }
 
-const slotAreaStyle = {
-    width: "25%",
-    margin: "40px",
-    padding: "20px",
-    borderRadius: "30px",
-    position: "relative",
-    backgroundColor: "gray"
-}
 
-const slotDataStyle = {
-    position: "absolute",
-    fontSize: "150px",
-    top: "50%",
-    left: "50%",
-    transform: "translate(-50%, -50%)"
-}
 
-export default class MainScreen extends React.Component {
+class JoinPlayScreen extends React.Component {
     constructor(props) {
         super(props)
     }
     
     render() {
-        const slot = id => 
-            <div key={id} style={slotAreaStyle}>
-                <span style={slotDataStyle}>{id}
-                </span>
-            </div>
+        const slot = id => <Slot 
+            key={id}
+            color={this.props.slots[id].color}
+            score={this.props.slots[id].score}
+            />
             
         return (
             <div style={topContainerStyle}>
                 <div style={messageAreaStyle}>
-                    This is a message
+                    {this.props.message}
                 </div>
                 <div style={rowContainerStyle}>
                     {[slot(0), slot(1), slot(2), slot(3)]}
@@ -71,3 +58,15 @@ export default class MainScreen extends React.Component {
         
     }
 }
+
+function mapStateToProps(state) {
+    return {
+        slots: state.getIn(['stateJoin', 'slots']).toJS()
+    }
+}
+
+function mapDispatchToProps(dispatch) {
+    return {}
+}
+
+export default connect(mapStateToProps, mapDispatchToProps)(JoinPlayScreen)
