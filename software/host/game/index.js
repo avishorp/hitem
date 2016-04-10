@@ -1,6 +1,8 @@
 'use strict'
 
 const electron = require('electron');
+const webpack = require('webpack')
+const path = require('path')
 
 const app = electron.app;  // Module to control application life.
 const BrowserWindow = electron.BrowserWindow;  // Module to create native browser window.
@@ -14,28 +16,44 @@ app.on('window-all-closed', function() {
     app.quit();
 });
 
-// This method will be called when Electron has finished
-// initialization and is ready to create browser windows.
 app.on('ready', function() {
-  // Create the browser window.
-  mainWindow = new BrowserWindow({
-      titleBarStyle: "hidden", 
-      width: 800, 
-      height: 600
-      });
-  mainWindow.setMenuBarVisibility(false)
+    // Set-up webpack
+    const webpackConfig = require(path.resolve(__dirname, 'webpack.config.js'))
+    const webpackConfigCompiled = webpack(webpackConfig)
+    webpackConfigCompiled.watch({}, function(err, stats) {
+        if (err)
+            console.log(err)
+        else {
+            console.log(stats.toString({colors: true}))
+        
+            // This method will be called when Electron has finished
+            // initialization and is ready to create browser windows.
 
-  // and load the index.html of the app.
-  mainWindow.loadURL('file://' + __dirname + '/static/index.html');
+            // Create the browser window.
+            mainWindow = new BrowserWindow({
+                titleBarStyle: "hidden", 
+                width: 800, 
+                height: 600
+                });
+//            mainWindow.setMenuBarVisibility(false)
 
-  // Open the DevTools.
-  //mainWindow.webContents.openDevTools();
+            // and load the index.html of the app.
+            mainWindow.loadURL('file://' + __dirname + '/static/index.html');
 
-  // Emitted when the window is closed.
-  mainWindow.on('closed', function() {
-    // Dereference the window object, usually you would store windows
-    // in an array if your app supports multi windows, this is the time
-    // when you should delete the corresponding element.
-    mainWindow = null;
-  });
-});
+            // Open the DevTools.
+            mainWindow.webContents.openDevTools();
+
+            // Emitted when the window is closed.
+            mainWindow.on('closed', function() {
+                // Dereference the window object, usually you would store windows
+                // in an array if your app supports multi windows, this is the time
+                // when you should delete the corresponding element.
+                mainWindow = null;
+            })
+        };
+    });
+})
+
+
+
+
