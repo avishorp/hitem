@@ -8,14 +8,13 @@ const EventEmitter = require('events').EventEmitter
 const util = require('util')
 const ProtocolParser = require('./parser')
 
-
-
 function EPManager(options, logger) {
 	logger.info("Starting")
 
 	this.units = new Map()
-	this.lastHitTime = 0
+	this.lastHit = { time: 0, id: undefined }
 	this.logger = logger
+    this.hitWindow = options.hitWindow
 	
 	// Create a server object
 	const srv = net.createServer(socket => {
@@ -63,7 +62,7 @@ function EPManager(options, logger) {
     setInterval(this._syncAllTcp.bind(this), 1000)
 }
 
-util.inherit(EPManager, EventEmitter)
+util.inherits(EPManager, EventEmitter)
 
 EPManager.prototype.handleWelcome = function(addr, parser, ep)
 {
@@ -107,6 +106,14 @@ EPManager.prototype.handleWelcome = function(addr, parser, ep)
 	// Emitted by the parser when the unit is hit
 	parser.on('hit', timestamp => {
         const corrected = timestamp - uentry.offset
+        
+        if ((corrected - lastHit.time) <= this.hitWindow)
+            this.handleHit(id, this.lastHit.id)
+            
+        this.lastHit = {
+            time: corrected,
+            id: id
+        }
         console.log(corrected)
 	})
     
@@ -132,9 +139,61 @@ EPManager.prototype._syncAllTcp = function()
 }
 
 
-EPManager.prototype.handleHit = function(timestamp)
+EPManager.prototype.handleHit = function(id1, id2)
 {
-	console.log('hit at ' + timestamp)
+    const unit1 = this.units.get(id1)
+    const unit2 = this.units.get(id2)
+    
+    // Make sure the IDs are correct
+    if (!unit1) {
+        this.logger.error(util.format("Hit received by unknow unit ID %d", id1))
+        return
+    }
+    if (!unit2) {
+        this.logger.error(util.format("Hit received by unknow unit ID %d", id2))
+        return
+    }
+
+    // Make sure it's a hat-by-hammer hit
+    if (unit1.personality === unit2.personality) {
+        this.logger.warn(util.format("Hammer-to-hammer or hat-to-hat hit (%d, %d)", id1, id2))
+    }
+    
+    // Find who is who
+    let hammerId, hatId
+    if (unit1.personality === 'hammer') {
+        hammerId = id1
+        hatId = id2
+    }
+    else {
+        hammerId = id2
+        hatId = id1
+    }
+    
+    // Finally, generate an event
+    this.emit('hit', {
+        hammer: hammerId,
+        hat: hatId
+    })
+}
+
+EPManager.prototype.setColor = function(id, color, intensity) {
+    const unit = this.units.get(id)
+    if (!unit) {
+        this.logger(util.format("setColor to unknown ID (%d)", id))
+    }
+    else
+        unit.setColor(color, intensity)
+}
+
+EPManager.prototype.setIndication = function(id, indication) 
+{
+    const unit = this.units.get(id)
+    if (!unit) {
+        this.logger(util.format("setIndication to unknown ID (%d)", id))
+    }
+    else
+        unit.setIndication(indication)
 }
 
 

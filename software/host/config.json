@@ -5,6 +5,7 @@
 	},
 	"endpoint": {
 		"port": 24334,
-        "sync": "tcp"
+        "sync": "tcp",
+        "hitWindow": 5
 	}
 }
