@@ -4,6 +4,7 @@
 
 const net = require('net')
 const dgram = require('dgram')
+const EventEmitter = require('events').EventEmitter
 const util = require('util')
 const ProtocolParser = require('./parser')
 
@@ -12,7 +13,7 @@ const ProtocolParser = require('./parser')
 function EPManager(options, logger) {
 	logger.info("Starting")
 
-	this.units = {}
+	this.units = new Map()
 	this.lastHitTime = 0
 	this.logger = logger
 	
@@ -42,22 +43,10 @@ function EPManager(options, logger) {
 		
 		// Emitted by the parser when a "WELCOME" message is received from the endpoint
 		parser.on('welcome', ep => {
-			logger.info(util.format("Unit no. %d of type %s has joined", ep.boardNum,
-				ep.personality==='hammer' ? "HAMMER" : "HAT"))
-			 parser.setIndication('blimp')
 			 this.handleWelcome(EPAddr, parser, ep)
 		})
 		
-		// Emitted by the parser when a sync response message is received
-		parser.on('sync_resp', timestamp => {
-			this.handleSyncResponse(timestamp)
-		})
 		
-		// Emitted by the parser when the unit is hit
-		parser.on('hit', timestamp => {
-			this.handleHit(timestamp)
-		})
-
 		// Emitted by the parses when a battery level indication is reveived
 		parser.on('battery', level => this.handleBattery(level))
 				
@@ -69,17 +58,79 @@ function EPManager(options, logger) {
 	
 	// Start listening
 	srv.listen(options.port)
+    
+    // Create sync request
+    setInterval(this._syncAllTcp.bind(this), 1000)
 }
+
+util.inherit(EPManager, EventEmitter)
 
 EPManager.prototype.handleWelcome = function(addr, parser, ep)
 {
-	
+	const id = ep.boardNum
+    const personality = ep.personality
+
+    this.logger.info(util.format("Unit no. %d of type %s has joined", id,
+	   personality==='hammer' ? "HAMMER" : "HAT"))
+     
+    parser.setIndication('blimp')
+    
+    // Check if the id is already in the unit list
+    if (this.units.has(id)) {
+        this.logger.warn(util.format("Unit %d re-registered without disconnecting", id))
+        this.units.delete(id)
+    }
+    
+    // Search through the list of units to see if there is another unit
+    // with the same address
+    const k = this._getUnitByAddress(addr)
+    if (k) {
+        console.warning(util.format("The unit address is already in use, delteing the other (%d)", k))
+        this.units.delete(k)
+    }
+    
+    // Add the unit to the list
+    let uentry = {
+        addr: addr,
+        personality: personality,
+        offset: 0,
+        setColor: (color, intensity) => parser.setColor(color, intensity),
+        setIndication: indication => parser.setIndication(indication),
+        syncReq: () => parser.syncReq()
+    }
+    
+    // Emitted by the parser when a sync response message is received
+	parser.on('sync_resp', timestamp => {
+			uentry.offset = timestamp
+	})
+    
+	// Emitted by the parser when the unit is hit
+	parser.on('hit', timestamp => {
+        const corrected = timestamp - uentry.offset
+        console.log(corrected)
+	})
+    
+   
+    this.units.set(id, uentry)
 }
 
-EPManager.prototype.handleSyncResponse = function(timestamp)
+EPManager.prototype._getUnitByAddress = function(addr)
 {
-	console.log('Sync response ' + timestamp)	
+    let r = undefined
+    
+    this.units.forEach((value, key) => {
+        if (value.addr === addr)
+            r = key
+    })
+    
+    return r
 }
+
+EPManager.prototype._syncAllTcp = function()
+{
+    this.units.forEach(value => { value.syncReq() })
+}
+
 
 EPManager.prototype.handleHit = function(timestamp)
 {
@@ -90,7 +141,7 @@ EPManager.prototype.handleHit = function(timestamp)
 EPManager.prototype.handleError = function(socket, err)
 {
 	this.logger.info(util.format("Socket error: %s, closing", err.description))
-	socket.close()
+	socket.destroy()
 }
 
 EPManager.prototype.handleBattery = function(level)

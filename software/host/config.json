@@ -4,6 +4,7 @@
 		"magic": "HTEM"
 	},
 	"endpoint": {
-		"port": 24334
+		"port": 24334,
+        "sync": "tcp"
 	}
 }
