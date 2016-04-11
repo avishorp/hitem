@@ -3,6 +3,7 @@
 const electron = require('electron');
 const webpack = require('webpack')
 const path = require('path')
+const bunyan = require('bunyan')
 
 const app = electron.app;  // Module to control application life.
 const BrowserWindow = electron.BrowserWindow;  // Module to create native browser window.
@@ -27,7 +28,12 @@ app.on('ready', function() {
 
     // and load the index.html of the app.
     mainWindow.loadURL('file://' + __dirname + '/static/index.html');
-
+electron.ipcMain.on('connect-ep', event => {
+    console.log('connected')
+    setTimeout(_ => { console.log('1'); event.sender.send('ep-event', 1)}, 120000)
+//    setTimeout(_ => { console.log('2'); event.sender.send('ep-event', {hammer: 1, hat: 2})}, 5000)
+//    setTimeout(_ => { console.log('3'); event.sender.send('ep-event')}, 10000)
+})    
     // Open the DevTools.
     mainWindow.webContents.openDevTools();
 
@@ -51,6 +57,7 @@ app.on('ready', function() {
             mainWindow.reload()
         };
     });
+    
 })
 
 

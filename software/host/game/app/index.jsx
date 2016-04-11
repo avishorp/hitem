@@ -10,6 +10,12 @@ import Game from './game'
 
 const store = createStore(reducer, immutable.Map())
 
+
+ipcRenderer.on('ep-events', (event, arg) => {
+    console.log(arg)
+})
+ipcRenderer.send('connect-ep')
+
 ReactDOM.render(
     <Provider store={store}>
         <Game/>
