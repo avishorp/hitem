@@ -10,8 +10,8 @@ import Game from './game'
 
 const store = createStore(reducer, immutable.Map())
 
-
-ipcRenderer.on('ep-events', (event, arg) => {
+// Connect to EP Server
+ipcRenderer.on('ep-event', (event, arg) => {
     console.log(arg)
 })
 ipcRenderer.send('connect-ep')
