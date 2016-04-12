@@ -102,18 +102,7 @@ app.on('ready', function() {
     })
 
 
-    // Set-up webpack
-    const webpackConfig = require(path.resolve(__dirname, 'webpack.config.js'))
-    const webpackConfigCompiled = webpack(webpackConfig)
-    webpackConfigCompiled.watch({}, function(err, stats) {
-        if (err)
-            console.log(err)
-        else {
-            console.log(stats.toString({colors: true}))
-            mainWindow.reload()
-        };
-    });
-    
+
 })
 
 

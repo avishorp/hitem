@@ -25,6 +25,7 @@
   },
   "homepage": "https://github.com/avishorp/hitem#readme",
   "dependencies": {
+    "babel-register": "^6.7.2",
     "bunyan": "^1.8.0",
     "bunyan-format": "^0.2.1",
     "electron-prebuilt": "^0.37.5",
