@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node . | bunyan"
+    "start": "electron game"
   },
   "repository": {
     "type": "git",
@@ -26,6 +26,7 @@
   "homepage": "https://github.com/avishorp/hitem#readme",
   "dependencies": {
     "bunyan": "^1.8.0",
+    "bunyan-format": "^0.2.1",
     "electron-prebuilt": "^0.37.5",
     "immutable": "^3.7.6",
     "react": "^15.0.1",
