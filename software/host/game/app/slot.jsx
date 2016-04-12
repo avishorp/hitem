@@ -64,7 +64,7 @@ export default class Slot extends React.Component {
                 // Game mode, assigned color
                 computedAreaStyle = Object.assign({}, slotAreaStyle, 
                     { backgroundColor: colorTranslateTable[this.props.color] })
-                content = '0'//this.props.score                
+                content = this.props.score                
             }
         }
         

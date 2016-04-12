@@ -19,7 +19,8 @@ const initialState = fromJS({
     slots: [0, 1, 2, 3, 4, 5, 6, 7].map(n => ({
         color: 'unassigned',
         hatId: null,
-        hammerId: null
+        hammerId: null,
+        score: 0
     })),
     ready: false,
     countdownVal: null
@@ -62,6 +63,9 @@ const reducer = createReducer({
     [actions.setCountdownMode]: (state, payload) => {console.log('xxxx'); return state
         .set('major', 'countdown')
         .set('countdownVal', payload.value)},
+        
+    [actions.setScoreToAll]: (state, payload) => 
+        state.update('slots', slots => slots.map(slot => slot.set('score', payload.score)))
         
     
 }, initialState)
