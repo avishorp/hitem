@@ -1,5 +1,6 @@
 'use strict'
 
+import util from 'util'
 import { fromJS } from 'immutable'
 import { combineReducers } from 'redux-immutable'
 import { createReducer } from 'redux-act'
@@ -17,9 +18,8 @@ const initialStateJoin = fromJS({
     currentSlot: 0,
     slots: [0, 1, 2, 3, 4, 5, 6, 7].map(n => ({
         color: 'unassigned',
-        score: 0,
-        hat: null,
-        hammer: null
+        hatId: null,
+        hammerId: null
     }))
 })
 
@@ -27,7 +27,12 @@ const initialStateCountdown = fromJS({
     value: 3
 })
 
-const initialStatePlay = fromJS({})
+const initialStatePlay = fromJS({
+    slots: [0, 1, 2, 3, 4, 5, 6, 7].map(n => ({
+        state: 'playing',
+        score: 5
+    }))
+})
 
 const initialStateDeathmatch = fromJS({
     player1: null,
@@ -52,14 +57,26 @@ const globalReducer = createReducer({
 
 const joinReducer = createReducer({
     [actions.hit]: (state, payload) => {
+        const { hatId, hammerId } = payload
+        
+        // Check if the hat is already assigned
+        const assigned = state.get('slots').reduce(
+            (prevVal, currentValue) => prevVal | (currentValue.get('hatId') === hatId), false)
+
+        if (assigned) {
+            // Hat already assigned, ignore the request
+            console.log(util.format("Hat %d already assigned to hammer %d", hatId, hammerId))
+            return state
+        }
+            
         const nextColor = state.getIn(['colors', -1])
         const currentSlot = state.get('currentSlot')
         return state
             .update('currentSlot', i => i + 1)
             .update('colors', l => l.pop())
             .setIn(['slots', currentSlot, 'color'], nextColor)
-            .setIn(['slots', currentSlot, 'hat'], payload.hatId)
-            .setIn(['slots', currentSlot, 'hammer'], payload.hammerId)
+            .setIn(['slots', currentSlot, 'hatId'], hatId)
+            .setIn(['slots', currentSlot, 'hammerId'], hammerId)
             .setIn(['slots', currentSlot, 'score'], 7)
     }
 }, initialStateJoin)

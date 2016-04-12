@@ -13,7 +13,7 @@ const store = createStore(reducer, immutable.Map())
 
 // Connect to EP Server
 ipcRenderer.on('ep-event', (event, arg) => {
-    store.dispatch(actions.hit(arg.hammer, arg.hit))
+    store.dispatch(actions.hit(arg.hammerId, arg.hatId))
 })
 ipcRenderer.send('connect-ep')
 
