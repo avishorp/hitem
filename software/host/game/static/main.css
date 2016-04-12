@@ -7,3 +7,8 @@
     font-family: lcd;
     src: url(MUSICNET.ttf)
 }
+
+body {
+    background: url(ivory-off-white-painted-wall-texture.jpg);
+    background-size: cover;
+}

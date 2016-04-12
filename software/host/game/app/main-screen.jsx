@@ -10,8 +10,7 @@ const topContainerStyle = {
     width: "100%",
     display: "flex",
     flexDirection: "column",
-    height: "850px",
-    backgroundColor: "green"
+    height: "1000px"
 }
 
 const rowContainerStyle = {
