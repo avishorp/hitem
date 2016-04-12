@@ -59,31 +59,40 @@ app.on('ready', function() {
     electron.ipcMain.on('connect-ep', event => {
         logger.info('Connected to EP server')
         
+        eps.on('hit', e => {
+            console.log('hit')
+            event.sender.send('ep-event', {
+                event: 'hit',
+                hammerId: e.hammerId,
+                hatId: e.hatId
+            })
+        })
+        
         setTimeout(_ => { console.log('sending'); event.sender.send('ep-event', {
             event: 'hit',
             hammerId: '0',
             hatId: '1'    
-        })}, 30000)
+        })}, 10000)
         setTimeout(_ => { console.log('sending'); event.sender.send('ep-event', {
             event: 'hit',
             hammerId: '2',
             hatId: '3'    
-        })}, 35000)
+        })}, 15000)
         setTimeout(_ => { console.log('sending'); event.sender.send('ep-event', {
             event: 'hit',
             hammerId: '4',
             hatId: '5'    
-        })}, 40000)
+        })}, 20000)
         setTimeout(_ => { console.log('sending'); event.sender.send('ep-event', {
             event: 'hit',
             hammerId: '4',
             hatId: '3'    
-        })}, 42000)
+        })}, 22000)
         setTimeout(_ => { console.log('sending'); event.sender.send('ep-event', {
             event: 'hit',
             hammerId: '6',
             hatId: '7'    
-        })}, 50000)
+        })}, 25000)
 
         //setTimeout(_ => { console.log('1'); event.sender.send('ep-event', 1)}, 120000)
         //setTimeout(_ => { console.log('2'); event.sender.send('ep-event', {hammer: 1, hat: 2})}, 5000)

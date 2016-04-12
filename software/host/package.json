@@ -35,6 +35,8 @@
     "redux": "^3.4.0",
     "redux-act": "^0.4.0",
     "redux-immutable": "^3.0.6",
+    "redux-logger": "^2.6.1",
+    "redux-promise": "^0.5.3",
     "redux-thunk": "^2.0.1"
   },
   "devDependencies": {

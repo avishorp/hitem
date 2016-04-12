@@ -107,7 +107,7 @@ EPManager.prototype.handleWelcome = function(addr, parser, ep)
 	parser.on('hit', timestamp => {
         const corrected = timestamp - uentry.offset
         
-        if ((corrected - lastHit.time) <= this.hitWindow)
+        if ((corrected - this.lastHit.time) <= this.hitWindow)
             this.handleHit(id, this.lastHit.id)
             
         this.lastHit = {
@@ -172,8 +172,8 @@ EPManager.prototype.handleHit = function(id1, id2)
     
     // Finally, generate an event
     this.emit('hit', {
-        hammer: hammerId,
-        hat: hatId
+        hammerId: hammerId,
+        hatId: hatId
     })
 }
 

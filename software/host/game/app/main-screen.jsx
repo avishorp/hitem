@@ -47,11 +47,22 @@ class JoinPlayScreen extends React.Component {
             mode={this.props.major}
             />
             
+        let message
+        switch(this.props.major) {
+            case 'join':
+                message = (<div>HIT YOUR OWN HAT TO JOIN THE GAME</div>)
+                if (this.props.ready)
+                    message = (<div><div>{message}</div><div style={{ fontSize: "50px", marginTop: "20px" }}>HIT START TO PLAY</div></div>)
+                break
+                
+            case 'countdown':
+                message = (<div>Game starts in {this.props.countdownVal}</div>)
+        }
+            
         return (
             <div style={topContainerStyle}>
                 <div style={messageAreaStyle}>
-                    <div>HIT YOUR OWN HAT TO JOIN THE GAME</div>
-                    { this.props.ready? <div style={{ fontSize: "50px", marginTop: "20px" }}>HIT START TO PLAY</div> : <div/>}
+                    { message }
                 </div>
                 <div style={rowContainerStyle}>
                     {[slot(0), slot(1), slot(2), slot(3)]}
@@ -66,10 +77,12 @@ class JoinPlayScreen extends React.Component {
 }
 
 function mapStateToProps(state) {
+    console.log(state.toJS())
     return {
-        major: state.getIn(['global', 'major']),
-        slots: state.getIn(['stateJoin', 'slots']).toJS(),
-        ready: state.getIn(['stateJoin', 'ready'])
+        major: state.get('major'),
+        slots: state.get('slots').toJS(),
+        ready: state.get('ready'),
+        countdownVal: state.get('countdownVal')
     }
 }
 

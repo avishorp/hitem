@@ -57,12 +57,14 @@ export default class Slot extends React.Component {
         else {
             if (this.props.color === 'unassigned') {
                 // Game mode, unassigned color
-                bgColor = 'white'
+                computedAreaStyle = Object.assign({}, slotAreaStyle, 
+                    { opacity: 0 })                
             }
             else {
                 // Game mode, assigned color
-                bgColor = colorTranslateTable[this.props.color]
-                content = this.props.score                
+                computedAreaStyle = Object.assign({}, slotAreaStyle, 
+                    { backgroundColor: colorTranslateTable[this.props.color] })
+                content = '0'//this.props.score                
             }
         }
         
