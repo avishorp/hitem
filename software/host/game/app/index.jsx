@@ -7,12 +7,13 @@ import { Provider } from 'react-redux'
 import immutable from 'immutable'
 import reducer from './reducer'
 import Game from './game'
+import actions from './actions'
 
 const store = createStore(reducer, immutable.Map())
 
 // Connect to EP Server
 ipcRenderer.on('ep-event', (event, arg) => {
-    console.log(arg)
+    store.dispatch(actions.hit(arg.hammer, arg.hit))
 })
 ipcRenderer.send('connect-ep')
 

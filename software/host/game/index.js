@@ -63,7 +63,23 @@ app.on('ready', function() {
             event: 'hit',
             hammer: '0',
             hat: '1'    
-        })}, 60000)
+        })}, 30000)
+        setTimeout(_ => { console.log('sending'); event.sender.send('ep-event', {
+            event: 'hit',
+            hammer: '2',
+            hat: '3'    
+        })}, 35000)
+        setTimeout(_ => { console.log('sending'); event.sender.send('ep-event', {
+            event: 'hit',
+            hammer: '4',
+            hat: '5'    
+        })}, 40000)
+        setTimeout(_ => { console.log('sending'); event.sender.send('ep-event', {
+            event: 'hit',
+            hammer: '6',
+            hat: '7'    
+        })}, 50000)
+
         //setTimeout(_ => { console.log('1'); event.sender.send('ep-event', 1)}, 120000)
         //setTimeout(_ => { console.log('2'); event.sender.send('ep-event', {hammer: 1, hat: 2})}, 5000)
         //setTimeout(_ => { console.log('3'); event.sender.send('ep-event')}, 10000)

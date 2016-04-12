@@ -40,6 +40,7 @@ class JoinPlayScreen extends React.Component {
             key={id}
             color={this.props.slots[id].color}
             score={this.props.slots[id].score}
+            mode={this.props.major}
             />
             
         return (
@@ -61,6 +62,7 @@ class JoinPlayScreen extends React.Component {
 
 function mapStateToProps(state) {
     return {
+        major: state.getIn(['global', 'major']),
         slots: state.getIn(['stateJoin', 'slots']).toJS()
     }
 }
