@@ -5,6 +5,9 @@ import { fromJS } from 'immutable'
 import { combineReducers } from 'redux-immutable'
 import { createReducer } from 'redux-act'
 import actions from './actions'
+import hitemConfig from '../../config.json'
+
+const gameConfig = hitemConfig.game
 
 const initialStateGlobal = fromJS({
     major: 'join'
@@ -20,7 +23,8 @@ const initialStateJoin = fromJS({
         color: 'unassigned',
         hatId: null,
         hammerId: null
-    }))
+    })),
+    ready: false
 })
 
 const initialStateCountdown = fromJS({
@@ -71,13 +75,21 @@ const joinReducer = createReducer({
             
         const nextColor = state.getIn(['colors', -1])
         const currentSlot = state.get('currentSlot')
+        
+        // Check if the game is ready
+        const ready = (currentSlot+1) >= gameConfig.minPlayers
+        console.log(currentSlot)
+        console.log( gameConfig.minPlayers)
+        console.log(ready)
+        
+        // Form the state
         return state
             .update('currentSlot', i => i + 1)
             .update('colors', l => l.pop())
             .setIn(['slots', currentSlot, 'color'], nextColor)
             .setIn(['slots', currentSlot, 'hatId'], hatId)
             .setIn(['slots', currentSlot, 'hammerId'], hammerId)
-            .setIn(['slots', currentSlot, 'score'], 7)
+            .set('ready', ready)
     }
 }, initialStateJoin)
 

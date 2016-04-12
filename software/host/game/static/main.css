@@ -2,3 +2,8 @@
     font-family: digital;
     src: url(digital7.ttf);
 }
+
+@font-face {
+    font-family: lcd;
+    src: url(MUSICNET.ttf)
+}
