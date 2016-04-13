@@ -60,9 +60,9 @@ const reducer = createReducer({
             .set('ready', ready)
     },
     
-    [actions.setCountdownMode]: (state, payload) => {console.log('xxxx'); return state
+    [actions.setCountdownMode]: (state, payload) => state
         .set('major', 'countdown')
-        .set('countdownVal', payload.value)},
+        .set('countdownVal', payload.value),
         
     [actions.setScoreToAll]: (state, payload) => 
         state.update('slots', slots => slots.map(slot => slot.set('score', payload.score)))

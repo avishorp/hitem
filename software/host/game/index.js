@@ -3,6 +3,7 @@
 const electron = require('electron');
 const webpack = require('webpack')
 const path = require('path')
+const util = require('util')
 const bunyan = require('bunyan')
 const bformat = require('bunyan-format')
 const hitemConfig = require('../config.json')
@@ -70,8 +71,8 @@ app.on('ready', function() {
         
         setTimeout(_ => { console.log('sending'); event.sender.send('ep-event', {
             event: 'hit',
-            hammerId: '0',
-            hatId: '1'    
+            hammerId: 16,
+            hatId: 1    
         })}, 10000)
         setTimeout(_ => { console.log('sending'); event.sender.send('ep-event', {
             event: 'hit',
@@ -97,6 +98,13 @@ app.on('ready', function() {
         //setTimeout(_ => { console.log('1'); event.sender.send('ep-event', 1)}, 120000)
         //setTimeout(_ => { console.log('2'); event.sender.send('ep-event', {hammer: 1, hat: 2})}, 5000)
         //setTimeout(_ => { console.log('3'); event.sender.send('ep-event')}, 10000)
+    })
+    
+    electron.ipcMain.on('ep-command', (event, args) => {
+        if (args.op === 'setColor') {
+            console.log(util.format("Setting color of %d to %s", args.id, args.color))
+            eps.setColor(args.id, args.color, args.intensity)
+        }    
     })
         
     // Open the DevTools.

@@ -77,7 +77,6 @@ class JoinPlayScreen extends React.Component {
 }
 
 function mapStateToProps(state) {
-    console.log(state.toJS())
     return {
         major: state.get('major'),
         slots: state.get('slots').toJS(),

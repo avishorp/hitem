@@ -180,7 +180,7 @@ EPManager.prototype.handleHit = function(id1, id2)
 EPManager.prototype.setColor = function(id, color, intensity) {
     const unit = this.units.get(id)
     if (!unit) {
-        this.logger(util.format("setColor to unknown ID (%d)", id))
+        this.logger.warn(util.format("setColor to unknown ID (%d)", id))
     }
     else
         unit.setColor(color, intensity)
@@ -190,7 +190,7 @@ EPManager.prototype.setIndication = function(id, indication)
 {
     const unit = this.units.get(id)
     if (!unit) {
-        this.logger(util.format("setIndication to unknown ID (%d)", id))
+        this.logger.warn(util.format("setIndication to unknown ID (%d)", id))
     }
     else
         unit.setIndication(indication)

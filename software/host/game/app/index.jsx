@@ -10,6 +10,7 @@ import createLogger from 'redux-logger';
 import immutable from 'immutable'
 import reducer from './reducer'
 import Game from './game'
+import EPState from './epstate'
 import actions from './actions'
 
 const KEY_START = 13  // ENTER
@@ -41,7 +42,24 @@ body.addEventListener("keypress", e => {
 
 ReactDOM.render(
     <Provider store={store}>
+    <div>
         <Game/>
+        <EPState
+            setColorDebug= { (id, color, identity) => {console.log(id);console.log(color);console.log(identity) } }
+            setColor = { (id, color, intensity) => { ipcRenderer.send('ep-command', {
+                op: 'setColor',
+                id: id,
+                color: color,
+                intensity: intensity
+            }) }}
+            
+            setIndication = { (id, indication) => { ipcRenderer.send('ep-command', {
+                id: id,
+                op: 'setIndication',
+                indication: indication
+            }) }}
+        />
+    </div>
     </Provider>
     ,document.getElementById('app'));
 
