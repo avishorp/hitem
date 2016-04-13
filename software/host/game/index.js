@@ -69,58 +69,72 @@ app.on('ready', function() {
             })
         })
         
-        setTimeout(_ => { console.log('sending'); event.sender.send('ep-event', {
-            event: 'hit',
-            hammerId: 0,
-            hatId: 1    
-        })}, 10000)
-        setTimeout(_ => { console.log('sending'); event.sender.send('ep-event', {
-            event: 'hit',
-            hammerId: 2,
-            hatId: 3    
-        })}, 15000)
-        setTimeout(_ => { console.log('sending'); event.sender.send('ep-event', {
-            event: 'hit',
-            hammerId: 4,
-            hatId: 5    
-        })}, 20000)
-        setTimeout(_ => { console.log('sending'); event.sender.send('ep-event', {
-            event: 'hit',
-            hammerId: 4,
-            hatId: 3    
-        })}, 22000)
-        setTimeout(_ => { console.log('sending'); event.sender.send('ep-event', {
-            event: 'hit',
-            hammerId: 6,
-            hatId: 7    
-        })}, 25000)
-        
-        
-        setTimeout(_ => { console.log('sending'); event.sender.send('ep-event', {
-            event: 'hit',
-            hammerId: 4,
-            hatId: 1    
-        })}, 30000)
-        setTimeout(_ => { console.log('sending'); event.sender.send('ep-event', {
-            event: 'hit',
-            hammerId: 2,
-            hatId: 5    
-        })}, 32000)
-        setTimeout(_ => { console.log('sending'); event.sender.send('ep-event', {
-            event: 'hit',
-            hammerId: 0,
-            hatId: 3    
-        })}, 34000)
-        setTimeout(_ => { console.log('sending'); event.sender.send('ep-event', {
-            event: 'hit',
-            hammerId: 2,
-            hatId: 1    
-        })}, 36000)
+        const emulation = true
+            if (emulation) {
+            setTimeout(_ => { console.log('sending'); event.sender.send('ep-event', {
+                event: 'hit',
+                hammerId: 0,
+                hatId: 1    
+            })}, 10000)
+            setTimeout(_ => { console.log('sending'); event.sender.send('ep-event', {
+                event: 'hit',
+                hammerId: 2,
+                hatId: 3    
+            })}, 15000)
+            setTimeout(_ => { console.log('sending'); event.sender.send('ep-event', {
+                event: 'hit',
+                hammerId: 4,
+                hatId: 5    
+            })}, 20000)
+            setTimeout(_ => { console.log('sending'); event.sender.send('ep-event', {
+                event: 'hit',
+                hammerId: 4,
+                hatId: 3    
+            })}, 22000)
+            setTimeout(_ => { console.log('sending'); event.sender.send('ep-event', {
+                event: 'hit',
+                hammerId: 6,
+                hatId: 7    
+            })}, 25000)
+            
+            
+            setTimeout(_ => { console.log('sending'); event.sender.send('ep-event', {
+                event: 'hit',
+                hammerId: 4,
+                hatId: 1    
+            })}, 30000)
+            setTimeout(_ => { console.log('sending'); event.sender.send('ep-event', {
+                event: 'hit',
+                hammerId: 2,
+                hatId: 5    
+            })}, 32000)
+            setTimeout(_ => { console.log('sending'); event.sender.send('ep-event', {
+                event: 'hit',
+                hammerId: 0,
+                hatId: 3    
+            })}, 34000)
+            setTimeout(_ => { console.log('sending'); event.sender.send('ep-event', {
+                event: 'hit',
+                hammerId: 2,
+                hatId: 1    
+            })}, 36000)
+            setTimeout(_ => { console.log('sending'); event.sender.send('ep-event', {
+                event: 'hit',
+                hammerId: 2,
+                hatId: 1    
+            })}, 37000)
+            setTimeout(_ => { console.log('sending'); event.sender.send('ep-event', {
+                event: 'hit',
+                hammerId: 4,
+                hatId: 7    
+            })}, 39000)
+            setTimeout(_ => { console.log('sending'); event.sender.send('ep-event', {
+                event: 'hit',
+                hammerId: 2,
+                hatId: 7    
+            })}, 40000)
+        }
 
-
-        //setTimeout(_ => { console.log('1'); event.sender.send('ep-event', 1)}, 120000)
-        //setTimeout(_ => { console.log('2'); event.sender.send('ep-event', {hammer: 1, hat: 2})}, 5000)
-        //setTimeout(_ => { console.log('3'); event.sender.send('ep-event')}, 10000)
     })
     
     electron.ipcMain.on('ep-command', (event, args) => {

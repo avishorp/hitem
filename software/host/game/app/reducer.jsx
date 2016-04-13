@@ -10,20 +10,22 @@ import { knuthShuffle } from 'knuth-shuffle'
 
 const gameConfig = hitemConfig.game
 
+const availableColors = [ 'blue', 'orange', 'purple', 'lgtgreen',
+        'turkiz', 'yellow', 'white', 'pink']
+
 const initialState = fromJS({
     major: 'join',
     enoughPlayers: false,
     numPlayers: 0,
-    colors: [ 'blue', 'orange', 'purple', 'lgtgreen',
-        'turkiz', 'yellow', 'white', 'pink'],
     currentSlot: 0,
     slots: [0, 1, 2, 3, 4, 5, 6, 7].map(n => ({
         color: 'unassigned',
+        assignedColor: availableColors[n],
         hatId: null,
         hammerId: null,
         score: 0,
         hatColor: null,
-        gameOver: false
+        state: 'unassigned'
     })),
     ready: false,
     countdownVal: null,
@@ -47,8 +49,8 @@ const reducer = createReducer({
             return state
         }
             
-        const nextColor = state.getIn(['colors', -1])
         const currentSlot = state.get('currentSlot')
+        const color = state.getIn(['slots', currentSlot, 'assignedColor'])
         
         // Check if the game is ready
         const ready = (currentSlot+1) >= gameConfig.minPlayers
@@ -56,11 +58,11 @@ const reducer = createReducer({
         // Form the state
         return state
             .update('currentSlot', i => i + 1)
-            .update('colors', l => l.pop())
-            .setIn(['slots', currentSlot, 'color'], nextColor)
+            .setIn(['slots', currentSlot, 'color'], color)
             .setIn(['slots', currentSlot, 'hatId'], hatId)
             .setIn(['slots', currentSlot, 'hammerId'], hammerId)
-            .setIn(['slots', currentSlot, 'hatColor'], nextColor)
+            .setIn(['slots', currentSlot, 'hatColor'], color)
+            .setIn(['slots', currentSlot, 'state'], 'assigned')
             .set('ready', ready)
     },
     
@@ -72,7 +74,10 @@ const reducer = createReducer({
         state.update('slots', slots => slots.map(slot => slot.set('score', payload.score))),
         
     [actions.startGame]: (state, payload) =>
-        state.set('major', 'game'),
+        state
+            .set('major', 'game')
+            .update('slots', slots =>
+                slots.map(slot => slot.update('state', currentState => currentState==='unassigned'? 'inactive' : 'active'))),
         
     [actions.colorTransition]: (state, payload) =>
         state.update('slots', slots => slots.map(slot => slot.set('hatColor', 'chirp')))
@@ -82,8 +87,8 @@ const reducer = createReducer({
         // Calculate all colors that are currently active
  
         const activeColors = state.get('slots')
-            .filter(v => (v.get('hatId') || (v.get('hatID') === 0)))
-            .filter(v => !v.get('gameOver'))
+            .filter(v => (v.get('hatId') || (v.get('hatId') === 0)))
+            .filter(v => v.get('state') === 'active')
             .map(v => v.get('color'))
             .toJS()
             
@@ -102,7 +107,7 @@ const reducer = createReducer({
         const { hammerId, hatId } = payload
         
         const gameOver = slotState =>
-            slotState.set('gameOver', true).set('color', 'red').set('hatColor', 'red')
+            slotState.set('state', 'gameOver').set('color', 'red').set('hatColor', 'red')
 
         // Find the color of the hammer
         const hammerSlotIndex = state.get('slots').findIndex(v => v.get('hammerId') === hammerId)
@@ -110,8 +115,8 @@ const reducer = createReducer({
             // Hammer not found, ignore
             return state
         let hammerSlot = state.getIn(['slots', hammerSlotIndex])
-        if (hammerSlot.get('gameOver'))
-            // If the slot is in 'gameOver' mode, ignore it
+        if (hammerSlot.get('state') !== 'active')
+            // If the slot is not in 'active' state, ignore it
             return state
         const hammerColor = hammerSlot.get('color')
         
@@ -121,8 +126,8 @@ const reducer = createReducer({
             // Hat not found, ignore
             return state
         let hatSlot = state.getIn(['slots', hatSlotIndex])
-        if (hatSlot.get('gameOver'))
-            // If the slot is in 'gameOver' mode, ignore it
+        if (hatSlot.get('state') !== 'active')
+            // If the slot is not in 'active' state, ignore it
             return state
         const hatColor = hatSlot.get('color')
         if (hatColor === hammerColor) {

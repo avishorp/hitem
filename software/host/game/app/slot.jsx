@@ -40,32 +40,36 @@ export default class Slot extends React.Component {
         let computedAreaStyle;
         let computedDataStyle;
         let content;
-                     
-        if (this.props.mode === 'join') {
-            if (this.props.color === 'unassigned') {
-                // Join mode, unassigned color
+
+        switch(this.props.state) {
+            case 'unassigned':
                 computedAreaStyle = slotAreaStyle
                 content = ''
-            }
-            else {
-                // Join mode, assigned color
+                break
+                
+            case 'assigned':
                 computedAreaStyle = Object.assign({}, slotAreaStyle, 
                     { backgroundColor: colorTranslateTable[this.props.color] })
                 content = <img src="checkmark.svg" width="200"/>
-            }
-        }
-        else {
-            if (this.props.color === 'unassigned') {
-                // Game mode, unassigned color
-                computedAreaStyle = Object.assign({}, slotAreaStyle, 
-                    { opacity: 0 })                
-            }
-            else {
+                break
+                
+            case 'active':
                 // Game mode, assigned color
                 computedAreaStyle = Object.assign({}, slotAreaStyle, 
                     { backgroundColor: colorTranslateTable[this.props.color] })
-                content = this.props.score                
-            }
+                content = this.props.score
+                break                
+
+            case 'inactive':
+                computedAreaStyle = Object.assign({}, slotAreaStyle, 
+                    { opacity: 0 })
+                break                
+
+            case 'gameOver':                            
+                computedAreaStyle = Object.assign({}, slotAreaStyle, 
+                    { backgroundColor: colorTranslateTable[this.props.color] })
+                content = 'OVER'
+                break
         }
         
         return (
