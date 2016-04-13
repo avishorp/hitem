@@ -71,7 +71,7 @@ app.on('ready', function() {
         
         setTimeout(_ => { console.log('sending'); event.sender.send('ep-event', {
             event: 'hit',
-            hammerId: 16,
+            hammerId: 0,
             hatId: 1    
         })}, 10000)
         setTimeout(_ => { console.log('sending'); event.sender.send('ep-event', {
@@ -108,7 +108,7 @@ app.on('ready', function() {
     })
         
     // Open the DevTools.
-    mainWindow.webContents.openDevTools();
+   // mainWindow.webContents.openDevTools();
 
     // Emitted when the window is closed.
     mainWindow.on('closed', function() {
