@@ -9,6 +9,7 @@ const gameConfig = hitemConfig.game
 
 const hit = createAction('hit', (hammerId, hatId) => ({ hammerId: hammerId, hatId: hatId }))
 const setCountdownMode = createAction('setCountdownMode', value => ({ value: value }))
+const startGame = createAction('startGame')
 
 const keyStart = function() {
     return (dispatch, getState) => {
@@ -17,6 +18,10 @@ const keyStart = function() {
             dispatch(setCountdownMode(3))
             setTimeout(() => dispatch(setCountdownMode(2)), 1000)
             setTimeout(() => dispatch(setCountdownMode(1)), 2000)
+            setTimeout(() => { 
+                dispatch(startGame())
+                //dispatch(nextRound())
+                }, 3000)
             
             let i;
             for(i=0; i <= gameConfig.startingScore; i++) {
@@ -32,8 +37,13 @@ const keyStop = createAction('keyStop')
 
 const setScoreToAll = createAction('setScoreToAll', score => ({ score: score }))
 
+const nextRound = function() {
+    return (dispatch, getState) => {
+        
+    }
+}
 
-const actions = { hit, setCountdownMode, setScoreToAll, keyStart, keyStop }
+const actions = { hit, setCountdownMode, setScoreToAll, keyStart, keyStop, startGame }
 
 export default actions;
 

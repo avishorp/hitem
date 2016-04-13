@@ -27,23 +27,25 @@ class EPState extends React.Component {
 			}
 				
 		})
-			/*
+
 		nextProps.hats.forEach(v => {
-			const { color, id } = v.color
-			const prevColor = this._findColorById(this.props.hats, id)
+			const { color, id } = v
 			
-			if (color !== prevColor) {
-				if (color != 'unassigned') {
-					if (color === 'chirp')
-						this.props.setIndication(id, 'chirp')
+			if (id || (id === 0)) {
+				const prevColor = this._findColorById(this.props.hats, id)
+			
+				if (color !== prevColor) {
+					if (color != 'unassigned') {
+						if (color === 'chirp')
+							this.props.setIndication(id, 'chirp')
+						else
+							this.props.setColor(id, color, 70)
+					}
 					else
-						this.props.setColor(id, color, 70)
+						this.props.setIndication(id, 'blimp')
 				}
-				else
-					this.props.setIndication(id, 'blimp')
 			}
 		})
-		*/
 	}
 	
 	_findColorById(coll, id) {
@@ -62,8 +64,8 @@ function mapStateToProps(state) {
 		hammers: state.get('slots')
 			.map(v => ({ id: v.get('hammerId'), color: v.get('color')}))
 			.toJS(),
-		hats: state.get('hatColor')
-			.map((v, i) => ({ id: i, color: v}))
+		hats: state.get('slots')
+			.map(v => ({ id: v.get('hatId'), color: v.get('hatColor')}))
 			.toJS()
 	}
 }

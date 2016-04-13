@@ -20,11 +20,11 @@ const initialState = fromJS({
         color: 'unassigned',
         hatId: null,
         hammerId: null,
-        score: 0
+        score: 0,
+        hatColor: null
     })),
     ready: false,
-    countdownVal: null,
-    hatColor: [0, 1, 2, 3, 4, 5, 6, 7].map(n => 'unassigned')
+    countdownVal: null
 })
 
 
@@ -58,7 +58,7 @@ const reducer = createReducer({
             .setIn(['slots', currentSlot, 'color'], nextColor)
             .setIn(['slots', currentSlot, 'hatId'], hatId)
             .setIn(['slots', currentSlot, 'hammerId'], hammerId)
-            .setIn(['hatColor', currentSlot], nextColor)
+            .setIn(['slots', currentSlot, 'hatColor'], nextColor)
             .set('ready', ready)
     },
     
@@ -67,7 +67,10 @@ const reducer = createReducer({
         .set('countdownVal', payload.value),
         
     [actions.setScoreToAll]: (state, payload) => 
-        state.update('slots', slots => slots.map(slot => slot.set('score', payload.score)))
+        state.update('slots', slots => slots.map(slot => slot.set('score', payload.score))),
+        
+    [actions.startGame]: (state, payload) =>
+        state.set('major', 'game')
         
     
 }, initialState)

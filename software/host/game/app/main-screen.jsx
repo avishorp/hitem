@@ -57,6 +57,10 @@ class JoinPlayScreen extends React.Component {
                 
             case 'countdown':
                 message = (<div>Game starts in {this.props.countdownVal}</div>)
+                break
+                
+            case 'game':
+                message = (<div style={{ fontSize: "170px" }}>Hit'em!</div>)
         }
             
         return (
