@@ -76,23 +76,23 @@ app.on('ready', function() {
         })}, 10000)
         setTimeout(_ => { console.log('sending'); event.sender.send('ep-event', {
             event: 'hit',
-            hammerId: '2',
-            hatId: '3'    
+            hammerId: 2,
+            hatId: 3    
         })}, 15000)
         setTimeout(_ => { console.log('sending'); event.sender.send('ep-event', {
             event: 'hit',
-            hammerId: '4',
-            hatId: '5'    
+            hammerId: 4,
+            hatId: 5    
         })}, 20000)
         setTimeout(_ => { console.log('sending'); event.sender.send('ep-event', {
             event: 'hit',
-            hammerId: '4',
-            hatId: '3'    
+            hammerId: 4,
+            hatId: 3    
         })}, 22000)
         setTimeout(_ => { console.log('sending'); event.sender.send('ep-event', {
             event: 'hit',
-            hammerId: '6',
-            hatId: '7'    
+            hammerId: 6,
+            hatId: 7    
         })}, 25000)
 
         //setTimeout(_ => { console.log('1'); event.sender.send('ep-event', 1)}, 120000)

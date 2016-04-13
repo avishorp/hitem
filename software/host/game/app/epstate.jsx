@@ -1,5 +1,6 @@
 'use strict'
 
+import util from 'util'
 import React from 'react'
 import { connect } from 'react-redux'
 
@@ -11,21 +12,25 @@ class EPState extends React.Component {
 	componentWillReceiveProps(nextProps) {
 		nextProps.hammers.forEach(v => { 
 			const { color, id } = v
-			
-			const prevColor = this._findColorById(props.hammers, id)
-			if (color !== prevColor) {
-				if (color === 'unassigned')
-					this.props.setIndication(id, 'blimp')
-				else {
-					this.props.setColor(id, color, 70)
+
+			if (id || (id === 0)) {
+				const prevColor = this._findColorById(this.props.hammers, id)
+				console.log(util.format("color: %s prevcolor: %s id: %d", color, prevColor, id))
+
+				if (color !== prevColor) {
+					if (color === 'unassigned')
+						this.props.setIndication(id, 'blimp')
+					else {
+						this.props.setColor(id, color, 70)
+					}
 				}
 			}
 				
 		})
-			
+			/*
 		nextProps.hats.forEach(v => {
 			const { color, id } = v.color
-			const prevColor = this._findColorById(props.hats, id)
+			const prevColor = this._findColorById(this.props.hats, id)
 			
 			if (color !== prevColor) {
 				if (color != 'unassigned') {
@@ -38,10 +43,11 @@ class EPState extends React.Component {
 					this.props.setIndication(id, 'blimp')
 			}
 		})
+		*/
 	}
 	
 	_findColorById(coll, id) {
-		const i = coll.findIndex(v => v.get(id)===id)
+		const i = coll.findIndex(v => v['id']===id)
 		return i===-1? null : coll[i].color
 	}
 	
@@ -54,7 +60,6 @@ class EPState extends React.Component {
 function mapStateToProps(state) {
 	return {
 		hammers: state.get('slots')
-			.filter(v => (v.get('color') !== 'unassigned'))
 			.map(v => ({ id: v.get('hammerId'), color: v.get('color')}))
 			.toJS(),
 		hats: state.get('hatColor')
