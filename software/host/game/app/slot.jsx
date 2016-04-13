@@ -68,7 +68,7 @@ export default class Slot extends React.Component {
             case 'gameOver':                            
                 computedAreaStyle = Object.assign({}, slotAreaStyle, 
                     { backgroundColor: colorTranslateTable[this.props.color] })
-                content = 'OVER'
+                content = <img src="game_over.svg" width="400"/>
                 break
         }
         
