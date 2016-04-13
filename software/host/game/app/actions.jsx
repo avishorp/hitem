@@ -20,7 +20,7 @@ const keyStart = function() {
             setTimeout(() => dispatch(setCountdownMode(1)), 2000)
             setTimeout(() => { 
                 dispatch(startGame())
-                //dispatch(nextRound())
+                dispatch(nextRound())
                 }, 3000)
             
             let i;
@@ -39,11 +39,20 @@ const setScoreToAll = createAction('setScoreToAll', score => ({ score: score }))
 
 const nextRound = function() {
     return (dispatch, getState) => {
-        
+        dispatch(colorTransition())
+        setTimeout( () => dispatch(setGameColors()), 1000)
+        setTimeout( () => dispatch(endGracePeriod()), gameConfig.gracePeriod)
     }
 }
 
-const actions = { hit, setCountdownMode, setScoreToAll, keyStart, keyStop, startGame }
+const colorTransition = createAction('colorTransition')
+
+const setGameColors = createAction('setGameColors')
+
+const endGracePeriod = createAction('endGracePeriod')
+
+const actions = { hit, setCountdownMode, setScoreToAll, keyStart, keyStop, startGame,
+    colorTransition, setGameColors, endGracePeriod }
 
 export default actions;
 

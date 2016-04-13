@@ -6,6 +6,7 @@ import { combineReducers } from 'redux-immutable'
 import { createReducer } from 'redux-act'
 import actions from './actions'
 import hitemConfig from '../../config.json'
+import { knuthShuffle } from 'knuth-shuffle'
 
 const gameConfig = hitemConfig.game
 
@@ -24,7 +25,8 @@ const initialState = fromJS({
         hatColor: null
     })),
     ready: false,
-    countdownVal: null
+    countdownVal: null,
+    gracePeriod: false
 })
 
 
@@ -70,9 +72,45 @@ const reducer = createReducer({
         state.update('slots', slots => slots.map(slot => slot.set('score', payload.score))),
         
     [actions.startGame]: (state, payload) =>
-        state.set('major', 'game')
+        state.set('major', 'game'),
         
-    
+    [actions.colorTransition]: (state, payload) =>
+        state.update('slots', slots => slots.map(slot => slot.set('hatColor', 'chirp')))
+        .set('gracePeriod', true),
+        
+    [actions.setGameColors]: (state, payload) => {
+        // Calculate all colors that are currently active
+ 
+        const activeColors = state.get('slots')
+            .filter(v => (v.get('hatId') || (v.get('hatID') === 0)))
+            .map(v => v.get('color'))
+            .toJS()
+            
+        const newColors = shuffleColors(activeColors)
+        
+        // Assign the shuffled colors to the hats
+        return state.update('slots',
+            slots => slots.map(
+                (slot, si) => slot.set('hatColor', newColors[si])
+            ))
+    },
+        
+    [actions.endGracePeriod]: (state, payload) => state.set('gracePeriod', false)
 }, initialState)
+
+const shuffleColors = function(colorList) {
+    
+    // Return false if the two lists are completely different
+    // (i.e. there is no single place that has same color in both)
+    const checkColorList = (list1, list2) =>
+        list1.map((v,i) => v !== list2[i])
+        .reduce((prev, v) => prev && v, true) 
+        
+    let newColorList = knuthShuffle(colorList.slice(0))
+    while(!checkColorList(colorList, newColorList))
+        newColorList = knuthShuffle(newColorList)   
+        
+    return newColorList
+}
 
 export default reducer

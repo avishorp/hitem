@@ -6,10 +6,11 @@
 	"endpoint": {
 		"port": 24334,
         "sync": "tcp",
-        "hitWindow": 5
+        "hitWindow": 25
 	},
     "game": {
         "minPlayers": 4,
-        "startingScore": 5
+        "startingScore": 5,
+		"gracePeriod": 3000
     }
 }

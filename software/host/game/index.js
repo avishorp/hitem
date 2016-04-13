@@ -54,7 +54,7 @@ app.on('ready', function() {
     mainWindow.setMenuBarVisibility(false)
 
     // and load the index.html of the app.
-    mainWindow.loadURL('file://' + __dirname + '/static/index.html');
+    //mainWindow.loadURL('file://' + __dirname + '/static/index.html');
     
     // Create an IPC event handler to communicate with EP Server
     electron.ipcMain.on('connect-ep', event => {
@@ -104,6 +104,10 @@ app.on('ready', function() {
         if (args.op === 'setColor') {
             console.log(util.format("Setting color of %d to %s", args.id, args.color))
             eps.setColor(args.id, args.color, args.intensity)
+        }
+        else if (args.op === 'setIndication') {
+            console.log(util.format("Setting indication of %d to %s", args.id, args.indication))
+            eps.setIndication(args.id, args.indication)
         }    
     })
         
@@ -127,7 +131,8 @@ app.on('ready', function() {
             console.log(err)
         else {
             console.log(stats.toString({colors: true}))
-            mainWindow.reload()
+            mainWindow.loadURL('file://' + __dirname + '/static/index.html');
+            //mainWindow.reload()
         };
     });
     
