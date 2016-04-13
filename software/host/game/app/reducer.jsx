@@ -19,6 +19,7 @@ const initialState = fromJS({
     numPlayers: 0,
     currentSlot: 0,
     slots: [0, 1, 2, 3, 4, 5, 6, 7].map(n => ({
+        index: n,
         color: 'unassigned',
         assignedColor: availableColors[n],
         hatId: null,
@@ -32,7 +33,10 @@ const initialState = fromJS({
     gracePeriod: false
 })
 
-
+const getActiveSlots = state => state.get('slots')
+            .filter(v => (v.get('hatId') || (v.get('hatId') === 0)))
+            .filter(v => v.get('state') === 'active')
+            
 const reducer = createReducer({
     // hit
     //////
@@ -86,19 +90,21 @@ const reducer = createReducer({
     [actions.setGameColors]: (state, payload) => {
         // Calculate all colors that are currently active
  
-        const activeColors = state.get('slots')
-            .filter(v => (v.get('hatId') || (v.get('hatId') === 0)))
-            .filter(v => v.get('state') === 'active')
+        const activeSlots = getActiveSlots(state)
+        const activeColors = activeSlots
             .map(v => v.get('color'))
+            .toJS()
+        const activeIndices = activeSlots
+            .map(v => v.get('index'))
             .toJS()
             
         const newColors = shuffleColors(activeColors)
         
         // Assign the shuffled colors to the hats
         return state.update('slots',
-            slots => slots.map(
-                (slot, si) => slot.set('hatColor', newColors[si])
-            ))
+            slots => activeIndices.reduce(
+                (slots, index) => slots.setIn([index, 'hatColor'], newColors.pop()), slots)
+            )
     },
         
     [actions.endGracePeriod]: (state, payload) => state.set('gracePeriod', false),
@@ -165,6 +171,9 @@ const shuffleColors = function(colorList) {
     while(!checkColorList(colorList, newColorList))
         newColorList = knuthShuffle(newColorList)   
         
+        
+    console.log(colorList)
+    console.log(newColorList)
     return newColorList
 }
 
