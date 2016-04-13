@@ -157,6 +157,7 @@ EPManager.prototype.handleHit = function(id1, id2)
     // Make sure it's a hat-by-hammer hit
     if (unit1.personality === unit2.personality) {
         this.logger.warn(util.format("Hammer-to-hammer or hat-to-hat hit (%d, %d)", id1, id2))
+        return
     }
     
     // Find who is who
