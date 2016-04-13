@@ -22,7 +22,8 @@ const initialState = fromJS({
         hatId: null,
         hammerId: null,
         score: 0,
-        hatColor: null
+        hatColor: null,
+        gameOver: false
     })),
     ready: false,
     countdownVal: null,
@@ -30,11 +31,10 @@ const initialState = fromJS({
 })
 
 
-
 const reducer = createReducer({
     // hit
     //////
-    [actions.hit]: (state, payload) => {
+    [actions.hitJoin]: (state, payload) => {
         const { hatId, hammerId } = payload
         
         // Check if the hat is already assigned
@@ -83,6 +83,7 @@ const reducer = createReducer({
  
         const activeColors = state.get('slots')
             .filter(v => (v.get('hatId') || (v.get('hatID') === 0)))
+            .filter(v => !v.get('gameOver'))
             .map(v => v.get('color'))
             .toJS()
             
@@ -95,7 +96,56 @@ const reducer = createReducer({
             ))
     },
         
-    [actions.endGracePeriod]: (state, payload) => state.set('gracePeriod', false)
+    [actions.endGracePeriod]: (state, payload) => state.set('gracePeriod', false),
+    
+    [actions.hitGame]: (state, payload) => {
+        const { hammerId, hatId } = payload
+        
+        const gameOver = slotState =>
+            slotState.set('gameOver', true).set('color', 'red').set('hatColor', 'red')
+
+        // Find the color of the hammer
+        const hammerSlotIndex = state.get('slots').findIndex(v => v.get('hammerId') === hammerId)
+        if (hammerSlotIndex === -1)
+            // Hammer not found, ignore
+            return state
+        let hammerSlot = state.getIn(['slots', hammerSlotIndex])
+        if (hammerSlot.get('gameOver'))
+            // If the slot is in 'gameOver' mode, ignore it
+            return state
+        const hammerColor = hammerSlot.get('color')
+        
+        // Find the color of the hat
+        const hatSlotIndex = state.get('slots').findIndex(v => v.get('hatId') === hatId)
+        if (hatSlotIndex === -1)
+            // Hat not found, ignore
+            return state
+        let hatSlot = state.getIn(['slots', hatSlotIndex])
+        if (hatSlot.get('gameOver'))
+            // If the slot is in 'gameOver' mode, ignore it
+            return state
+        const hatColor = hatSlot.get('color')
+        if (hatColor === hammerColor) {
+            // Successult hit
+            hammerSlot = hammerSlot.update('score', val => val + 1)
+            hatSlot = hatSlot.update('score', val => val - 1)
+            
+            if (hatSlot.get('score') <= 0)
+                hatSlot = gameOver(hatSlot) 
+        }
+        else {
+            // Un-successful hit
+            // TODO: grace period
+            hammerSlot = hammerSlot.update('score', val => val - gameConfig.penalty)
+            
+            if (hammerSlot.get('score') <= 0)
+                hammerSlot = gameOver(hammerSlot)
+        }
+        
+        return state
+            .setIn(['slots', hammerSlotIndex], hammerSlot)
+            .setIn(['slots', hatSlotIndex], hatSlot)
+    }
 }, initialState)
 
 const shuffleColors = function(colorList) {

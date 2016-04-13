@@ -7,7 +7,8 @@ import hitemConfig from '../../config.json'
 const gameConfig = hitemConfig.game
 
 
-const hit = createAction('hit', (hammerId, hatId) => ({ hammerId: hammerId, hatId: hatId }))
+const hitJoin = createAction('hitJoin', (hammerId, hatId) => ({ hammerId: hammerId, hatId: hatId }))
+const hitGame = createAction('hitGame', (hammerId, hatId) => ({ hammerId: hammerId, hatId: hatId }))
 const setCountdownMode = createAction('setCountdownMode', value => ({ value: value }))
 const startGame = createAction('startGame')
 
@@ -45,13 +46,26 @@ const nextRound = function() {
     }
 }
 
+
+const hit = function(hammerId, hatId) {
+    return (dispatch, getState) => {
+        const major = getState().get('major')
+        
+        if (major === 'join')
+            dispatch(hitJoin(hammerId, hatId))
+        else if (major === 'game') {
+            dispatch(hitGame(hammerId, hatId))
+            dispatch(nextRound())
+        }
+    }
+}
 const colorTransition = createAction('colorTransition')
 
 const setGameColors = createAction('setGameColors')
 
 const endGracePeriod = createAction('endGracePeriod')
 
-const actions = { hit, setCountdownMode, setScoreToAll, keyStart, keyStop, startGame,
+const actions = { hit, hitJoin, hitGame, setCountdownMode, setScoreToAll, keyStart, keyStop, startGame,
     colorTransition, setGameColors, endGracePeriod }
 
 export default actions;

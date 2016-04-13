@@ -11,6 +11,7 @@
     "game": {
         "minPlayers": 4,
         "startingScore": 5,
-		"gracePeriod": 3000
+		"gracePeriod": 3000,
+		"penalty": 2
     }
 }
