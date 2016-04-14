@@ -57,7 +57,7 @@ ProtocolParser.prototype._write = function(chunk, encoding, done) {
 	//console.log(chunk)
 	for(let b of chunk) {
 		this.msg.lshift(b)
-		
+	}	
 		// Check the validity of the message
 		if (this.msg.buffer[0]==MSG_PROLOG) {
 			const checksum = this._checksum(this.msg.buffer)
@@ -69,7 +69,7 @@ ProtocolParser.prototype._write = function(chunk, encoding, done) {
 			else 
 				this._doMessageParsing(this.msg.buffer)
 		}	
-	}
+	//}
 	
 	done()
 }
