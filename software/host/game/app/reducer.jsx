@@ -26,7 +26,8 @@ const initialState = fromJS({
         hammerId: null,
         score: 0,
         hatColor: null,
-        state: 'unassigned'
+        state: 'unassigned',
+        hitState: 'none'
     })),
     ready: false,
     countdownVal: null,
@@ -85,10 +86,18 @@ const reducer = createReducer({
                 slots.map(slot => slot.update('state', currentState => currentState==='unassigned'? 'inactive' : 'active'))),
         
     [actions.colorTransition]: (state, payload) =>
-        state.update('slots', slots => slots.map(slot => slot.set('hatColor', 'chirp')))
+        // Set all active hats to "chirp" signal
+        state.update('slots', 
+            slots => slots.map(slot => slot.get('state')==='active'? slot.set('hatColor', 'chirp') : slot))
         .set('gracePeriod', true),
         
     [actions.setGameColors]: (state, payload) => {
+        // First of all, clean all the previous markings
+        let newState = state.update('slots',
+            slots => slots.map(
+                slot => slot.set('hitState', 'none')//.set('color', state.get('assignedColor'))
+            ))
+ 
         // Calculate all colors that are currently active
  
         const activeSlots = getActiveSlots(state)
@@ -101,7 +110,6 @@ const reducer = createReducer({
             
         const newColors = shuffleColors(activeColors)
         
-        let newState = state
         let ni = 0
         activeIndices.forEach(i => { newState = newState.setIn(['slots', i, 'hatColor'], newColors[ni]); ni = ni + 1 })
         
@@ -146,8 +154,13 @@ const reducer = createReducer({
         
         if (hatColor === hammerColor) {
             // Successult hit
-            hammerSlot = hammerSlot.update('score', val => val + 1)
-            hatSlot = hatSlot.update('score', val => val - 1)
+            hammerSlot = hammerSlot
+                .update('score', val => val + 1)
+                .set('hitState', 'green')
+            hatSlot = hatSlot
+                .update('score', val => val - 1)
+                .set('hitState', 'red')
+            
             
             if (hatSlot.get('score') <= 0) {
                 hatSlot = gameOver(hatSlot) 
@@ -157,7 +170,9 @@ const reducer = createReducer({
         else {
             // Un-successful hit
             // TODO: grace period
-            hammerSlot = hammerSlot.update('score', val => val - gameConfig.penalty)
+            hammerSlot = hammerSlot
+                .update('score', val => val - gameConfig.penalty)
+                .set('hitState', 'red')
             
             if (hammerSlot.get('score') <= 0) {
                 hammerSlot = gameOver(hammerSlot)
@@ -172,12 +187,16 @@ const reducer = createReducer({
             
         // Calculate the number of active players
         const activePlayers = getActiveSlots(newState).size
-        if (activePlayers === 2)
-            // Two players left - Deathmatch
-            return newState.set('major', 'deathmatch')
-        else if (activePlayers <= 1)
+        //if (activePlayers === 2)                // No deathmatch for mean time - TODO
+        //    // Two players left - Deathmatch
+        //    return newState.set('major', 'deathmatch')
+        if (activePlayers <= 1) {
             // One player left - winner
-            return newState.set('major', 'gameOver')
+            return newState
+                .set('major', 'gameOver')
+                .update(['slots'], slots =>
+                    slots.set(slots.findIndex(slot => slog.get('state') === 'active')), 'winner')
+        }
         else
             return newState
     },
@@ -205,8 +224,8 @@ const shuffleColors = function(colorList) {
     }   
         
         
-    console.log(colorList)
-    console.log(newColorList)
+    //console.log(colorList)
+    //console.log(newColorList)
     return newColorList
 }
 

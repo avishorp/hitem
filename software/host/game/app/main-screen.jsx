@@ -45,6 +45,7 @@ class JoinPlayScreen extends React.Component {
             color={this.props.slots[id].assignedColor}
             state={this.props.slots[id].state}
             score={this.props.slots[id].score}
+            hitState={this.props.slots[id].hitState}
             />
             
         let message

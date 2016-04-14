@@ -70,7 +70,17 @@ export default class Slot extends React.Component {
                     { backgroundColor: colorTranslateTable[this.props.color] })
                 content = <img src="game_over.svg" width="400"/>
                 break
+                
+            case 'winner':
+                computedAreaStyle = Object.assign({}, slotAreaStyle, 
+                    { backgroundColor: colorTranslateTable[this.props.color] })
+                content = <img src="cup.svg" width="200"/>                
         }
+        
+        // If the slot is "hit", mark it with a border`
+        if (this.props.hitState !== 'none')
+                computedAreaStyle.border = "8px solid " + this.props.hitState
+             
         
         return (
             <div style={computedAreaStyle}>
