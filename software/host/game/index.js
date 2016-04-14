@@ -9,6 +9,7 @@ const bformat = require('bunyan-format')
 const hitemConfig = require('../config.json')
 const discoveryServer = require('../discovery')
 const EPServer = require('../epserver')
+const pickRandom = require('pick-random')
 
 const app = electron.app;  // Module to control application life.
 const BrowserWindow = electron.BrowserWindow;  // Module to create native browser window.
@@ -70,7 +71,10 @@ app.on('ready', function() {
         })
         
         const emulation = true
-            if (emulation) {
+        if (emulation) {
+            
+            const hammers = [0, 2, 4, 6]
+            const hats = [1, 3, 5, 7]    
             setTimeout(_ => { console.log('sending'); event.sender.send('ep-event', {
                 event: 'hit',
                 hammerId: 0,
@@ -97,42 +101,21 @@ app.on('ready', function() {
                 hatId: 7    
             })}, 25000)
             
+            let events = 20
+            let generator = setInterval(() => {
+                const hammer = pickRandom(hammers)[0]
+                const hat = pickRandom(hats)[0]
+                console.log(util.format("Emulating hit hat=%d hammer=%d", hat, hammer))
+                event.sender.send('ep-event', {
+                    event: 'hit',
+                    hammerId: hammer,
+                    hatId: hat
+                })
+                events = events - 1
+                if (events === 0)
+                    clearInterval(generator)    
+            }, 1500)
             
-            setTimeout(_ => { console.log('sending'); event.sender.send('ep-event', {
-                event: 'hit',
-                hammerId: 4,
-                hatId: 1    
-            })}, 30000)
-            setTimeout(_ => { console.log('sending'); event.sender.send('ep-event', {
-                event: 'hit',
-                hammerId: 2,
-                hatId: 5    
-            })}, 32000)
-            setTimeout(_ => { console.log('sending'); event.sender.send('ep-event', {
-                event: 'hit',
-                hammerId: 0,
-                hatId: 3    
-            })}, 34000)
-            setTimeout(_ => { console.log('sending'); event.sender.send('ep-event', {
-                event: 'hit',
-                hammerId: 2,
-                hatId: 1    
-            })}, 36000)
-            setTimeout(_ => { console.log('sending'); event.sender.send('ep-event', {
-                event: 'hit',
-                hammerId: 2,
-                hatId: 1    
-            })}, 37000)
-            setTimeout(_ => { console.log('sending'); event.sender.send('ep-event', {
-                event: 'hit',
-                hammerId: 4,
-                hatId: 7    
-            })}, 39000)
-            setTimeout(_ => { console.log('sending'); event.sender.send('ep-event', {
-                event: 'hit',
-                hammerId: 2,
-                hatId: 7    
-            })}, 40000)
         }
 
     })
