@@ -78,8 +78,10 @@ export default class Slot extends React.Component {
         }
         
         // If the slot is "hit", mark it with a border`
-        if (this.props.hitState !== 'none')
+        if (this.props.hitState !== 'none') {
                 computedAreaStyle.border = "8px solid " + this.props.hitState
+                computedAreaStyle.margin = "32px"
+        }
              
         
         return (
