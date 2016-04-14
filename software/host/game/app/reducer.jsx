@@ -157,13 +157,18 @@ const reducer = createReducer({
         
         if (hatColor === hammerColor) {
             // Successult hit
+
+            // TODO: This should be handled more gracefully by
+            // "deathmatch" mode
+            const activePlayers = getActiveSlots(newState).size
+            if (activePlayers > 2) {
             hammerSlot = hammerSlot
                 .update('score', val => val + 1)
                 .set('hitState', 'green')
+            }
             hatSlot = hatSlot
                 .update('score', val => val - 1)
-                .set('hitState', 'red')
-            
+                .set('hitState', 'red')                
             
             if (hatSlot.get('score') <= 0) {
                 hatSlot = gameOver(hatSlot) 
