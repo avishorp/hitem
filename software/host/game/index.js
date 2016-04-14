@@ -101,20 +101,23 @@ app.on('ready', function() {
                 hatId: 7    
             })}, 25000)
             
-            let events = 20
-            let generator = setInterval(() => {
-                const hammer = pickRandom(hammers)[0]
-                const hat = pickRandom(hats)[0]
-                console.log(util.format("Emulating hit hat=%d hammer=%d", hat, hammer))
-                event.sender.send('ep-event', {
-                    event: 'hit',
-                    hammerId: hammer,
-                    hatId: hat
-                })
-                events = events - 1
-                if (events === 0)
-                    clearInterval(generator)    
-            }, 1500)
+            setTimeout(() => {
+                let events = 50
+                let generator = setInterval(() => {
+                    const hammer = pickRandom(hammers)[0]
+                    const hat = pickRandom(hats)[0]
+                    console.log(util.format("Emulating hit hat=%d hammer=%d", hat, hammer))
+                    event.sender.send('ep-event', {
+                        event: 'hit',
+                        hammerId: hammer,
+                        hatId: hat
+                    })
+                    events = events - 1
+                    if (events === 0)
+                        clearInterval(generator)    
+                }, 1500)
+                
+            }, 30000)
             
         }
 
