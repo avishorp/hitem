@@ -45,9 +45,12 @@ const reducer = createReducer({
     [actions.hitJoin]: (state, payload) => {
         const { hatId, hammerId } = payload
         
-        // Check if the hat is already assigned
+        // Check if the hat or hammer is already assigned
         const assigned = state.get('slots').reduce(
-            (prevVal, currentValue) => prevVal | (currentValue.get('hatId') === hatId), false)
+            (prevVal, currentValue) => 
+                prevVal || 
+                (currentValue.get('hatId') === hatId) ||
+                (currentValue.get('hammerId') === hammerId), false)
 
         if (assigned) {
             // Hat already assigned, ignore the request
