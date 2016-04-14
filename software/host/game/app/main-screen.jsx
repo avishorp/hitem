@@ -24,7 +24,7 @@ const messageAreaStyle = {
     width: "100%",
     height: "200px",
     fontFamily: "lcd",
-    fontSize: "80px",
+    fontSize: "120px",
     paddingTop: "20px",
     paddingBottom: "20px",
     textAlign: "center",
@@ -53,7 +53,7 @@ class JoinPlayScreen extends React.Component {
             case 'join':
                 message = (<div>HIT YOUR OWN HAT TO JOIN THE GAME</div>)
                 if (this.props.ready)
-                    message = (<div><div>{message}</div><div style={{ fontSize: "50px", marginTop: "20px" }}>HIT START TO PLAY</div></div>)
+                    message = (<div><div>{message}</div><div style={{ fontSize: "80px", marginTop: "20px" }}>HIT START TO PLAY</div></div>)
                 break
                 
             case 'countdown':
@@ -62,6 +62,10 @@ class JoinPlayScreen extends React.Component {
                 
             case 'game':
                 message = (<div style={{ fontSize: "170px" }}>Hit'em!</div>)
+                break
+                
+            case 'gameOver':
+                message = (<div style={{ fontSize: "170px" }}>We have a winner</div>)
         }
             
         return (
