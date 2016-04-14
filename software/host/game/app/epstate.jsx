@@ -7,7 +7,7 @@ import { connect } from 'react-redux'
 class EPState extends React.Component {
 	constructor(props) {
 		super(props)
-		setInterval(() => { console.log('refresh'); this.refresh() }, 500)
+		setInterval(() => { /*console.log('refresh');*/ this.refresh() }, 500)
 	}
 	
 	componentWillReceiveProps(nextProps) {

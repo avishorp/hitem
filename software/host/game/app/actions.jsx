@@ -11,6 +11,7 @@ const hitJoin = createAction('hitJoin', (hammerId, hatId) => ({ hammerId: hammer
 const hitGame = createAction('hitGame', (hammerId, hatId) => ({ hammerId: hammerId, hatId: hatId }))
 const setCountdownMode = createAction('setCountdownMode', value => ({ value: value }))
 const startGame = createAction('startGame')
+const reset = createAction('reset')
 
 const keyStart = function() {
     return (dispatch, getState) => {
@@ -34,7 +35,9 @@ const keyStart = function() {
     }
 }
 
-const keyStop = createAction('keyStop')
+const keyStop = function() {
+    return (dispatch) => { dispatch(actions.reset()) }
+}
 
 const setScoreToAll = createAction('setScoreToAll', score => ({ score: score }))
 
@@ -53,7 +56,7 @@ const hit = function(hammerId, hatId) {
         
         if (major === 'join')
             dispatch(hitJoin(hammerId, hatId))
-        else if (major === 'game') {
+        else if ((major === 'game') || (major === 'deathmatch')) {
             dispatch(hitGame(hammerId, hatId))
             dispatch(nextRound())
         }
@@ -66,7 +69,7 @@ const setGameColors = createAction('setGameColors')
 const endGracePeriod = createAction('endGracePeriod')
 
 const actions = { hit, hitJoin, hitGame, setCountdownMode, setScoreToAll, keyStart, keyStop, startGame,
-    colorTransition, setGameColors, endGracePeriod }
+    colorTransition, setGameColors, endGracePeriod, reset }
 
 export default actions;
 

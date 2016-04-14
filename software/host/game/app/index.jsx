@@ -14,7 +14,7 @@ import EPState from './epstate'
 import actions from './actions'
 
 const KEY_START = 13  // ENTER
-const KEY_STOP  = 27  // ESC
+const KEY_STOP  = 96  // ~
 
 const logger = createLogger({ stateTransformer: s => s.toJS() })
 const store = createStore(
@@ -33,11 +33,11 @@ ipcRenderer.send('connect-ep')
 // Hook to the keyboard events
 const body = document.getElementsByTagName('body')[0]
 body.addEventListener("keypress", e => {
-
+console.log(e.which)
     if (e.which === KEY_START) 
         store.dispatch(actions.keyStart())
     else if (e.which === KEY_STOP)
-        store.dispatch(actions.keyStop)
+        store.dispatch(actions.keyStop())
 })
 
 ReactDOM.render(
@@ -62,4 +62,6 @@ ReactDOM.render(
     </div>
     </Provider>
     ,document.getElementById('app'));
+
+
 
