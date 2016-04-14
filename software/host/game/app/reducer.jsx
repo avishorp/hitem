@@ -160,7 +160,7 @@ const reducer = createReducer({
 
             // TODO: This should be handled more gracefully by
             // "deathmatch" mode
-            const activePlayers = getActiveSlots(newState).size
+            const activePlayers = getActiveSlots(state).size
             if (activePlayers > 2) {
             hammerSlot = hammerSlot
                 .update('score', val => val + 1)
@@ -200,10 +200,10 @@ const reducer = createReducer({
         //    return newState.set('major', 'deathmatch')
         if (activePlayers <= 1) {
             // One player left - winner
+            const winnerIndex = newState.get('slots').findIndex(slot => slot.get('state') === 'active')
             return newState
                 .set('major', 'gameOver')
-                .update(['slots'], slots =>
-                    slots.set(slots.findIndex(slot => slog.get('state') === 'active')), 'winner')
+                .setIn(['slots', winnerIndex, 'state'], 'winner')
         }
         else
             return newState
