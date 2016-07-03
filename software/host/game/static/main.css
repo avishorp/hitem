@@ -1,0 +1,14 @@
+@font-face {
+    font-family: digital;
+    src: url(digital7.ttf);
+}
+
+@font-face {
+    font-family: lcd;
+    src: url(BALLSONTHERAMPAGE.ttf)
+}
+
+body {
+    background: url(ivory-off-white-painted-wall-texture.jpg);
+    background-size: cover;
+}

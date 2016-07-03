@@ -1,0 +1,17 @@
+{
+	"discovery": {
+		"port": 24333,
+		"magic": "HTEM"
+	},
+	"endpoint": {
+		"port": 24334,
+        "sync": "tcp",
+        "hitWindow": 25
+	},
+    "game": {
+        "minPlayers": 4,
+        "startingScore": 5,
+		"gracePeriod": 3000,
+		"penalty": 2
+    }
+}
