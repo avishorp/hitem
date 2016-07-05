@@ -29,29 +29,27 @@
 
 #define DISCOVERY_MAGIC "HTEM"
 
-//typedef struct appState_t;
-typedef struct appState_t* (*stateHandler_t)();
-//typedef void* (*stateHandler_t)();
-typedef struct {
-	const char* stateName;
-	const stateHandler_t stateHandler;
-} appState_t;
-typedef appState_t* pAppState_t;
+struct appState_t;
+typedef const struct appState_t* pAppState_t;
+typedef pAppState_t (*stateHandler_t)();
 
-#define STATE_HANDLER(st) static struct appState_t* _StateHandle_ ## st()
-#define BEGIN_STATE_TABLE \
-	const appState_t g_StateTable[] = {
-#define END_STATE_TABLE \
-    };
+typedef struct appState_t {
+	unsigned long stateSigniture;
+	const char* stateName;
+	stateHandler_t stateHandler;
+} appState_t;
+
+
+#define STATE_HANDLER(st) static pAppState_t _StateHandle_ ## st()
+
+#define STATE_SIGNITURE (0x849fc99a)
+
 #define DEF_STATE(st) \
 	STATE_HANDLER(st); \
-	appState_t __STATE_ ## st = { #st, &_StateHandle_ ## st }; \
+	appState_t __STATE_ ## st = { STATE_SIGNITURE, #st, &_StateHandle_ ## st }; \
 	static const pAppState_t STATE_ ## st = &__STATE_ ## st;
 
-#define STATE_HANDLER(st) static struct appState_t* _StateHandle_ ## st()
-
 // Type & Constant definitions
-//BEGIN_STATE_TABLE
 DEF_STATE(DOCONNECT)     // Instruct SimpleLink to connect to the WiFi Network
 DEF_STATE(WAITCONNECT)   // Wait for WLAN connection to be established
 DEF_STATE(WAITFORIP)     // Wait for IP address
@@ -63,8 +61,6 @@ DEF_STATE(READY)          // Ready state
 DEF_STATE(CLEANUP)        // Clean opened data and then retry connecting
 DEF_STATE(SLEEP)          // Go to sleep
 
-//END_STATE_TABLE
-#define NUM_STATES 10
 
 #define STATUS_CONNECTED  0
 #define STATUS_IPACQUIRED 1
@@ -75,8 +71,7 @@ DEF_STATE(SLEEP)          // Go to sleep
 #define CLEAR_STATUS(b) g_ulStatus = (g_ulStatus & ~(1 << b))
 
 // Global Variables
-pAppState_t* g_stateTable;
-static appState_t* g_tState;
+static pAppState_t g_tState;
 static unsigned long g_ulStatus;
 static _i16 g_iDiscoverySocket;
 static _i16 g_iCmdSocket;
@@ -101,19 +96,6 @@ void MainLoopInit(const appConfig_t* config)
 	g_ulStatus = 0;
 	g_iSyncTimeSched = NULL_TIME;
 
-	// TODO: Must do it more elegantly
-	g_stateTable = (pAppState_t*)malloc(sizeof(appState_t)*NUM_STATES);
-	g_stateTable[0] = STATE_DOCONNECT;
-	g_stateTable[1] = STATE_WAITCONNECT;
-	g_stateTable[2] = STATE_WAITFORIP;
-	g_stateTable[3] = STATE_SENDDISCOVERY;
-	g_stateTable[4] = STATE_WAITDISCOVERY;
-	g_stateTable[5] = STATE_DOCONNECTSRV;
-	g_stateTable[6] = STATE_DOWELCOME;
-	g_stateTable[7] = STATE_READY;
-	g_stateTable[8] = STATE_CLEANUP;
-	g_stateTable[9] = STATE_SLEEP;
-
 	g_iCmdSocket = -1;
 	g_iSyncSocket = -1;
 	g_iDiscoverySocket = -1;
@@ -126,23 +108,20 @@ void MainLoopInit(const appConfig_t* config)
 
 void MainLoopExec()
 {
-	// Scan for the state handler
-	int i;
-	for(i=0; i < NUM_STATES; i++) {
-		if (g_stateTable[i] == g_tState) {
-			// Invoke the function handler
-			pAppState_t next = (pAppState_t)g_stateTable[i]->stateHandler();
-			if (next != 0) {
-				// State change
-				ConsolePrintf(">> State switch to %s\n\r", next->stateName);
-				g_tState = next;
-			}
-			return;
-		}
+	// TODO: Check the integrity of the state handle
+	if (g_tState->stateSigniture != STATE_SIGNITURE) {
+		FatalError("ILLEGAL STATE");
 	}
 
-	ConsolePrint("ILLEGAL STATE");
-	while(1);
+	// Execute the state handler
+	pAppState_t next = g_tState->stateHandler();
+
+	if (next != 0) {
+		// State change
+		ConsolePrintf(">> State switch to %s\n\r", next->stateName);
+		g_tState = next;
+	}
+
 }
 
 //////////////////////////////////////////////////////////

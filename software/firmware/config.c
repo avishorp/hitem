@@ -8,7 +8,7 @@
 
 #include "simplelink.h"
 
-const char CONFIG_FILENAME[] = "config.bin";
+const _u8 CONFIG_FILENAME[] = "config.bin";
 
 static appConfig_t g_tAppConfig;
 

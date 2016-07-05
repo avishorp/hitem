@@ -33,6 +33,8 @@
 #include "settings.h"
 #include "gpio.h"
 #include "adc.h"
+#include "protocol.h"
+#include "error.h"
 
 extern void (* const g_pfnVectors[])(void);
 
