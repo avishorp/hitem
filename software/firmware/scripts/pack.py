@@ -14,6 +14,8 @@ import sys, getopt
 import struct, os
 import os.path
 
+MAGIC = 0xe411b783
+
 if sys.argv[1] == '-o':
 	out_file = file(sys.argv[2], 'wb')
 	in_filename_list = sys.argv[3:]
@@ -24,6 +26,9 @@ else:
 def create_header(filename, size, flags):
 	h = struct.pack("24sII", filename, size, flags)
 	return h
+
+# The package starts with a magic number
+out_file.write(struct.pack("I", MAGIC))
 
 # Write the file number
 num_files = len(in_filename_list)
