@@ -26,28 +26,11 @@
 #include "time.h"
 #include "analog.h"
 #include "config.h"
+#include "statedef.h"
 
 #define DISCOVERY_MAGIC "HTEM"
 
-struct appState_t;
-typedef const struct appState_t* pAppState_t;
-typedef pAppState_t (*stateHandler_t)();
 
-typedef struct appState_t {
-	unsigned long stateSigniture;
-	const char* stateName;
-	stateHandler_t stateHandler;
-} appState_t;
-
-
-#define STATE_HANDLER(st) static pAppState_t _StateHandle_ ## st()
-
-#define STATE_SIGNITURE (0x849fc99a)
-
-#define DEF_STATE(st) \
-	STATE_HANDLER(st); \
-	appState_t __STATE_ ## st = { STATE_SIGNITURE, #st, &_StateHandle_ ## st }; \
-	static const pAppState_t STATE_ ## st = &__STATE_ ## st;
 
 // Type & Constant definitions
 DEF_STATE(DOCONNECT)     // Instruct SimpleLink to connect to the WiFi Network
@@ -71,7 +54,7 @@ DEF_STATE(SLEEP)          // Go to sleep
 #define CLEAR_STATUS(b) g_ulStatus = (g_ulStatus & ~(1 << b))
 
 // Global Variables
-static pAppState_t g_tState;
+static pState_t g_tState;
 static unsigned long g_ulStatus;
 static _i16 g_iDiscoverySocket;
 static _i16 g_iCmdSocket;
@@ -114,7 +97,7 @@ void MainLoopExec()
 	}
 
 	// Execute the state handler
-	pAppState_t next = g_tState->stateHandler();
+	pState_t next = g_tState->stateHandler();
 
 	if (next != 0) {
 		// State change
