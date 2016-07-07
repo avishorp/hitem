@@ -1,7 +1,11 @@
 {
 	"discovery": {
 		"port": 24333,
-		"magic": "HTEM"
+		"magic": "HTEM",
+		"firmware": {
+			"version": "1.0.0",
+			"file": "hitem_fw_1_0_0.pak"
+		}
 	},
 	"endpoint": {
 		"port": 24334,

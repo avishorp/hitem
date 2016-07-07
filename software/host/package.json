@@ -30,6 +30,7 @@
     "electron-prebuilt": "^0.37.5",
     "immutable": "^3.7.6",
     "knuth-shuffle": "^1.0.1",
+    "python-struct": "^1.0.2",
     "react": "^15.0.1",
     "react-dom": "^15.0.1",
     "react-redux": "^4.4.2",
