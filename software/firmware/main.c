@@ -21,6 +21,7 @@
 #include "timer.h"
 #include "uart.h"
 #include "analog.h"
+#include "version.h"
 
 #include "pinmux/pin_mux_config.h"
 #include "hw_memmap.h"
@@ -91,6 +92,13 @@ int main(void) {
 
     // Load configuration
     ConfigInit();
+
+    // Get and display the firmware version
+    version_t ver;
+    char verStr[20];
+    VersionGet(&ver);
+    VersionToString(&ver, verStr);
+    ConsolePrintf("\n\rFirmware version: %s\n\r", verStr);
 
     // All initialization done! Start running.
     MainLoopInit(ConfigGet());
