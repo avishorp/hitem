@@ -4,6 +4,8 @@ const dgram = require('dgram')
 const util = require('util')
 const struct = require('python-struct')
 const tftp = require('tftp')
+const fileExists = require('file-exists')
+const fs = require('fs')
 
 
 // Discovery server
@@ -42,8 +44,6 @@ function parseDiscoveryRequest(req)
 		// Incorrect size
 		return null
 		
-	//const unpacked = struct.unpack(discoverReqFormat, req)
-	
 	const unpacked = {
 		'magic': req.toString('utf-8', 0, 4),
 		'fw_version': [req.readUInt8(4), req.readUInt8(5), req.readUInt8(6)],
@@ -81,6 +81,27 @@ function versionToNumbers(vstring) {
 	})
 }
 
+function updateTrackingFile(filename, board, personality, version)
+{
+	let trackingTable = {}
+	
+	if (fileExists(filename))
+		trackingTable = JSON.parse(fs.readFileSync(filename, 'utf8'));
+	
+	// Update the board entry	
+	const entry = {
+		'personality': personality,
+		'version': version,
+		'updated': (new Date()).toJSON(),
+		'connected': (new Date()).toJSON()
+	}
+	trackingTable[board] = entry
+	
+	// Write the table back
+	fs.writeFileSync(filename, JSON.stringify(trackingTable))
+	
+}
+
 module.exports = function(options, logger) {
 	// Initiate the UDP discovery socket
 	const srv = dgram.createSocket('udp4')
@@ -107,6 +128,12 @@ module.exports = function(options, logger) {
 			const r = createDiscoveryResponse(options.firmware.version, options.firmware.filename)
 			srv.send(r, 0, r.length, port, address)
 			logger.info(`Replied discovery from ${req.personality} ${req.boardId}`)
+			
+			console.log(options.tracking)
+			if (options.tracking) {
+				updateTrackingFile(options.tracking, 
+					req.boardId, req.personality, req.fw_version)
+			}
 		}
 		else
 			logger.warn("Got invalid discovery message from " + rinfo.address)
