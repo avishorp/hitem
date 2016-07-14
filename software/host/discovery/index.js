@@ -16,12 +16,54 @@ const tftp = require('tftp')
 // * Firmware version number - 4 bytes - major, minor, patch, zero
 // * Firmware filename - 32 zero padded string
 
-function createDiscoveryResponse(magic, versionString, firmwareFilename)
+const DISCOVERY_MAGIC = "HTEM"
+
+function createDiscoveryResponse(versionString, firmwareFilename)
 {
 	const version = versionToNumbers(versionString)
-	return struct.pack("4sbbbx32s", [
-		magic, version[0], version[1], version[2], firmwareFilename
-	])
+	
+	let r = new Buffer(40)
+	r.fill(0)
+	r.write(DISCOVERY_MAGIC)
+	r.writeUInt8(version[0], DISCOVERY_MAGIC.length)
+	r.writeUInt8(version[1], DISCOVERY_MAGIC.length + 1)
+	r.writeUInt8(version[2], DISCOVERY_MAGIC.length + 2)
+	r.write(firmwareFilename, DISCOVERY_MAGIC.length + 4)
+	
+	return r
+}
+
+function parseDiscoveryRequest(req)
+{
+	const discoverReqFormat = ">4sbbbxii"
+	const discoverReqSize = struct.sizeOf(discoverReqFormat)
+	
+	if (req.length != discoverReqSize)
+		// Incorrect size
+		return null
+		
+	//const unpacked = struct.unpack(discoverReqFormat, req)
+	
+	const unpacked = {
+		'magic': req.toString('utf-8', 0, 4),
+		'fw_version': [req.readUInt8(4), req.readUInt8(5), req.readUInt8(6)],
+		'boardId': req.readUInt32LE(8),
+		'personality_raw': req.readUInt32LE(12) 
+	}	
+	
+	if (unpacked.magic !== DISCOVERY_MAGIC)
+		return null
+	else 
+		if (unpacked.personality_raw === 1)
+			unpacked.personality = 'hat'
+		else if (unpacked.personality_raw === 2)
+			unpacked.personality = 'hammer'
+		else
+			// Invalid personality code
+			return null
+		
+	return unpacked
+	
 }
 
 function versionToNumbers(vstring) {
@@ -31,11 +73,12 @@ function versionToNumbers(vstring) {
 	if (parts.length != 3)
 		throw new Error(errorMessage)
 		
-	return version = map(ns => {
-		n = parseInt(ns)
+	return parts.map(ns => {
+		const n = parseInt(ns)
 		if (isNaN(n) || (n < 0) || (n > 255))
 			throw new Error(errorMessage)
-	}, parts)
+		return n
+	})
 }
 
 module.exports = function(options, logger) {
@@ -55,14 +98,15 @@ module.exports = function(options, logger) {
 	})
 	
 	srv.on('message', (msg, rinfo) => {
-		if (msg.toString().startsWith(options.magic)) {
+		const req = parseDiscoveryRequest(msg)
+		if (req) {
 			// Valid message - send a message back
 			const address = rinfo.address
 			const port = rinfo.port
 			
-			const r = createDiscoveryResponse(options.magic, options.firmware.version, options.firmware.filename)
+			const r = createDiscoveryResponse(options.firmware.version, options.firmware.filename)
 			srv.send(r, 0, r.length, port, address)
-			logger.info("Replied discovery from " + rinfo.address)
+			logger.info(`Replied discovery from ${req.personality} ${req.boardId}`)
 		}
 		else
 			logger.warn("Got invalid discovery message from " + rinfo.address)

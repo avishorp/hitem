@@ -27,10 +27,7 @@
 #include "analog.h"
 #include "config.h"
 #include "statedef.h"
-
-#define DISCOVERY_MAGIC "HTEM"
-
-
+#include "version.h"
 
 // Type & Constant definitions
 DEF_STATE(DOCONNECT)     // Instruct SimpleLink to connect to the WiFi Network
@@ -53,6 +50,24 @@ DEF_STATE(SLEEP)          // Go to sleep
 #define SET_STATUS(b) g_ulStatus = (g_ulStatus | (1 << b))
 #define CLEAR_STATUS(b) g_ulStatus = (g_ulStatus & ~(1 << b))
 
+#define DISCOVERY_MAGIC      "HTEM"
+#define DISCOVERY_MAGIC_LEN  4
+
+typedef struct {
+	char magic[DISCOVERY_MAGIC_LEN];
+						  // Magic code
+	version_t fw_version; // Current firmware version
+	long lBoardNumber;    // Board serial number
+	long lPersonaliry;    // Unit personality
+} discovery_req_t;
+
+typedef struct {
+	char magic[DISCOVERY_MAGIC_LEN];
+						  // Magic code
+	version_t fw_version;
+	char fw_filename[32];
+} discovery_resp_t;
+
 // Global Variables
 static pState_t g_tState;
 static unsigned long g_ulStatus;
@@ -60,6 +75,7 @@ static _i16 g_iDiscoverySocket;
 static _i16 g_iCmdSocket;
 static _i16 g_iSyncSocket;
 static _u32 g_iMyIP;
+static discovery_req_t g_discoveryRequest;
 
 static SlSockAddrIn_t g_tBroadcastAddr;
 static SlSockAddrIn_t g_tServerAddr;
@@ -87,6 +103,11 @@ void MainLoopInit(const appConfig_t* config)
 	g_tBroadcastAddr.sin_family = SL_AF_INET;
 	g_tBroadcastAddr.sin_port = sl_Htons(ConfigGet()->iDiscPort);
 
+	// Create the discovery request message
+	memcpy(&g_discoveryRequest.magic, DISCOVERY_MAGIC, 4);
+	VersionGet(&(g_discoveryRequest.fw_version));
+	g_discoveryRequest.lBoardNumber = config->lBoardNumber;
+	g_discoveryRequest.lPersonaliry = config->lPersonaliry;
 }
 
 void MainLoopExec()
@@ -179,12 +200,10 @@ STATE_HANDLER(SENDDISCOVERY)
 		sl_SetSockOpt(g_iDiscoverySocket, SL_SOL_SOCKET, SL_SO_NONBLOCKING, &nb, sizeof(SlSockNonblocking_t));
 	}
 
-	static const char sDiscoveryMsg[] = DISCOVERY_MAGIC;
-
 	// Adjust broadcast address according to allocated IP
 	g_tBroadcastAddr.sin_addr.s_addr = sl_Htonl(g_iMyIP | (~(ConfigGet()->iNetmask)));
 
-	sl_SendTo(g_iDiscoverySocket, sDiscoveryMsg, sizeof(sDiscoveryMsg), 0, (SlSockAddr_t*)&g_tBroadcastAddr, sizeof(SlSockAddrIn_t));
+	sl_SendTo(g_iDiscoverySocket, &g_discoveryRequest, sizeof(discovery_req_t), 0, (SlSockAddr_t*)&g_tBroadcastAddr, sizeof(SlSockAddrIn_t));
 
     LEDSetPattern(PATTERN_RED_GREEN);
 
@@ -200,19 +219,27 @@ STATE_HANDLER(WAITDISCOVERY)
 	if (!GET_STATUS(STATUS_CONNECTED))
 		return STATE_CLEANUP;
 
-	char rbuf[10];
+	discovery_resp_t rbuf;
 
+	memset((void*)&rbuf, 0, sizeof(rbuf));
 	_i16 asize = sizeof(SlSockAddrIn_t);
-	_i16 lRet = sl_RecvFrom(g_iDiscoverySocket, &rbuf, sizeof(rbuf), 0,
+	_i16 lRet = sl_RecvFrom(g_iDiscoverySocket, (_u8*)&rbuf, sizeof(rbuf), 0,
 			(SlSockAddr_t*)&g_tServerAddr, (SlSocklen_t*)&asize);
 
 	if (lRet > 0) {
-		if ((lRet >= strlen(DISCOVERY_MAGIC)) && (strncmp(rbuf, DISCOVERY_MAGIC, strlen(DISCOVERY_MAGIC))==0)) {
+		// Got response. Must be in the length of a discovery response and start with the magic string
+		if ((lRet == sizeof(discovery_resp_t)) && (strncmp(rbuf.magic, DISCOVERY_MAGIC, DISCOVERY_MAGIC_LEN)==0)) {
 			// Return packet is valid
 			// Adjust server port
 			g_tServerAddr.sin_port = sl_Htons(ConfigGet()->iSrvPort);
+
+			char vbuf[20];
+			VersionToString(&rbuf.fw_version, vbuf);
+			ConsolePrintf("Got discovery response\n\r");
+			ConsolePrintf("Server has firmware version %s\n\r", vbuf);
 			return STATE_DOCONNECTSRV;
 		}
+		else { ConsolePrintf("len=%d magic=%s filename=%s\n\r", lRet, rbuf.magic, rbuf.fw_filename); }
 	}
 	else if (lRet == SL_EAGAIN) {
 		// Check that timeout hasn't occured
