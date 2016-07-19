@@ -4,7 +4,7 @@
   "description": "Hit'em host server",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "node . | ./node_modules/.bin/bunyan",
     "start": "electron game"
   },
   "repository": {
