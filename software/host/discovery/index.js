@@ -143,6 +143,7 @@ module.exports = function(options, logger) {
 
 	// Create TFTP server
 	const tftpSrv = tftp.createServer({
+		host: '0.0.0.0',
 		root: options.firmware.directory,
 		port: options.firmware.port,
 		denyPUT: true
@@ -153,7 +154,7 @@ module.exports = function(options, logger) {
 		console.log(err)
 	})
 	tftpSrv.on('listening', _ => {
-		logger.info("TFTP Server listening")
+		logger.info(`TFTP Server listening on ${options.firmware.port}`)
 	})
 	tftpSrv.on('request', (req, res) => {
 		req.on('error', err => {

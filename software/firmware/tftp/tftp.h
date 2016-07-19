@@ -50,7 +50,7 @@
   *          						This API is called from the application to initiate the receive.
   */
 
-int sl_TftpRecv( unsigned long TftpIP, char *szFileName, char *FileBuffer,unsigned long *FileSize, unsigned short *pErrorCode );
+int sl_TftpRecv( unsigned long TftpIP, unsigned short TftpPort, char *szFileName, char *FileBuffer,unsigned long *FileSize, unsigned short *pErrorCode );
 
 /*!
  * 	\brief Send data over TFTP

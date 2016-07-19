@@ -241,14 +241,16 @@ STATE_HANDLER(WAITDISCOVERY)
 
 			ConsolePrint("Testing file transfer\n\r");
 			char buf[1000];
-			unsigned long size = 0;
+			unsigned long size = 1000;
 			unsigned short error;
-			lRet = sl_TftpRecv(ntohl(g_tServerAddr.sin_addr.s_addr), "test.txt", buf, &size, &error);
+			lRet = sl_TftpRecv(ntohl(g_tServerAddr.sin_addr.s_addr), 24335, "test.txt", buf, &size, &error);
 			if (lRet < 0) {
 				ConsolePrintf("TFTP returned with error code %d\n\r", error);
 			}
 			else {
-				ConsolePrintf("Transfer successful");
+				buf[size] = 0;
+				ConsolePrintf("Transfer successful %d\n\r", size);
+				ConsolePrint(buf);
 			}
 
 

@@ -94,7 +94,7 @@ static int tftpSocketSetup( TFTP *pTftp )
     bzero( &pTftp->peeraddr, sizeof(struct sockaddr_in) );
     pTftp->peeraddr.sin_family      = AF_INET;
     pTftp->peeraddr.sin_addr.s_addr = sl_Htonl(pTftp->PeerAddress);
-    pTftp->peeraddr.sin_port        = htons(PORT_TFTP);
+    pTftp->peeraddr.sin_port        = htons(pTftp->PeerPort);
     rc = 0;
 
 ABORT:
@@ -300,6 +300,7 @@ RETRY:
 #endif
     // Attempt to read data
     addrLength = sizeof(pTftp->tmpaddr);
+memset(ReadBuffer, 0, 40);
     BytesRead  = recvfrom( pTftp->Sock, ReadBuffer, DATA_SIZE, 0,
                            (struct sockaddr *)&pTftp->tmpaddr, (SlSocklen_t *)&addrLength );
 
@@ -321,7 +322,7 @@ RETRY:
 
     // If the peer port is NOT TFTP, then it must match our expected
     // peer.
-    if( pTftp->peeraddr.sin_port != htons(PORT_TFTP) )
+    if( pTftp->peeraddr.sin_port != htons(pTftp->PeerPort) )
     {
         if( pTftp->tmpaddr.sin_port != pTftp->peeraddr.sin_port )
             goto RETRY;
@@ -660,50 +661,8 @@ ABORT:
  * 									<0 - Error
  */
 
-static int tftpSendFile( TFTP *pTftp )
-{
-    int rc = 0;
 
-    /* Build the request packet */
-    tftpWRQBuild( pTftp );
-
-    /* Send the request packet */
-    rc = tftpSend( pTftp );
-    if( rc < 0 )
-       goto ABORT;
-
-    /* Now look for response packets */
-    pTftp->MaxSyncError   = MAX_SYNC_TRIES;  /* set sync error counter */
-    pTftp->NextBlock      = 0;               /* first block expected is "1" */
-
-    for(;;)
-    {
-        /* Try and get a reply packet */
-        rc = tftpReadPacket( pTftp );
-        if( rc < 0 )
-            goto ABORT;
-
-        /* Process the reply packet */
-        rc = tftpProcessPacket( pTftp );
-        if( rc < 0 )
-            goto ABORT;
-
-        /* If done, break out of loop */
-        if( rc == 1 )
-            break;
-    }
-
-    /* If the receive buffer was too small, return 0, else return 1 */
-    if( pTftp->BufferUsed < pTftp->FileSize )
-       rc = 0;
-    else
-       rc = 1;
-
-ABORT:
-    return(rc);
-}
-
-int sl_TftpRecv( unsigned long TftpIP, char *szFileName, char *FileBuffer,
+int sl_TftpRecv( unsigned long TftpIP, unsigned short TftpPort, char *szFileName, char *FileBuffer,
                 unsigned long *FileSize, unsigned short *pErrorCode )
 {
     TFTP *pTftp;
@@ -730,6 +689,7 @@ int sl_TftpRecv( unsigned long TftpIP, char *szFileName, char *FileBuffer,
 
     // store IP in network byte order
     pTftp->PeerAddress = TftpIP;
+    pTftp->PeerPort = TftpPort;
 
     // Setup initial socket
     rc = tftpSocketSetup( pTftp );
@@ -772,75 +732,6 @@ ABORT:
     return(rc);
 }
 
-
-int sl_TftpSend( unsigned long TftpIP, char *szFileName, char *FileBuffer,
-                unsigned long *FileSize, unsigned short *pErrorCode )
-{
-    TFTP *pTftp;
-    int rc;          /* Return Code */
-
-    /* Quick parameter validation */
-    if( !szFileName || !FileSize || (*FileSize != 0 && !FileBuffer) )
-        return( TFTPERROR_BADPARAM );
-
-    /* Malloc Parameter Structure */
-    if( !(pTftp = (TFTP *)mmAlloc( sizeof(TFTP) )) )
-        return( TFTPERROR_RESOURCES );
-
-    /* Initialize parameters to "NULL" */
-    bzero( pTftp, sizeof(TFTP) );
-    pTftp->Sock = -1;
-
-    /* Malloc Packet Data Buffer */
-    if( !(pTftp->PacketBuffer = (char *)mmAlloc( DATA_SIZE )) )
-    {
-        rc = TFTPERROR_RESOURCES;
-        goto ABORT;
-    }
-
-    /* store IP in network byte order */
-    pTftp->PeerAddress = TftpIP;
-
-    /* Setup initial socket */
-    rc = tftpSocketSetup( pTftp );
-    if( rc < 0 )
-        goto ABORT;
-
-    /*  Socket now registered and available for use. Get the data */
-    pTftp->szFileName  = szFileName;
-    pTftp->Buffer      = FileBuffer;
-    pTftp->BufferSize  = *FileSize;   /* Do not read more than can fit in file */
-
-    /* Get the requested file */
-    rc = tftpSendFile( pTftp );
-    if( rc < 0 )
-    {
-        /* ERROR CONDITION */
-
-        /* Set the "FileSize" to the actual number of bytes copied */
-        *FileSize = pTftp->BufferUsed;
-
-        /* If the ErrorCode pointer is valid, copy it */
-        if( pErrorCode )
-            *pErrorCode = pTftp->ErrorCode;
-    }
-    else
-    {
-        /* SUCCESS CONDITION */
-
-        /* Set the "FileSize" to the file size (regardless of bytes copied) */
-        *FileSize = pTftp->FileSize;
-    }
-
-ABORT:
-    if( pTftp->Sock != -1 )
-        close( pTftp->Sock );
-    if( pTftp->PacketBuffer )
-        mmFree( pTftp->PacketBuffer );
-    mmFree( pTftp );
-
-    return(rc);
-}
 
 void*	mmAlloc( unsigned long Size )
 {
