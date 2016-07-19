@@ -13,3 +13,5 @@ encoding//Release/pinmux/subdir_vars.mk=UTF-8
 encoding//Release/sources.mk=UTF-8
 encoding//Release/subdir_rules.mk=UTF-8
 encoding//Release/subdir_vars.mk=UTF-8
+encoding//Release/tftp/subdir_rules.mk=UTF-8
+encoding//Release/tftp/subdir_vars.mk=UTF-8

@@ -28,6 +28,7 @@
 #include "config.h"
 #include "statedef.h"
 #include "version.h"
+#include "tftp/tftp.h"
 
 // Type & Constant definitions
 DEF_STATE(DOCONNECT)     // Instruct SimpleLink to connect to the WiFi Network
@@ -237,6 +238,20 @@ STATE_HANDLER(WAITDISCOVERY)
 			VersionToString(&rbuf.fw_version, vbuf);
 			ConsolePrintf("Got discovery response\n\r");
 			ConsolePrintf("Server has firmware version %s\n\r", vbuf);
+
+			ConsolePrint("Testing file transfer\n\r");
+			char buf[1000];
+			unsigned long size = 0;
+			unsigned short error;
+			lRet = sl_TftpRecv(ntohl(g_tServerAddr.sin_addr.s_addr), "test.txt", buf, &size, &error);
+			if (lRet < 0) {
+				ConsolePrintf("TFTP returned with error code %d\n\r", error);
+			}
+			else {
+				ConsolePrintf("Transfer successful");
+			}
+
+
 			return STATE_DOCONNECTSRV;
 		}
 		else { ConsolePrintf("len=%d magic=%s filename=%s\n\r", lRet, rbuf.magic, rbuf.fw_filename); }
