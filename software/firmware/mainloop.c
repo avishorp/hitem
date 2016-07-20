@@ -66,6 +66,7 @@ typedef struct {
 	char magic[DISCOVERY_MAGIC_LEN];
 						  // Magic code
 	version_t fw_version;
+	_u16 tftp_port;
 	char fw_filename[32];
 } discovery_resp_t;
 

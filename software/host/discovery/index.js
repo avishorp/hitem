@@ -20,17 +20,18 @@ const fs = require('fs')
 
 const DISCOVERY_MAGIC = "HTEM"
 
-function createDiscoveryResponse(versionString, firmwareFilename)
+function createDiscoveryResponse(versionString, firmwareFilename, tftpPort)
 {
 	const version = versionToNumbers(versionString)
 	
-	let r = new Buffer(40)
+	let r = new Buffer(42)
 	r.fill(0)
 	r.write(DISCOVERY_MAGIC)
 	r.writeUInt8(version[0], DISCOVERY_MAGIC.length)
 	r.writeUInt8(version[1], DISCOVERY_MAGIC.length + 1)
 	r.writeUInt8(version[2], DISCOVERY_MAGIC.length + 2)
-	r.write(firmwareFilename, DISCOVERY_MAGIC.length + 4)
+	r.writeUInt16LE(tftpPort, DISCOVERY_MAGIC.length + 4)
+	r.write(firmwareFilename, DISCOVERY_MAGIC.length + 6)
 	
 	return r
 }
@@ -125,7 +126,7 @@ module.exports = function(options, logger) {
 			const address = rinfo.address
 			const port = rinfo.port
 			
-			const r = createDiscoveryResponse(options.firmware.version, options.firmware.filename)
+			const r = createDiscoveryResponse(options.firmware.version, options.firmware.filename, options.firmware.port)
 			srv.send(r, 0, r.length, port, address)
 			logger.info(`Replied discovery from ${req.personality} ${req.boardId}`)
 			
