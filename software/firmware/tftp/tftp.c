@@ -26,6 +26,7 @@
 #include "tftpinc.h"
 #include "tftp.h"
 #include "utils.h"
+#include "../console.h"
 
 
 static int  tftpGetFile( TFTP *pTftp);
@@ -85,7 +86,7 @@ static int tftpSocketSetup( TFTP *pTftp )
     if( setsockopt( pTftp->Sock, SOL_SOCKET, SO_RCVTIMEO,
                     &timeout, sizeof(timeout)) < 0 )
     {
-        rc = TFTPERROR_SOCKET;
+    	rc = TFTPERROR_SOCKET;
         goto ABORT;
     }
 
@@ -667,7 +668,6 @@ int sl_TftpRecv( unsigned long TftpIP, unsigned short TftpPort, char *szFileName
 {
     TFTP *pTftp;
     int rc;          // Return Code
-
     // Quick parameter validation
     if( !szFileName || !FileSize || (*FileSize != 0 && !FileBuffer) )
         return( TFTPERROR_BADPARAM );
@@ -693,8 +693,9 @@ int sl_TftpRecv( unsigned long TftpIP, unsigned short TftpPort, char *szFileName
 
     // Setup initial socket
     rc = tftpSocketSetup( pTftp );
-    if( rc < 0 )
+    if( rc < 0 ) {
         goto ABORT;
+    }
 
     //  Socket now registered and available for use. Get the data
     pTftp->szFileName  = szFileName;
