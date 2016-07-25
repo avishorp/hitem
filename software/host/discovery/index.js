@@ -6,6 +6,11 @@ const struct = require('python-struct')
 const tftp = require('tftp')
 const fileExists = require('file-exists')
 const fs = require('fs')
+const yamlEval = require('yaml').eval
+const md5 = require('md5')
+const binary = require('./binary')
+const mstream = require('memory-streams')
+const path = require('path')
 
 
 // Discovery server
@@ -19,11 +24,11 @@ const fs = require('fs')
 // * Firmware filename - 32 zero padded string
 
 const DISCOVERY_MAGIC = "HTEM"
+const FIRMWARE_DESCRIPTOR_FILENAME = "hitem_fw.yaml"
+const OTA_METADATA_BIN = "hitem_ota.bin"
 
-function createDiscoveryResponse(versionString, firmwareFilename, tftpPort)
+function createDiscoveryResponse(version, firmwareFilename, tftpPort)
 {
-	const version = versionToNumbers(versionString)
-	
 	let r = new Buffer(42)
 	r.fill(0)
 	r.write(DISCOVERY_MAGIC)
@@ -103,12 +108,97 @@ function updateTrackingFile(filename, board, personality, version)
 	
 }
 
+function createOTAMetadata(descriptorFilename) {
+	const directory = path.dirname(descriptorFilename)
+	
+	// Read and parse the descriptor file
+	const descriptor = yamlEval(fs.readFileSync(path.resolve(directory, descriptorFilename)).toString())
+	
+	// Validate the descriptor
+	//  - Must have a "version" field
+	if (descriptor.version) {
+		const v = descriptor.version
+		
+		// - The version should be in x.y.z format
+		if (!(/[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}/.test(v)))
+			throw new Error("Invalid version number format")
+			
+			const versionNumber = versionToNumbers(v) 
+			descriptor.version = versionNumber
+	} 
+	else
+		throw new Error("No version field specified")
+	
+	// - Must have a "files" field
+	if (descriptor.files) {
+		const files = descriptor.files
+		
+		// - Iterate through the files, calc their size and md5
+		const fileEntries = files.map(filename => {
+			// - Check that this is a local file (no path name allowed)
+			if (path.dirname(filename) !== '.')
+				throw Error('Filenames in OTA descriptor must be directory-local')
+				
+			// - Check the the file exists
+			const fullFilename = path.resolve(directory, filename)
+			if (!fileExists(fullFilename))
+				throw new Error(`File ${filename} does not exist`)
+			
+			return {
+				sourceFilename: filename,
+				destFilename: filename,
+				size: fs.statSync(fullFilename).size,
+				md5: md5(fs.readFileSync(fullFilename))
+			}		
+		})
+		descriptor.fileEntries = fileEntries
+	}
+	else
+		throw new Error("No files field specified")
+		
+	// Create the binary representation of the firmware
+	// metadata
+	const OTAMetadata = new mstream.WritableStream()
+	
+	// Header
+	OTAMetadata.write(DISCOVERY_MAGIC)						// Magic number [4 bytes]
+	OTAMetadata.write(binary.UInt8(descriptor.version[0]))  // Version (major) [1 byte]
+	OTAMetadata.write(binary.UInt8(descriptor.version[1]))  // Version (minor) [1 byte]
+	OTAMetadata.write(binary.UInt8(descriptor.version[2]))  // Version (patch) [1 byte]
+	OTAMetadata.write(binary.UInt8(descriptor.files.length))// Number of files in the update [1 byte]
+	
+	// File entries (one for each file)
+	descriptor.fileEntries.forEach(fe => {
+		OTAMetadata.write(binary.string(fe.sourceFilename, 32)) // Source filename [32 bytes]
+		OTAMetadata.write(binary.string(fe.destFilename, 32))   // Destination filename [32 bytes]
+		OTAMetadata.write(binary.UInt32LE(fe.size))             // File size [4 bytes]
+		OTAMetadata.write(new Buffer(fe.md5, 'hex'))            // MD5 Checksum [16 bytes]
+	}, this);
+	
+	return {
+		version: descriptor.version,
+		binary: OTAMetadata.toBuffer()
+	}
+}
+
 module.exports = function(options, logger) {
+
+	// Read and parse the firmware metadata
+	let OTAMetadata;
+	try {
+		OTAMetadata = createOTAMetadata(path.resolve(options.firmware.directory, FIRMWARE_DESCRIPTOR_FILENAME))
+	}
+	catch(e) {
+		logger.error(`Failed reading firmware metadata: ${e.message}`)	
+	}
+
+
+	// Create UDP Discovery server
+	//////////////////////////////
 	// Initiate the UDP discovery socket
 	const srv = dgram.createSocket('udp4')
-	
-	
-	// Create UDP server
+
+	// Create a server on the socket
 	srv.on('error', err => {
 		logger.error(`Socket creation failed: ${err.stack}`)
 		srv.close();
@@ -126,7 +216,7 @@ module.exports = function(options, logger) {
 			const address = rinfo.address
 			const port = rinfo.port
 			
-			const r = createDiscoveryResponse(options.firmware.version, options.firmware.filename, options.firmware.port)
+			const r = createDiscoveryResponse(OTAMetadata? OTAMetadata.version : [0, 0, 0], "", options.firmware.port)
 			srv.send(r, 0, r.length, port, address)
 			logger.info(`Replied discovery from ${req.personality} ${req.boardId}`)
 			
@@ -142,31 +232,48 @@ module.exports = function(options, logger) {
 	
 	srv.bind(options.port)
 
-	// Create TFTP server
-	const tftpSrv = tftp.createServer({
-		host: '0.0.0.0',
-		root: options.firmware.directory,
-		port: options.firmware.port,
-		denyPUT: true
-	})
 	
-	tftpSrv.on('error', err => {
-		logger.error("TFTP Server failed initializing")
-		console.log(err)
-	})
-	tftpSrv.on('listening', _ => {
-		logger.info(`TFTP Server listening on ${options.firmware.port}`)
-	})
-	tftpSrv.on('request', (req, res) => {
-		req.on('error', err => {
-			logger.error("[" + req.stats.remoteAddress + ":" + req.stats.remotePort +
-        		"] (" + req.file + ") " + err.message)
+	// Create OTA TFTP server
+	/////////////////////////
+	if (OTAMetadata) {
+		const tftpSrv = tftp.createServer({
+			host: '0.0.0.0',
+			root: options.firmware.directory,
+			port: options.firmware.port,
+			denyPUT: true
 		})
-		
-		logger.info(util.format("TFTP: Node %s requested file %s", req.stats.remoteAddress, req.file))
-	})
 	
-	tftpSrv.listen()
+		tftpSrv.on('error', err => {
+			logger.error("TFTP Server failed initializing")
+			console.log(err)
+		})
+
+		tftpSrv.on('listening', _ => {
+			logger.info(`TFTP Server listening on ${options.firmware.port}`)
+		})
+
+		tftpSrv.on('request', (req, res) => {
+			req.on('error', err => {
+				logger.error("[" + req.stats.remoteAddress + ":" + req.stats.remotePort +
+					"] (" + req.file + ") " + err.message)
+			})
+			
+			if (req.file === OTA_METADATA_BIN) {
+				logger.info(`TFTP: Node ${req.stats.remoteAddress} requested OTA metadata`)
+
+				res.setSize(OTAMetadata.binary.length)
+				res.end(OTAMetadata.binary)
+				req.close()
+			}
+			else {
+				logger.info(`TFTP: Node ${req.stats.remoteAddress} requested file ${req.file}`)	
+			}
+		})
+	
+		tftpSrv.listen()
+	}
+	else
+		logger.warn("No OTA Metadata, TFTP server will not be created")
 
 }
 

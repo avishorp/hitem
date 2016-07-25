@@ -32,6 +32,8 @@
     "file-exists": "^1.0.0",
     "immutable": "^3.7.6",
     "knuth-shuffle": "^1.0.1",
+    "md5": "^2.1.0",
+    "memory-streams": "^0.1.0",
     "python-struct": "^1.0.2",
     "react": "^15.0.1",
     "react-dom": "^15.0.1",
@@ -42,7 +44,8 @@
     "redux-logger": "^2.6.1",
     "redux-promise": "^0.5.3",
     "redux-thunk": "^2.0.1",
-    "tftp": "^0.1.2"
+    "tftp": "^0.1.2",
+    "yaml": "^0.3.0"
   },
   "devDependencies": {
     "babel-core": "^6.7.6",

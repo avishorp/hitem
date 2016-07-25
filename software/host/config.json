@@ -3,9 +3,7 @@
 		"port": 24333,
 		"magic": "HTEM",
 		"firmware": {
-			"version": "1.2.3",
-			"filename": "hitem_fw_1_0_0.pak",
-			"directory": "firmware",
+			"directory": "firmware/v0.0.1",
 			"port": 24335,
 			"fwtab": "fwtab.json"
 		},
