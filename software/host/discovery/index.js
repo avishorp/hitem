@@ -165,6 +165,7 @@ function createOTAMetadata(descriptorFilename) {
 	OTAMetadata.write(binary.UInt8(descriptor.version[0]))  // Version (major) [1 byte]
 	OTAMetadata.write(binary.UInt8(descriptor.version[1]))  // Version (minor) [1 byte]
 	OTAMetadata.write(binary.UInt8(descriptor.version[2]))  // Version (patch) [1 byte]
+	OTAMetadata.write(binary.UInt8(0))                      // Version (reserved) [1 byte]
 	OTAMetadata.write(binary.UInt8(descriptor.files.length))// Number of files in the update [1 byte]
 	
 	// File entries (one for each file)
@@ -173,6 +174,7 @@ function createOTAMetadata(descriptorFilename) {
 		OTAMetadata.write(binary.string(fe.destFilename, 32))   // Destination filename [32 bytes]
 		OTAMetadata.write(binary.UInt32LE(fe.size))             // File size [4 bytes]
 		OTAMetadata.write(new Buffer(fe.md5, 'hex'))            // MD5 Checksum [16 bytes]
+		OTAMetadata.write(binary.UInt16LE(0))					// Reserved [2 bytes ]
 	}, this);
 	
 	return {
@@ -216,7 +218,7 @@ module.exports = function(options, logger) {
 			const address = rinfo.address
 			const port = rinfo.port
 			
-			const r = createDiscoveryResponse(OTAMetadata? OTAMetadata.version : [0, 0, 0], "", options.firmware.port)
+			const r = createDiscoveryResponse(OTAMetadata? OTAMetadata.version : [0, 0, 0], OTA_METADATA_BIN, options.firmware.port)
 			srv.send(r, 0, r.length, port, address)
 			logger.info(`Replied discovery from ${req.personality} ${req.boardId}`)
 			

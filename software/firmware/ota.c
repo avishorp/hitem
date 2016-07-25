@@ -3,13 +3,14 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 #include <simplelink.h>
 
 #include "ota.h"
 #include "tftp/tftp.h"
 #include "console.h"
+#include "version.h"
 
-#define DESCRIPTOR_FILE_NAME "hitem_fw.json"
 #define DESCRIPTOR_MAX_FILE_SIZE 2048
 
 typedef struct {
@@ -28,6 +29,22 @@ const error_code_t error_table[] = {
         MKCODE(TFTPERROR_DATA_FAILED)
 };
 
+// OTA Metadata - File entry
+typedef struct {
+	char source_filename[32];  // Source filename (to fetch using TFTP)
+	char dest_filename[32];    // Destination filename (to write to storage)
+	_u32 file_size;                  // File size in bytes
+	_u8 checksum[16];                // MD5 Checksum
+	_u16 reserved;                   // Unused
+} __attribute__((packed)) ota_file_entry_t;
+
+typedef struct {
+	char magic[4];
+	version_t version;
+	_u8 file_count;
+	ota_file_entry_t files[0];
+} __attribute__((packed)) ota_metadata_t;
+
 
 const char* _TFTPErrorStr(int code) {
 	int i;
@@ -42,7 +59,32 @@ const char* _TFTPErrorStr(int code) {
 	return _unknown_error_buf;
 }
 
-void OTAExec(unsigned long remoteIP, unsigned short port)
+void ProcessOTAMetadata(const ota_metadata_t* omd, unsigned int size)
+{
+	// First, validate the magic code is correct
+	if (memcmp("HTEM", omd->magic, 4) != 0) {
+		ConsolePrint("Incorrect OTA Metadata header received (Incorrect Magic Code)\n\r");
+	}
+
+	// Check that the size of the metadata received makes sense
+	unsigned int expected_size = sizeof(ota_metadata_t) + omd->file_count * sizeof(ota_file_entry_t);
+	if (size != expected_size) {
+		ConsolePrintf("Incorrect OTA Metadata header received (Incorrect size - expected %d, got %d)", expected_size, size);
+		return;
+	}
+
+	// DEBUG - Dump the OTA metadata
+	ConsolePrintf("Number of files: %d\n\r", omd->file_count);
+	int i;
+	for(i = 0; i < omd->file_count; i++) {
+		ConsolePrintf("File No. %d\n\r", i);
+		ConsolePrintf("  Source Filename: %s\n\r", omd->files[i].source_filename);
+		ConsolePrintf("  Dest Filename: %s\n\r", omd->files[i].dest_filename);
+		ConsolePrintf("  Size: %d\n\r", omd->files[i].file_size);
+	}
+}
+
+void OTAExec(unsigned long remoteIP, unsigned short port, const char* filename)
 {
 	ConsolePrint("************ Starting OTA ************\n\r");
 
@@ -57,7 +99,7 @@ void OTAExec(unsigned long remoteIP, unsigned short port)
 	}
 
 	ConsolePrint("Requesting descriptor file\n\r");
-	int r = sl_TftpRecv(remoteIP, port, DESCRIPTOR_FILE_NAME, descriptor_buffer, &descriptor_size, &tftp_error);
+	int r = sl_TftpRecv(remoteIP, port, filename, descriptor_buffer, &descriptor_size, &tftp_error);
 
 	if (r < 0) {
 		if ((r == TFTPERROR_ERRORREPLY) && (descriptor_size > 0) && (descriptor_size < (DESCRIPTOR_MAX_FILE_SIZE-1))) {
@@ -72,20 +114,18 @@ void OTAExec(unsigned long remoteIP, unsigned short port)
 	else {
 		if (descriptor_size > 0) {
 			// Good descriptor has been received
-			descriptor_buffer[descriptor_size] = 0;
-			ConsolePrint("######################################################1\n\r");
-			ConsolePrint(descriptor_buffer);
-			ConsolePrint("######################################################2\n\r");
-			ConsolePrintf("%02x %02x %02x %02x %02x %02x %02x %02x %02x %02x \n\r", descriptor_buffer[0],descriptor_buffer[1],descriptor_buffer[2],descriptor_buffer[3],descriptor_buffer[4],descriptor_buffer[5],descriptor_buffer[6],descriptor_buffer[7],descriptor_buffer[8],descriptor_buffer[9]);
+			ProcessOTAMetadata((ota_metadata_t*)descriptor_buffer, descriptor_size);
 		}
 		else {
 			ConsolePrint("Descriptor file too big, aborting\n\r");
 			goto ABORT;
 		}
 	}
-	return;
 
 ABORT:
+	if (descriptor_buffer)
+		free(descriptor_buffer);
+
 	return;
 
 }

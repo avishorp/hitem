@@ -663,7 +663,7 @@ ABORT:
  */
 
 
-int sl_TftpRecv( unsigned long TftpIP, unsigned short TftpPort, char *szFileName, char *FileBuffer,
+int sl_TftpRecv( unsigned long TftpIP, unsigned short TftpPort, const char *szFileName, char *FileBuffer,
                 unsigned long *FileSize, unsigned short *pErrorCode )
 {
     TFTP *pTftp;

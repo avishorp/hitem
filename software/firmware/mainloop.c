@@ -241,8 +241,7 @@ STATE_HANDLER(WAITDISCOVERY)
 			ConsolePrintf("Server has firmware version %s\n\r", vbuf);
 
 			// TODO: Check the version number
-			ConsolePrintf("Port %d\n\r", rbuf.tftp_port);
-			OTAExec(ntohl(g_tServerAddr.sin_addr.s_addr), rbuf.tftp_port);
+			OTAExec(ntohl(g_tServerAddr.sin_addr.s_addr), rbuf.tftp_port, rbuf.fw_filename);
 
 			return STATE_DOCONNECTSRV;
 		}

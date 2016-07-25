@@ -48,8 +48,8 @@ typedef struct sockaddr      *PSA;
 typedef struct _tftp
 {
     IPN    PeerAddress;             // Peer address supplied by caller
-    unsigned short PeerPort;         // Peer port
-    char   *szFileName;             // Filename supplied by caller
+    unsigned short PeerPort;        // Peer port
+    const char   *szFileName;       // Filename supplied by caller
     char   *Buffer;                 // Buffer supplied by caller
     unsigned long BufferSize;              // Buffer size supplied by caller
     SOCKET Sock;                    // Socket used for transfer
