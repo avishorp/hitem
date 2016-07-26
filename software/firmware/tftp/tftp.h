@@ -50,7 +50,8 @@
   *          						This API is called from the application to initiate the receive.
   */
 
-int sl_TftpRecv( unsigned long TftpIP, unsigned short TftpPort, const char *szFileName, char *FileBuffer,unsigned long *FileSize, unsigned short *pErrorCode );
+int sl_TftpRecv( unsigned long TftpIP, unsigned short TftpPort, const char *szFileName, char *FileBuffer,unsigned long *FileSize, unsigned short *pErrorCode,
+		int FileDownload);
 
 /*!
  * 	\brief Send data over TFTP
@@ -62,6 +63,9 @@ int sl_TftpRecv( unsigned long TftpIP, unsigned short TftpPort, const char *szFi
  * 	\param[in] *FileBuffer			Pointer to buffer holding data to be sent
  * 	\param[in] *FileSize			Pointer to filesize
  * 	\param[in] *pErrorCode			Pointer to error code that will be populated if send is unsuccessful
+ *	\param[in] FileDownload         When non-zero, downloads the file directly to the filesystem. In this case, the FileBuffer
+ *	                                is assumed to contain the destination filename, and the FileSize is the maximal file size on
+ *	                                the storage
  *
  * 	\return							1 - If file was sucessfully transferred
  *     								0 - If the file was transferred but too large for the buffer
@@ -77,6 +81,13 @@ int sl_TftpRecv( unsigned long TftpIP, unsigned short TftpPort, const char *szFi
 
 int sl_TftpSend( unsigned long TftpIP, char *szFileName, char *FileBuffer,unsigned long *FileSize, unsigned short *pErrorCode );
 
+
+/*!
+ * 	\brief Convert an error code returned by sl_Tftr* into string
+ *
+ * 	\param[in] code The numerical error code
+ */
+const char* TFTPErrorStr(int code);
 
 #define  bzero(ptr,sz)       mmZeroInit(ptr,sz)
 #define  bcopy(src,dst,sz)   mmCopy(dst,src,sz)
@@ -95,6 +106,8 @@ int sl_TftpSend( unsigned long TftpIP, char *szFileName, char *FileBuffer,unsign
 #define TFTPERROR_RESOURCES 	(-5)
 #define TFTPERROR_OPCODE_FAILED (-6)
 #define TFTPERROR_DATA_FAILED   (-7)
+#define TFTPERROR_FILE_CREATION_FAILED (-8)
+#define TFTPERROR_FILE_WRITE_FAILED (-9)
 
 struct tftphdr
 {

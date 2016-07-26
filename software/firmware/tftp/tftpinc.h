@@ -62,6 +62,7 @@ typedef struct _tftp
     int    MaxSyncError;            // Max SYNC errors remaining
     struct sockaddr_in tmpaddr;     // inaddr for RECV
     struct sockaddr_in peeraddr;    // inaddr for SEND
+    _u32 FileHandle;                // File download flag
 
 #ifdef _INCLUDE_IPv6_CODE
     IP6N   Peer6Address;            // Peer address supplied by caller

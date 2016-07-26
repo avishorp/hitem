@@ -40,6 +40,39 @@ static int  tftpReadPacket( TFTP *pTftp );
 static int  tftpProcessPacket( TFTP *pTftp );
 static int  tftpSend( TFTP *pTftp);
 
+
+// Error table - for converting the code into text
+typedef struct {
+	int code;
+	const char* description;
+} error_code_t;
+
+#define MKCODE(code) { code, #code }
+const error_code_t error_table[] = {
+		MKCODE(TFTPERROR_SOCKET),
+		MKCODE(TFTPERROR_FAILED),
+	    MKCODE(TFTPERROR_ERRORREPLY),
+        MKCODE(TFTPERROR_BADPARAM),
+        MKCODE(TFTPERROR_RESOURCES),
+        MKCODE(TFTPERROR_OPCODE_FAILED),
+        MKCODE(TFTPERROR_DATA_FAILED),
+		MKCODE(TFTPERROR_FILE_CREATION_FAILED),
+		MKCODE(TFTPERROR_FILE_WRITE_FAILED)
+};
+
+const char* TFTPErrorStr(int code) {
+	int i;
+	static char _unknown_error_buf[20];
+
+	for(i = 0; i < (sizeof(error_table)/sizeof(error_code_t)); i++) {
+		if (code == error_table[i].code) {
+			return error_table[i].description;
+		}
+	}
+	sprintf(_unknown_error_buf, "UNKNOWN %d", code);
+	return _unknown_error_buf;
+}
+
 /*!
  * 	\brief  TFTP socket setup. Creates a UDP socket at known port 69 and binds to it.
  *
@@ -498,21 +531,33 @@ static int tftpProcessPacket( TFTP *pTftp )
         CopySize = pTftp->Length;              /* Copy length */
         pTftp->FileSize += CopySize;           /* Track the file length */
 
-        // Copy file data if room left in buffer is large enough
-        if( pTftp->BufferSize > pTftp->BufferUsed )
-        {
-            if( (pTftp->BufferSize - pTftp->BufferUsed) < CopySize)
-               CopySize = pTftp->BufferSize - pTftp->BufferUsed;
+        if (!pTftp->FileHandle) {
+        	///// Download to memory
 
-            if( CopySize )
-            {
-                // Add it to our receive buffer
-                bcopy( ReadBuffer->data, (pTftp->Buffer+pTftp->BufferUsed),
-                       (int)CopySize );
+			// Copy file data if room left in buffer is large enough
+			if( pTftp->BufferSize > pTftp->BufferUsed )
+			{
+				if( (pTftp->BufferSize - pTftp->BufferUsed) < CopySize)
+				   CopySize = pTftp->BufferSize - pTftp->BufferUsed;
 
-                /* Track the number of bytes used */
-                pTftp->BufferUsed += CopySize;
-            }
+				if( CopySize )
+				{
+					// Add it to our receive buffer
+					bcopy( ReadBuffer->data, (pTftp->Buffer+pTftp->BufferUsed),
+						   (int)CopySize );
+
+					/* Track the number of bytes used */
+					pTftp->BufferUsed += CopySize;
+				}
+			}
+        }
+        else {
+        	///// Download to files
+        	int r = sl_FsWrite(pTftp->FileHandle, pTftp->BufferUsed, ReadBuffer->data, pTftp->Length);
+        	if (r < 0)
+        		rc = TFTPERROR_FILE_WRITE_FAILED;
+
+        	pTftp->BufferUsed += pTftp->Length;
         }
 
         /* If we received a partial block, we're done */
@@ -650,6 +695,23 @@ ABORT:
     return(rc);
 }
 
+static int tftpCreateFile(TFTP *pTftp)
+{
+	const char* filename = pTftp->Buffer;
+	unsigned long max_size = (pTftp->BufferSize & 0xfffff000) + 0x1000;
+
+	static _i32 handle = -1;
+	_i32 ret = sl_FsOpen((const unsigned char*)filename,
+			FS_MODE_OPEN_CREATE(max_size, _FS_FILE_OPEN_FLAG_COMMIT|_FS_FILE_PUBLIC_WRITE),
+			NULL, &handle);
+
+	if (ret < 0)
+		return TFTPERROR_FILE_CREATION_FAILED;
+
+	pTftp->FileHandle = handle;
+
+}
+
 /*!
  * 	\brief Send specific file over TFTP
  * 	This function sends the entire file before returning.
@@ -664,11 +726,15 @@ ABORT:
 
 
 int sl_TftpRecv( unsigned long TftpIP, unsigned short TftpPort, const char *szFileName, char *FileBuffer,
-                unsigned long *FileSize, unsigned short *pErrorCode )
+                unsigned long *FileSize, unsigned short *pErrorCode, int FileDownload )
 {
     TFTP *pTftp;
     int rc;          // Return Code
     // Quick parameter validation
+
+    if (!szFileName)
+    	return( TFTPERROR_BADPARAM );
+
     if( !szFileName || !FileSize || (*FileSize != 0 && !FileBuffer) )
         return( TFTPERROR_BADPARAM );
 
@@ -702,6 +768,13 @@ int sl_TftpRecv( unsigned long TftpIP, unsigned short TftpPort, const char *szFi
     pTftp->Buffer      = FileBuffer;
     pTftp->BufferSize  = *FileSize;   // Do not read more than can fit in file
 
+    // If file download is requested, create the file
+    if (FileDownload) {
+    	rc = tftpCreateFile(pTftp);
+    	if (rc < 0)
+    		goto ABORT;
+    }
+
     // Get the requested file
     rc = tftpGetFile( pTftp );
     if( rc < 0 )
@@ -728,6 +801,8 @@ ABORT:
         close( pTftp->Sock );
     if( pTftp->PacketBuffer )
         mmFree( pTftp->PacketBuffer );
+    if (pTftp->FileHandle)
+    	sl_FsClose(pTftp->FileHandle, NULL, NULL, 0);
     mmFree( pTftp );
 
     return(rc);
