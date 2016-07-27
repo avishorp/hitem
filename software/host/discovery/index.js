@@ -135,20 +135,32 @@ function createOTAMetadata(descriptorFilename) {
 		
 		// - Iterate through the files, calc their size and md5
 		const fileEntries = files.map(filename => {
+			let sourceFilename, destFilename
+			if (filename.indexOf("=>") == -1) {
+				// Source and dest filenames are the same
+				sourceFilename = filename
+				destFilename = filename
+			}
+			else {
+				// Dest filename is specified
+				const sp = filename.split("=>")
+				sourceFilename = sp[0].trim()
+				destFilename = sp[1].trim()
+			}
 			// - Check that this is a local file (no path name allowed)
-			if (path.dirname(filename) !== '.')
+			if (path.dirname(sourceFilename) !== '.')
 				throw Error('Filenames in OTA descriptor must be directory-local')
 				
 			// - Check the the file exists
-			const fullFilename = path.resolve(directory, filename)
-			if (!fileExists(fullFilename))
-				throw new Error(`File ${filename} does not exist`)
+			const fullSourceFilename = path.resolve(directory, sourceFilename)
+			if (!fileExists(fullSourceFilename))
+				throw new Error(`File ${sourceFilename} does not exist`)
 			
 			return {
-				sourceFilename: filename,
-				destFilename: filename,
-				size: fs.statSync(fullFilename).size,
-				md5: md5(fs.readFileSync(fullFilename))
+				sourceFilename: sourceFilename,
+				destFilename: destFilename,
+				size: fs.statSync(fullSourceFilename).size,
+				md5: md5(fs.readFileSync(fullSourceFilename))
 			}		
 		})
 		descriptor.fileEntries = fileEntries
