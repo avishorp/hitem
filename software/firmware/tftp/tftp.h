@@ -19,7 +19,7 @@
 // Trivial File Transfer Protocol
 //
 #define SEGSIZE         512     // data segment size
-
+#define DO_MD5
 //
 // TFTP Packet types.
 
@@ -51,8 +51,11 @@
   */
 
 int sl_TftpRecv( unsigned long TftpIP, unsigned short TftpPort, const char *szFileName, char *FileBuffer,unsigned long *FileSize, unsigned short *pErrorCode,
-		int FileDownload);
-
+		int FileDownload
+#ifdef DO_MD5
+		, _u8* md5
+#endif
+		);
 /*!
  * 	\brief Send data over TFTP
  * 	This function sends data from a specified filename to the destination IP.
@@ -66,6 +69,7 @@ int sl_TftpRecv( unsigned long TftpIP, unsigned short TftpPort, const char *szFi
  *	\param[in] FileDownload         When non-zero, downloads the file directly to the filesystem. In this case, the FileBuffer
  *	                                is assumed to contain the destination filename, and the FileSize is the maximal file size on
  *	                                the storage
+ *	\param[in] md5                  Expected MD5 hash code of the downloaded file
  *
  * 	\return							1 - If file was sucessfully transferred
  *     								0 - If the file was transferred but too large for the buffer
@@ -108,6 +112,7 @@ const char* TFTPErrorStr(int code);
 #define TFTPERROR_DATA_FAILED   (-7)
 #define TFTPERROR_FILE_CREATION_FAILED (-8)
 #define TFTPERROR_FILE_WRITE_FAILED (-9)
+#define TFTPERROR_CHECKSUM_FAIL (-10)
 
 struct tftphdr
 {

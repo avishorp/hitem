@@ -22,11 +22,27 @@
 
 
 
+#include <stdio.h>
+#include <stdlib.h>
+#include <hw_memmap.h>
+#include <stdint.h>
+#include <stdbool.h>
+
+
 #include "simplelink.h"
 #include "tftpinc.h"
 #include "tftp.h"
 #include "utils.h"
 #include "../console.h"
+
+#ifdef DO_MD5
+#include "hw_shamd5.h"
+#include "hw_memmap.h"
+#include "hw_types.h"
+#include "hw_ints.h"
+#include "hw_common_reg.h"
+#include "shamd5.h"
+#endif
 
 
 static int  tftpGetFile( TFTP *pTftp);
@@ -57,7 +73,8 @@ const error_code_t error_table[] = {
         MKCODE(TFTPERROR_OPCODE_FAILED),
         MKCODE(TFTPERROR_DATA_FAILED),
 		MKCODE(TFTPERROR_FILE_CREATION_FAILED),
-		MKCODE(TFTPERROR_FILE_WRITE_FAILED)
+		MKCODE(TFTPERROR_FILE_WRITE_FAILED),
+		MKCODE(TFTPERROR_CHECKSUM_FAIL)
 };
 
 const char* TFTPErrorStr(int code) {
@@ -72,6 +89,113 @@ const char* TFTPErrorStr(int code) {
 	sprintf(_unknown_error_buf, "UNKNOWN %d", code);
 	return _unknown_error_buf;
 }
+
+#ifdef DO_MD5
+// NOTE: This function is not part of the official MD5SHA API, it was copied from the
+// Driverlib source file, since it can handle variable block sizes
+//*****************************************************************************
+//
+//! Writes multiple words of data into the SHA/MD5 data registers.
+//!
+//! \param ui32Base is the base address of the SHA/MD5 module.
+//! \param pui8DataSrc is a pointer to an array of data to be written.
+//! \param ui32DataLength is the length of the data to be written in bytes.
+//!
+//! This function writes a variable number of words into the SHA/MD5 data
+//! registers.  The function waits for each block of data to be processed
+//! before another is written.
+//!
+//! \note This function is used by SHAMD5HashCompute(), SHAMD5HMACWithKPP(),
+//! and SHAMD5HMACNoKPP() to process data.
+//!
+//! \return None.
+//
+//*****************************************************************************
+static void
+SHAMD5DataWriteMultiple(uint32_t ui32Base, uint8_t *pui8DataSrc,
+                        uint32_t ui32DataLength)
+{
+    uint32_t ui32Idx, ui32Count, ui32TempData=0, ui32Lastword;
+    uint8_t * ui8TempData;
+
+
+    //
+    // Calculate the number of blocks of data.
+    //
+    ui32Count = ui32DataLength / 64;
+
+    //
+    // Loop through all the blocks and write them into the data registers
+    // making sure to block additional operations until we can write the
+    // next 16 words.
+    //
+    for(ui32Idx = 0; ui32Idx < ui32Count; ui32Idx++)
+    {
+        //
+        // Write the block of data.
+        //
+        SHAMD5DataWrite(ui32Base,pui8DataSrc);
+        //
+        // Increment the pointer to next block of data.
+        //
+        pui8DataSrc += 64;
+    }
+
+    //
+    // Calculate the remaining bytes of data that don't make up a full block.
+    //
+    ui32Count = ui32DataLength % 64;
+
+    //
+    // If there are bytes that do not make up a whole block, then
+    // write them separately.
+    //
+    if(ui32Count)
+    {
+        //
+        // Wait until the engine has finished processing the previous block.
+        //
+        while((HWREG(ui32Base + SHAMD5_O_IRQSTATUS) &
+               SHAMD5_INT_INPUT_READY) == 0)
+        {
+        }
+
+        //
+        // Loop through the remaining words.
+        //
+        ui32Count = ui32Count / 4;
+        for(ui32Idx = 0; ui32Idx < ui32Count; ui32Idx ++)
+        {
+            //
+            // Write the word into the data register.
+            //
+            HWREG(ui32Base + SHAMD5_O_DATA0_IN + (ui32Idx * 4)) =* ( (uint32_t *) pui8DataSrc);
+            pui8DataSrc +=4;
+        }
+        //
+        // Loop through the remaining bytes
+        //
+        ui32Count = ui32DataLength % 4;
+        ui8TempData = (uint8_t *) &ui32TempData;
+        if(ui32Count)
+        {
+        	ui32Lastword = 0;
+        	if(ui32Idx)
+        	{
+        		ui32Lastword = (ui32Idx-1) *4;
+        	}
+        	for(ui32Idx=0 ; ui32Idx<ui32Count ; ui32Idx++)
+        	{
+        		*(ui8TempData+ui32Idx) = *(pui8DataSrc+ui32Idx);
+        	}
+        	HWREG(ui32Base + SHAMD5_O_DATA0_IN + ui32Lastword) = ui32TempData;
+        }
+
+
+    }
+}
+#endif
+
 
 /*!
  * 	\brief  TFTP socket setup. Creates a UDP socket at known port 69 and binds to it.
@@ -557,7 +681,13 @@ static int tftpProcessPacket( TFTP *pTftp )
         	if (r < 0)
         		rc = TFTPERROR_FILE_WRITE_FAILED;
 
+
+#ifdef DO_MD5
+        	SHAMD5DataWriteMultiple(SHAMD5_BASE, ReadBuffer->data, pTftp->Length);
+#endif
+
         	pTftp->BufferUsed += pTftp->Length;
+
         }
 
         /* If we received a partial block, we're done */
@@ -710,6 +840,7 @@ static int tftpCreateFile(TFTP *pTftp)
 
 	pTftp->FileHandle = handle;
 
+	return 0;
 }
 
 /*!
@@ -726,7 +857,11 @@ static int tftpCreateFile(TFTP *pTftp)
 
 
 int sl_TftpRecv( unsigned long TftpIP, unsigned short TftpPort, const char *szFileName, char *FileBuffer,
-                unsigned long *FileSize, unsigned short *pErrorCode, int FileDownload )
+                unsigned long *FileSize, unsigned short *pErrorCode, int FileDownload
+#ifdef DO_MD5
+				,_u8* md5
+#endif
+				)
 {
     TFTP *pTftp;
     int rc;          // Return Code
@@ -773,6 +908,19 @@ int sl_TftpRecv( unsigned long TftpIP, unsigned short TftpPort, const char *szFi
     	rc = tftpCreateFile(pTftp);
     	if (rc < 0)
     		goto ABORT;
+
+#ifdef DO_MD5
+    	// Set the hardware mode to MD5
+    	SHAMD5ConfigSet(SHAMD5_BASE, SHAMD5_ALGO_MD5);
+
+        // Wait for the context to be ready before writing the mode.
+        while((HWREG(SHAMD5_BASE + SHAMD5_O_IRQSTATUS) & SHAMD5_INT_CONTEXT_READY) ==
+              0) {}
+
+        // Set the data length to the expected file length
+        SHAMD5DataLengthSet(SHAMD5_BASE, *FileSize);
+#endif
+
     }
 
     // Get the requested file
@@ -794,6 +942,27 @@ int sl_TftpRecv( unsigned long TftpIP, unsigned short TftpPort, const char *szFi
 
         // Set the "FileSize" to the file size (regardless of bytes copied)
         *FileSize = pTftp->FileSize;
+
+#ifdef DO_MD5
+        if (FileDownload) {
+        	// Wait for the MD5 output to be ready.
+        	while((HWREG(SHAMD5_BASE + SHAMD5_O_IRQSTATUS) & SHAMD5_INT_OUTPUT_READY) ==
+              0) {}
+
+        	// Read the result
+        	_u8 hash[16];
+        	SHAMD5ResultRead(SHAMD5_BASE, hash);
+
+        	// Compare it against the given hash
+        	if (md5) {
+        		if (memcmp(md5, hash, 16) != 0)
+        			rc = TFTPERROR_CHECKSUM_FAIL;
+        	}
+
+        	//ConsolePrintf("File hash: %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x", hash[0], hash[1], hash[2], hash[3], hash[4], hash[5], hash[6], hash[7], hash[8], hash[9]);
+        }
+#endif
+
     }
 
 ABORT:

@@ -64,7 +64,7 @@ void ProcessOTAMetadata(unsigned long remoteIP, unsigned short port, const ota_m
 		int r;
 
 		ConsolePrintf("Requesting %s\n\r", omd->files[j].source_filename);
-		r = sl_TftpRecv(remoteIP, port, omd->files[j].source_filename, omd->files[j].dest_filename, &omd->files[j].file_size, &tftp_error, 1);
+		r = sl_TftpRecv(remoteIP, port, omd->files[j].source_filename, omd->files[j].dest_filename, &omd->files[j].file_size, &tftp_error, 1, omd->files[j].checksum);
 		if (r < 0) {
 			ConsolePrintf("TFTP returned error %s, aborting\n\r", TFTPErrorStr(r));
 			return;
@@ -97,7 +97,7 @@ void OTAExec(unsigned long remoteIP, unsigned short port, const char* filename)
 	}
 
 	ConsolePrint("Requesting descriptor file\n\r");
-	int r = sl_TftpRecv(remoteIP, port, filename, metadata_buffer, &metadata_size, &tftp_error, 0);
+	int r = sl_TftpRecv(remoteIP, port, filename, metadata_buffer, &metadata_size, &tftp_error, 0, NULL);
 
 	if (r < 0) {
 		if ((r == TFTPERROR_ERRORREPLY) && (metadata_size > 0) && (metadata_size < (METADATA_MAX_FILE_SIZE-1))) {
@@ -119,6 +119,7 @@ void OTAExec(unsigned long remoteIP, unsigned short port, const char* filename)
 			goto ABORT;
 		}
 	}
+
 
 ABORT:
 	if (metadata_buffer)

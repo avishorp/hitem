@@ -22,7 +22,6 @@
 
 #define TFTP_HEADER 4
 #define DATA_SIZE (SEGSIZE + TFTP_HEADER) // SEGSIZE declared in TFTP.H as 512
-#define PORT_TFTP 69
 
 typedef unsigned long         IPN;             // IP Address in NETWORK format
 
@@ -68,6 +67,10 @@ typedef struct _tftp
     IP6N   Peer6Address;            // Peer address supplied by caller
     struct sockaddr_in6 tmp6addr;   // inaddr for RECV
     struct sockaddr_in6 peer6addr;  // inaddr for SEND
+#endif
+
+#ifdef DO_MD5
+    _u8 MD5[16];
 #endif
 } TFTP;
 
