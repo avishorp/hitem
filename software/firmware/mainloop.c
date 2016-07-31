@@ -235,13 +235,22 @@ STATE_HANDLER(WAITDISCOVERY)
 			// Adjust server port
 			g_tServerAddr.sin_port = sl_Htons(ConfigGet()->iSrvPort);
 
-			char vbuf[20];
-			VersionToString(&rbuf.fw_version, vbuf);
+			char server_version_str[20];
+			VersionToString(&rbuf.fw_version, server_version_str);
 			ConsolePrintf("Got discovery response\n\r");
-			ConsolePrintf("Server has firmware version %s\n\r", vbuf);
 
-			// TODO: Check the version number
-			OTAExec(ntohl(g_tServerAddr.sin_addr.s_addr), rbuf.tftp_port, rbuf.fw_filename);
+			version_t current_version;
+			VersionGet(&current_version);
+			char current_version_str[20];
+			VersionToString(&current_version, current_version_str);
+
+			ConsolePrintf("Current FW version is %s, server has version %s\n\r", current_version_str, server_version_str);
+
+			if (VersionGreaterThan(&rbuf.fw_version, &current_version)) {
+				ConsolePrintf("Starting OTA Process\n\r");
+				if (OTAExec(ntohl(g_tServerAddr.sin_addr.s_addr), rbuf.tftp_port, rbuf.fw_filename))
+					return STATE_SLEEP;
+			}
 
 			return STATE_DOCONNECTSRV;
 		}
