@@ -15,7 +15,7 @@ typedef struct {
 void VersionGet(version_t* result);
 
 // Set the current firmware version
-void VersionSet(version_t* result);
+void VersionSet(const version_t* result);
 
 // Compare two versions. If the left is greater than the right, return 1 otherwise
 // return 0

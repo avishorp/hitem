@@ -40,7 +40,7 @@ void VersionGet(version_t* result)
 }
 
 
-void VersionSet(version_t* ver)
+void VersionSet(const version_t* ver)
 {
 	// Open the file
 	static _i32 handle = -1;

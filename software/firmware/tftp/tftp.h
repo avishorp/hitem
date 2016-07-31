@@ -53,38 +53,9 @@
 int sl_TftpRecv( unsigned long TftpIP, unsigned short TftpPort, const char *szFileName, char *FileBuffer,unsigned long *FileSize, unsigned short *pErrorCode,
 		int FileDownload
 #ifdef DO_MD5
-		, _u8* md5
+		, const _u8* md5
 #endif
 		);
-/*!
- * 	\brief Send data over TFTP
- * 	This function sends data from a specified filename to the destination IP.
- *	This API is called from the application to initiate the send
- *
- * 	\param[in] TftpIP				Server IP
- * 	\param[in] *szFileName			Pointer to string holding filename.
- * 	\param[in] *FileBuffer			Pointer to buffer holding data to be sent
- * 	\param[in] *FileSize			Pointer to filesize
- * 	\param[in] *pErrorCode			Pointer to error code that will be populated if send is unsuccessful
- *	\param[in] FileDownload         When non-zero, downloads the file directly to the filesystem. In this case, the FileBuffer
- *	                                is assumed to contain the destination filename, and the FileSize is the maximal file size on
- *	                                the storage
- *	\param[in] md5                  Expected MD5 hash code of the downloaded file
- *
- * 	\return							1 - If file was sucessfully transferred
- *     								0 - If the file was transferred but too large for the buffer
- * 									<0 - Error
- *
- * 	\note							TFTPERROR_ERRORCODE: TFTP server error code. The error code
- *          						is written to pErrorCode, and an error message is
- *         							written to FileBuffer. The length of the error message
- *          						is written to FileSize.
- *
- *
- */
-
-int sl_TftpSend( unsigned long TftpIP, char *szFileName, char *FileBuffer,unsigned long *FileSize, unsigned short *pErrorCode );
-
 
 /*!
  * 	\brief Convert an error code returned by sl_Tftr* into string

@@ -44,7 +44,7 @@ int MoveFile(const char* sourceFilename, const char* destFilename)
  	int r;
 
  	// Get the source file length
- 	r = sl_FsGetInfo(sourceFilename, NULL, &source_info);
+ 	r = sl_FsGetInfo((const _u8*)sourceFilename, NULL, &source_info);
  	if (r <  0)
  		return r;
 
@@ -126,7 +126,7 @@ int ProcessOTAMetadata(unsigned long remoteIP, unsigned short port, const ota_me
 		return 0;
 	}
 
-#ifdef 0
+#ifdef PRINT_OTA_METADATA
 	// DEBUG - Dump the OTA metadata
 	ConsolePrintf("Number of files: %d\n\r", omd->file_count);
 	int i;
@@ -147,7 +147,7 @@ int ProcessOTAMetadata(unsigned long remoteIP, unsigned short port, const ota_me
 
 		while (retries > 0) {
 			ConsolePrintf("Requesting %s\n\r", omd->files[j].source_filename);
-			r = sl_TftpRecv(remoteIP, port, omd->files[j].source_filename, tempFilename, &omd->files[j].file_size, &tftp_error, 1, omd->files[j].checksum);
+			r = sl_TftpRecv(remoteIP, port, omd->files[j].source_filename, (char*)tempFilename, (unsigned long*)&omd->files[j].file_size, &tftp_error, 1, omd->files[j].checksum);
 			if (r < 0) {
 				ConsolePrintf("TFTP returned error %s, retrying\n\r", TFTPErrorStr(r));
 				retries--;
@@ -176,15 +176,6 @@ int ProcessOTAMetadata(unsigned long remoteIP, unsigned short port, const ota_me
 
 	return 1;
 
-#ifdef 0
-	_i32 hh;
-	char bb[100];
-	sl_FsOpen("test.txt", FS_MODE_OPEN_READ, 0, &hh);
-	sl_FsRead(hh, 0, &bb, 100);
-	sl_FsClose(hh, NULL, NULL, 0);
-	ConsolePrint(bb);
-#endif
-
 }
 
 int OTAExec(unsigned long remoteIP, unsigned short port, const char* filename)
@@ -192,6 +183,7 @@ int OTAExec(unsigned long remoteIP, unsigned short port, const char* filename)
 	ConsolePrint("************ Starting OTA ************\n\r");
 
 	int rc = 1;
+	int r = 0;
 
 	// Step 1: Download to memory the package description file
 	char* metadata_buffer = (char*)malloc(METADATA_MAX_FILE_SIZE);
@@ -205,7 +197,7 @@ int OTAExec(unsigned long remoteIP, unsigned short port, const char* filename)
 	}
 
 	ConsolePrint("Requesting descriptor file\n\r");
-	int r = sl_TftpRecv(remoteIP, port, filename, metadata_buffer, &metadata_size, &tftp_error, 0, NULL);
+	r = sl_TftpRecv(remoteIP, port, filename, metadata_buffer, &metadata_size, &tftp_error, 0, NULL);
 
 	if (r < 0) {
 		if ((r == TFTPERROR_ERRORREPLY) && (metadata_size > 0) && (metadata_size < (METADATA_MAX_FILE_SIZE-1))) {

@@ -677,13 +677,13 @@ static int tftpProcessPacket( TFTP *pTftp )
         }
         else {
         	///// Download to files
-        	int r = sl_FsWrite(pTftp->FileHandle, pTftp->BufferUsed, ReadBuffer->data, pTftp->Length);
+        	int r = sl_FsWrite(pTftp->FileHandle, pTftp->BufferUsed, (_u8*)ReadBuffer->data, pTftp->Length);
         	if (r < 0)
         		rc = TFTPERROR_FILE_WRITE_FAILED;
 
 
 #ifdef DO_MD5
-        	SHAMD5DataWriteMultiple(SHAMD5_BASE, ReadBuffer->data, pTftp->Length);
+        	SHAMD5DataWriteMultiple(SHAMD5_BASE, (uint8_t*)ReadBuffer->data, pTftp->Length);
 #endif
 
         	pTftp->BufferUsed += pTftp->Length;
@@ -859,7 +859,7 @@ static int tftpCreateFile(TFTP *pTftp)
 int sl_TftpRecv( unsigned long TftpIP, unsigned short TftpPort, const char *szFileName, char *FileBuffer,
                 unsigned long *FileSize, unsigned short *pErrorCode, int FileDownload
 #ifdef DO_MD5
-				,_u8* md5
+				,const _u8* md5
 #endif
 				)
 {
