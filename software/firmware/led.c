@@ -31,13 +31,17 @@ typedef struct {
 #define PLEN(p) (sizeof(p)/sizeof(pattern_point_t))
 
 const pattern_point_t g_tPatternRedBlue[] = {
-		{ COLOR_RED, 500 },
-		{ COLOR_BLUE, 500 }
+		{ COLOR_RED, 100 },
+		{ COLOR_NONE, 500 },
+		{ COLOR_BLUE, 100 },
+		{ COLOR_NONE, 500 }
 };
 
 const pattern_point_t g_tPatternRedGreen[] = {
-		{ COLOR_RED, 500 },
-		{ COLOR_GREEN, 500 }
+		{ COLOR_RED, 100 },
+		{ COLOR_NONE, 500 },
+		{ COLOR_GREEN, 100 },
+		{ COLOR_NONE, 500 }
 };
 
 const pattern_point_t g_tPatternRedPulse[] = {
