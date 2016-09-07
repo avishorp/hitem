@@ -14,7 +14,7 @@ const bunyan = require('bunyan')
 	logger.info("Hit'em server starting")
 		
 	// Discovery service
-	discovery(config.discovery, logger.child({'component': 'Discovery'}))
+	discovery(config.discovery, config.endpoint.port, logger.child({'component': 'Discovery'}))
 	
 	// Endpoint server
 	const eps = new EPServer(config.endpoint, logger.child({'component': 'EPServer'}))

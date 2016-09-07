@@ -1,9 +1,12 @@
+#!/usr/bin/python2
+
 # Config file generator
 
 import ConfigParser
 import struct
 
-FORMAT="ii30s30siiL"
+BOARD_CONF_FORMAT="ii"
+WLAN_CONF_FORMAT="30s30si"
 
 # Read the configuration file
 config = ConfigParser.ConfigParser()
@@ -13,8 +16,11 @@ config.read("gen_config.ini")
 ssid=config.get("common", "ssid")
 password=config.get("common", "password")
 discport=config.getint("common", "discport")
-srvport=config.getint("common", "srvport")
-netmask=int(config.get("common","netmask"), 16)
+
+# Create WLAN config file
+wlan_file = file("wlan.bin","w")
+wlan_file.write(struct.pack(WLAN_CONF_FORMAT, ssid, password, discport))
+wlan_file.close()
 
 # Iterate through the units, generate config gile per unit
 units = config.items("units")
@@ -30,7 +36,7 @@ for (snumber, personality) in units:
 		raise ValueError("Personality must be either 'hammer' or 'hat'")
 		
 	
-	data = struct.pack(FORMAT, number, personality_code, ssid, password, discport, srvport, netmask)
+	data = struct.pack(BOARD_CONF_FORMAT, number, personality_code)
 	filename = "config_%d.bin" % number
 	f = file(filename, 'w')
 	f.write(data)

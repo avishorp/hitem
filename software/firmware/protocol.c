@@ -72,8 +72,8 @@ _i16 ProtocolSendWelcome(_i16 sock)
 	memset(&msg, 0, sizeof(message_t));
 	msg.prolog = MSG_PROLOG;
 	msg.type = MSG_TYPE_WELCOME;
-	msg.payload.welcome.endpoint_id = config->lBoardNumber;
-	msg.payload.welcome.endpoint_personality = config->lPersonaliry;
+	msg.payload.welcome.endpoint_id = config->board.lBoardNumber;
+	msg.payload.welcome.endpoint_personality = config->board.lPersonality;
 	msg.checksum = _CalcChecksum(&msg);
 
 	// Send it

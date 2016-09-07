@@ -26,27 +26,27 @@ const path = require('path')
 const DISCOVERY_MAGIC = "HTEM"
 const FIRMWARE_DESCRIPTOR_FILENAME = "hitem_fw.yaml"
 const OTA_METADATA_BIN = "hitem_ota.bin"
+const DISCOVERY_REQUEST_SIZE = 16
 
-function createDiscoveryResponse(version, firmwareFilename, tftpPort)
+function createDiscoveryResponse(version, firmwareFilename, tftpPort, serverPort)
 {
-	let r = new Buffer(42)
-	r.fill(0)
-	r.write(DISCOVERY_MAGIC)
-	r.writeUInt8(version[0], DISCOVERY_MAGIC.length)
-	r.writeUInt8(version[1], DISCOVERY_MAGIC.length + 1)
-	r.writeUInt8(version[2], DISCOVERY_MAGIC.length + 2)
-	r.writeUInt16LE(tftpPort, DISCOVERY_MAGIC.length + 4)
-	r.write(firmwareFilename, DISCOVERY_MAGIC.length + 6)
+	const discoveryResponse = new mstream.WritableStream()
 	
-	return r
+	discoveryResponse.write(DISCOVERY_MAGIC);
+	discoveryResponse.write(binary.UInt8(version[0]))    // Version (major) [1 byte]
+	discoveryResponse.write(binary.UInt8(version[1]))    // Version (minor) [1 byte]
+	discoveryResponse.write(binary.UInt8(version[2]))    // Version (patch) [1 byte]
+	discoveryResponse.write(binary.UInt8(0))             // Version (reserved) [1 byte]
+	discoveryResponse.write(binary.UInt16LE(serverPort)) // Endpoint server port
+	discoveryResponse.write(binary.UInt16LE(tftpPort))   // TFTP port
+	discoveryResponse.write(binary.string(firmwareFilename, 32)) // Firmware metadata filename
+
+	return discoveryResponse.toBuffer()
 }
 
 function parseDiscoveryRequest(req)
 {
-	const discoverReqFormat = ">4sbbbxii"
-	const discoverReqSize = struct.sizeOf(discoverReqFormat)
-	
-	if (req.length != discoverReqSize)
+	if (req.length != DISCOVERY_REQUEST_SIZE)
 		// Incorrect size
 		return null
 		
@@ -195,7 +195,7 @@ function createOTAMetadata(descriptorFilename) {
 	}
 }
 
-module.exports = function(options, logger) {
+module.exports = function(options, endpointServerPort, logger) {
 
 	// Read and parse the firmware metadata
 	let OTAMetadata;
@@ -230,7 +230,8 @@ module.exports = function(options, logger) {
 			const address = rinfo.address
 			const port = rinfo.port
 			
-			const r = createDiscoveryResponse(OTAMetadata? OTAMetadata.version : [0, 0, 0], OTA_METADATA_BIN, options.firmware.port)
+			const r = createDiscoveryResponse(OTAMetadata? OTAMetadata.version : [0, 0, 0], OTA_METADATA_BIN, 
+				options.tftpPort, endpointServerPort)
 			srv.send(r, 0, r.length, port, address)
 			logger.info(`Replied discovery from ${req.personality} ${req.boardId}`)
 			

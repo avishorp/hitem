@@ -66,6 +66,7 @@ typedef struct {
 	char magic[DISCOVERY_MAGIC_LEN];
 						  // Magic code
 	version_t fw_version;
+	_u16 srv_port;
 	_u16 tftp_port;
 	char fw_filename[32];
 } discovery_resp_t;
@@ -77,7 +78,9 @@ static _i16 g_iDiscoverySocket;
 static _i16 g_iCmdSocket;
 static _i16 g_iSyncSocket;
 static _u32 g_iMyIP;
+static unsigned long g_iMyNetMask;
 static discovery_req_t g_discoveryRequest;
+static _u16 g_iSrvPort;
 
 static SlSockAddrIn_t g_tBroadcastAddr;
 static SlSockAddrIn_t g_tServerAddr;
@@ -103,13 +106,13 @@ void MainLoopInit(const appConfig_t* config)
 
 	// Initialize static broadcast address
 	g_tBroadcastAddr.sin_family = SL_AF_INET;
-	g_tBroadcastAddr.sin_port = sl_Htons(ConfigGet()->iDiscPort);
+	g_tBroadcastAddr.sin_port = sl_Htons(ConfigGet()->wlan.iDiscPort);
 
 	// Create the discovery request message
 	memcpy(&g_discoveryRequest.magic, DISCOVERY_MAGIC, 4);
 	VersionGet(&(g_discoveryRequest.fw_version));
-	g_discoveryRequest.lBoardNumber = config->lBoardNumber;
-	g_discoveryRequest.lPersonaliry = config->lPersonaliry;
+	g_discoveryRequest.lBoardNumber = config->board.lBoardNumber;
+	g_discoveryRequest.lPersonaliry = config->board.lPersonality;
 }
 
 void MainLoopExec()
@@ -139,16 +142,16 @@ SlSecParams_t secParams = {0};
 // Connect to the WLAN
 STATE_HANDLER(DOCONNECT)
 {
-	ConsolePrintf("Trying to connect to %s\n\r", ConfigGet()->sESSID);
+	ConsolePrintf("Trying to connect to %s\n\r", ConfigGet()->wlan.sESSID);
 
 	memset(&g_tServerAddr, 0, sizeof(g_tServerAddr));
 
-    secParams.Key = (signed char *)(ConfigGet()->sPassword);
-    secParams.KeyLen = strlen(ConfigGet()->sPassword);
+    secParams.Key = (signed char *)(ConfigGet()->wlan.sPassword);
+    secParams.KeyLen = strlen(ConfigGet()->wlan.sPassword);
     secParams.Type = SL_SEC_TYPE_WPA_WPA2;
 
-    long lRetVal = sl_WlanConnect((signed char *)(ConfigGet()->sESSID),
-                           strlen((const char *)(ConfigGet()->sESSID)), 0, &secParams, 0);
+    long lRetVal = sl_WlanConnect((signed char *)(ConfigGet()->wlan.sESSID),
+                           strlen((const char *)(ConfigGet()->wlan.sESSID)), 0, &secParams, 0);
     if (lRetVal < 0)
     	ConsolePrintf("Error %d", lRetVal);
 
@@ -179,8 +182,26 @@ STATE_HANDLER(WAITFORIP)
 	if (!GET_STATUS(STATUS_CONNECTED))
 		return STATE_CLEANUP;
 
-	if (GET_STATUS(STATUS_IPACQUIRED))
+	if (GET_STATUS(STATUS_IPACQUIRED)) {
+/*
+		// Retrieve the Netmask
+		_u8 ConfigOpt = 0, ConfigLen = sizeof(SlNetCfgIpV4DhcpClientArgs_t);
+		_i32 Status;
+		static SlNetCfgIpV4DhcpClientArgs_t Dhcp;
+		Status = sl_NetCfgGet(SL_IPV4_DHCP_CLIENT,&ConfigOpt,&ConfigLen,(_u8 *)&Dhcp);
+		if( Status )
+		{
+		  ConsolePrint("Failed retrieving the DHCP NetMask");
+		  return STATE_CLEANUP;
+		}
+		g_iMyNetMask = Dhcp.Mask;
+*/
+
+		// TODO: sl_NetCfgGet hangs, so I use constant netmask
+		g_iMyNetMask = (255 << 24) + (255 << 16) + (255 << 8);
 		return STATE_SENDDISCOVERY;
+	}
+
 
 	return 0;
 }
@@ -203,7 +224,7 @@ STATE_HANDLER(SENDDISCOVERY)
 	}
 
 	// Adjust broadcast address according to allocated IP
-	g_tBroadcastAddr.sin_addr.s_addr = sl_Htonl(g_iMyIP | (~(ConfigGet()->iNetmask)));
+	g_tBroadcastAddr.sin_addr.s_addr = sl_Htonl(g_iMyIP | (~(g_iMyNetMask)));
 
 	sl_SendTo(g_iDiscoverySocket, &g_discoveryRequest, sizeof(discovery_req_t), 0, (SlSockAddr_t*)&g_tBroadcastAddr, sizeof(SlSockAddrIn_t));
 
@@ -233,7 +254,8 @@ STATE_HANDLER(WAITDISCOVERY)
 		if ((lRet == sizeof(discovery_resp_t)) && (strncmp(rbuf.magic, DISCOVERY_MAGIC, DISCOVERY_MAGIC_LEN)==0)) {
 			// Return packet is valid
 			// Adjust server port
-			g_tServerAddr.sin_port = sl_Htons(ConfigGet()->iSrvPort);
+			g_tServerAddr.sin_port = sl_Htons(g_iSrvPort);
+			ConsolePrintf("Endpoint Server Port: %d", g_iSrvPort);
 
 			char server_version_str[20];
 			VersionToString(&rbuf.fw_version, server_version_str);
@@ -251,6 +273,9 @@ STATE_HANDLER(WAITDISCOVERY)
 				if (OTAExec(ntohl(g_tServerAddr.sin_addr.s_addr), rbuf.tftp_port, rbuf.fw_filename))
 					return STATE_SLEEP;
 			}
+
+			// Set the server port
+			g_iSrvPort = rbuf.srv_port;
 
 			return STATE_DOCONNECTSRV;
 		}
@@ -296,7 +321,7 @@ STATE_HANDLER(DOCONNECTSRV)
 		SlSockAddrIn_t addr;
 		memset(&addr, 0, sizeof(SlSockAddrIn_t));
 		addr.sin_family = AF_INET;
-		addr.sin_port = sl_Htons(ConfigGet()->iSrvPort);
+		addr.sin_port = sl_Htons(g_iSrvPort);
 
 		sl_Bind(g_iSyncSocket, (SlSockAddr_t*)&addr, sizeof(SlSockAddrIn_t));
 	}
