@@ -3,7 +3,7 @@
 		"port": 24333,
 		"magic": "HTEM",
 		"firmware": {
-			"directory": "firmware/v0.0.1",
+			"directory": "firmware/v0.0.6",
 			"port": 24335,
 			"fwtab": "fwtab.json"
 		},
