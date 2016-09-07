@@ -253,14 +253,15 @@ STATE_HANDLER(WAITDISCOVERY)
 		// Got response. Must be in the length of a discovery response and start with the magic string
 		if ((lRet == sizeof(discovery_resp_t)) && (strncmp(rbuf.magic, DISCOVERY_MAGIC, DISCOVERY_MAGIC_LEN)==0)) {
 			// Return packet is valid
+			ConsolePrintf("Got discovery response\n\r");
+
 			// Adjust server port
 			g_tServerAddr.sin_port = sl_Htons(g_iSrvPort);
-			ConsolePrintf("Endpoint Server Port: %d", g_iSrvPort);
 
 			char server_version_str[20];
 			VersionToString(&rbuf.fw_version, server_version_str);
-			ConsolePrintf("Got discovery response\n\r");
 
+			// Get the unit's FW version abd print it
 			version_t current_version;
 			VersionGet(&current_version);
 			char current_version_str[20];

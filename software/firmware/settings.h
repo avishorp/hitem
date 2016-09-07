@@ -17,7 +17,7 @@
 #define ADC_CHANNEL_VSENSE   ADC_CH_3
 
 // The sensitivity to hit
-#define HIT_THRESHOLD 2500
+#define HIT_THRESHOLD 10
 #define HIT_DEBOUNCE_A  2
 #define HIT_DEBOUNCE_B  3000
 

@@ -8,12 +8,18 @@
 #include "rom_map.h"
 #include "adc.h"
 
+typedef enum {
+	HIT_MODE_IDLE,
+	HIT_MODE_THRESH,
+	HIT_MODE_HOLD
+} hit_mode_e;
 
 // Global Variables
 static int g_iBatteryLevel;
 static struct {
 	int counter;
-	int mode;
+	int last_value;
+	hit_mode_e mode;
 	systime_t timestamp;
 } g_tHitDetect;
 
@@ -22,8 +28,9 @@ void AnalogInit()
 {
 	// Hit detection data
 	g_tHitDetect.counter = 0;
+	g_tHitDetect.last_value = 0;
 	g_tHitDetect.timestamp = NULL_TIME;
-	g_tHitDetect.mode = 0;
+	g_tHitDetect.mode = HIT_MODE_IDLE;
 
 	// Enable the PIEZO & VSENSE channels
 	MAP_ADCChannelEnable(ADC_BASE, ADC_CHANNEL_PIEZO);
@@ -48,24 +55,38 @@ void AnalogTask()
 			ConsolePrintf("ADC=%d\n\r", value);
 #endif
 
-		if (value > HIT_THRESHOLD) {
-			if (g_tHitDetect.mode == 0) {
-				g_tHitDetect.timestamp = TimeGetSystime();
-				g_tHitDetect.mode = 1;
-				g_tHitDetect.counter = HIT_DEBOUNCE_B;
-				ConsolePrint("hit ");
-			}
-		}
-		else {
-			if (g_tHitDetect.mode == 1) {
-				if (g_tHitDetect.counter > 0)
-					g_tHitDetect.counter--;
+		switch(g_tHitDetect.mode) {
 
-				if (g_tHitDetect.counter == 0) {
-					g_tHitDetect.mode = 0;
-				}
+		case HIT_MODE_IDLE:
+			if (value > HIT_THRESHOLD) {
+				// Initial hit level threshold has been crossed
+				g_tHitDetect.mode = HIT_MODE_THRESH;
+				g_tHitDetect.last_value = value;
 			}
+			break;
+
+		case HIT_MODE_THRESH:
+			if (value > g_tHitDetect.last_value)
+				// The hit pulse is still rising
+				g_tHitDetect.last_value = value;
+			else {
+				// The received pulse is smaller than the previously
+				// measured value, the pulse has passed its peak
+				g_tHitDetect.mode = HIT_MODE_HOLD;
+				g_tHitDetect.timestamp = TimeGetSystime();
+				g_tHitDetect.counter = HIT_DEBOUNCE_B;
+			}
+			break;
+
+		case HIT_MODE_HOLD:
+			// While in HOLD mode, we're not detecting additional hit pulses
+			g_tHitDetect.counter--;
+			if (g_tHitDetect.counter == 0)
+				// Hold time done
+				g_tHitDetect.mode = HIT_MODE_IDLE;
+			break;
 		}
+
 	}
 }
 
