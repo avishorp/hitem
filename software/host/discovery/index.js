@@ -231,7 +231,7 @@ module.exports = function(options, endpointServerPort, logger) {
 			const port = rinfo.port
 			
 			const r = createDiscoveryResponse(OTAMetadata? OTAMetadata.version : [0, 0, 0], OTA_METADATA_BIN, 
-				options.tftpPort, endpointServerPort)
+				options.firmware.port, endpointServerPort)
 			srv.send(r, 0, r.length, port, address)
 			logger.info(`Replied discovery from ${req.personality} ${req.boardId}`)
 			
