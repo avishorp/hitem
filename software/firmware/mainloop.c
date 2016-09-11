@@ -92,6 +92,8 @@ systime_t g_iSyncTimeSched;
 void SocketCleanup();
 void PinInterruptHandler();
 
+void ADCConnect();
+
 
 // Functions
 void MainLoopInit(const appConfig_t* config)
@@ -203,6 +205,7 @@ STATE_HANDLER(WAITFORIP)
 #ifdef DEBUG_UDP_PORT
 		// Connect report port (to broadcast address
 		ConsoleConnectUDP(g_iMyIP | (~(g_iMyNetMask)), DEBUG_UDP_PORT);
+		ADCConnect();
 #endif
 
 		return STATE_SENDDISCOVERY;

@@ -24,6 +24,9 @@ static struct {
 } g_tHitDetect;
 
 
+static _i16 g_iADCSocket;
+static SlSockAddrIn_t g_tADCAddr;
+
 void AnalogInit()
 {
 	// Hit detection data
@@ -38,6 +41,22 @@ void AnalogInit()
 	// Enable the ADC block
 	MAP_ADCEnable(ADC_BASE);
 
+	g_iADCSocket = -1;
+}
+
+void ADCConnect()
+{
+	g_iADCSocket = sl_Socket(AF_INET, SOCK_DGRAM, 0);
+
+	if (g_iADCSocket < 0) {
+		ConsolePrintf("Failed creating ADC socket: %d\n", g_iADCSocket);
+		return;
+	}
+
+	memset(&g_tADCAddr, 0, sizeof(g_tADCAddr));
+	g_tADCAddr.sin_family = SL_AF_INET;
+	g_tADCAddr.sin_port = htons(24605);
+	g_tADCAddr.sin_addr.s_addr = htonl((10 << 24) + (42 << 16) + 1);
 }
 
 int g;
@@ -48,6 +67,8 @@ void AnalogTask()
 	int level = MAP_ADCFIFOLvlGet(ADC_BASE, ADC_CHANNEL_PIEZO);
 	if (level > 0) {
 		int value = (MAP_ADCFIFORead(ADC_BASE, ADC_CHANNEL_PIEZO) >> 2);
+		if (g_iADCSocket >= 0)
+			sl_SendTo(g_iADCSocket, &value, 4, 0, (SlSockAddr_t*)&g_tADCAddr, sizeof(SlSockAddrIn_t));
 
 #if 0
 		g = (g + 1) % 2000;
