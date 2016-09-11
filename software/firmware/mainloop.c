@@ -199,9 +199,14 @@ STATE_HANDLER(WAITFORIP)
 
 		// TODO: sl_NetCfgGet hangs, so I use constant netmask
 		g_iMyNetMask = (255 << 24) + (255 << 16) + (255 << 8);
+
+#ifdef DEBUG_UDP_PORT
+		// Connect report port (to broadcast address
+		ConsoleConnectUDP(g_iMyIP | (~(g_iMyNetMask)), DEBUG_UDP_PORT);
+#endif
+
 		return STATE_SENDDISCOVERY;
 	}
-
 
 	return 0;
 }
@@ -225,7 +230,6 @@ STATE_HANDLER(SENDDISCOVERY)
 
 	// Adjust broadcast address according to allocated IP
 	g_tBroadcastAddr.sin_addr.s_addr = sl_Htonl(g_iMyIP | (~(g_iMyNetMask)));
-
 	sl_SendTo(g_iDiscoverySocket, &g_discoveryRequest, sizeof(discovery_req_t), 0, (SlSockAddr_t*)&g_tBroadcastAddr, sizeof(SlSockAddrIn_t));
 
     LEDSetPattern(PATTERN_RED_GREEN);
@@ -432,6 +436,10 @@ STATE_HANDLER(READY)
 STATE_HANDLER(CLEANUP)
 {
 	SocketCleanup();
+
+#ifdef DEBUG_UDP_PORT
+	ConsoleDisconnectUDP();
+#endif
 
 	// Disconnect from WLAN
 	sl_WlanDisconnect();

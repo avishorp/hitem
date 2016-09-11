@@ -17,7 +17,7 @@
 #define ADC_CHANNEL_VSENSE   ADC_CH_3
 
 // The sensitivity to hit
-#define HIT_THRESHOLD 10
+#define HIT_THRESHOLD 2080
 #define HIT_DEBOUNCE_A  2
 #define HIT_DEBOUNCE_B  3000
 
@@ -27,6 +27,9 @@
 #define WLAN_TIMEOUT         40000 // The time, in mS, the unit waits for WLAN connection
 
 //#define NO_UDP_SYNC_REQ
+
+// Define to enable report messages to be sent over UDP
+#define DEBUG_UDP_PORT  24600
 
 #endif
 

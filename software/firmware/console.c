@@ -23,6 +23,10 @@ char g_cConsoleBuffer[CONSOLE_BUFFER_SIZE];
 int g_iConsoleWritePtr;
 int g_iConsoleReadPtr;
 int g_iConsoleLength;
+static _i16 g_iReportSocket;
+static SlSockAddrIn_t g_tReportAddr;
+
+
 
 // Local forwards
 void _ConsoleProcessTX();
@@ -46,6 +50,8 @@ void ConsoleInit()
 	g_iConsoleWritePtr = 0;
 	g_iConsoleReadPtr = 0;
 	g_iConsoleLength = 0;
+
+	g_iReportSocket = -1;
 }
 
 // Print a message to the console. This function copies the message
@@ -55,6 +61,17 @@ void ConsoleInit()
 void ConsolePrint(const char* pStr)
 {
 	const char* p = pStr;
+
+	// Send report over UDP
+	//if (g_iReportSocket > 0) {
+		sl_SendTo(g_iReportSocket, pStr, strlen(pStr), 0, (SlSockAddr_t*)&g_tReportAddr, sizeof(SlSockAddrIn_t));
+
+		//static const char xx[] = "hello oooooo";
+		//int r = sl_SendTo(g_iReportSocket, xx, 10, 0, (SlSockAddr_t*)&g_tReportAddr, sizeof(SlSockAddrIn_t));
+		//g_cConsoleBuffer[g_iConsoleWritePtr] = '*';
+		//g_iConsoleWritePtr = (g_iConsoleWritePtr + 1) % CONSOLE_BUFFER_SIZE;
+		//g_iConsoleLength++;
+	//}
 
 	// Disable interrupts while wer'e working with the buffer
 	MAP_UARTIntDisable(CONSOLE, UART_INT_TX);
@@ -80,6 +97,8 @@ void ConsolePrint(const char* pStr)
 
 	// Enable interrupt
 	MAP_UARTIntEnable(CONSOLE, UART_INT_TX);
+
+
 
 }
 
@@ -127,6 +146,35 @@ int ConsolePrintf(const char *pcFormat, ...)
 
   return iRet;
 }
+
+void ConsoleConnectUDP(_u32 ip, _u16 port)
+{
+	g_iReportSocket = sl_Socket(AF_INET, SOCK_DGRAM, 0);
+
+	if (g_iReportSocket < 0) {
+		ConsolePrintf("Failed creating report socket: %d\n", g_iReportSocket);
+		return;
+	}
+
+	// Change the socket into non-blocking mode
+	SlSockNonblocking_t nb;
+	nb.NonblockingEnabled = 1;
+	sl_SetSockOpt(g_iReportSocket, SL_SOL_SOCKET, SL_SO_NONBLOCKING, &nb, sizeof(SlSockNonblocking_t));
+
+	memset(&g_tReportAddr, 0, sizeof(g_tReportAddr));
+	g_tReportAddr.sin_family = SL_AF_INET;
+	g_tReportAddr.sin_port = htons(port);
+	g_tReportAddr.sin_addr.s_addr = htonl(ip);
+}
+
+void ConsoleDisconnectUDP()
+{
+	if (g_iReportSocket > 0) {
+		sl_Close(g_iReportSocket);
+		g_iReportSocket = -1;
+	}
+}
+
 
 
 void _ConsoleProcessTX()

@@ -62,6 +62,7 @@ void AnalogTask()
 				// Initial hit level threshold has been crossed
 				g_tHitDetect.mode = HIT_MODE_THRESH;
 				g_tHitDetect.last_value = value;
+				ConsolePrintf("value=%d\n", value);
 			}
 			break;
 
