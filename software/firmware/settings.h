@@ -17,9 +17,9 @@
 #define ADC_CHANNEL_VSENSE   ADC_CH_3
 
 // The sensitivity to hit
-#define HIT_THRESHOLD 2080
+#define HIT_THRESHOLD 2400
 #define HIT_DEBOUNCE_A  2
-#define HIT_DEBOUNCE_B  3000
+#define HIT_DEBOUNCE_B  500
 
 
 #define DISCOVERY_TIMEOUT    1000  // The period, in mS, in which repeated discovery
