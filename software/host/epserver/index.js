@@ -105,7 +105,7 @@ EPManager.prototype.handleWelcome = function(addr, parser, ep)
     
 	// Emitted by the parser when the unit is hit
 	parser.on('hit', timestamp => {
-        const corrected = timestamp - uentry.offset
+        const corrected = timestamp// - uentry.offset
         
         if ((corrected - this.lastHit.time) <= this.hitWindow)
             this.handleHit(id, this.lastHit.id)
@@ -114,7 +114,7 @@ EPManager.prototype.handleWelcome = function(addr, parser, ep)
             time: corrected,
             id: id
         }
-        console.log(corrected)
+        console.log(`HIT(%d): %d`, id, corrected)
 	})
     
    
