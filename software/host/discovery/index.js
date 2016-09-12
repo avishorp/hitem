@@ -199,11 +199,13 @@ module.exports = function(options, endpointServerPort, logger) {
 
 	// Read and parse the firmware metadata
 	let OTAMetadata;
-	try {
-		OTAMetadata = createOTAMetadata(path.resolve(options.firmware.directory, FIRMWARE_DESCRIPTOR_FILENAME))
-	}
-	catch(e) {
-		logger.error(`Failed reading firmware metadata: ${e.message}`)	
+	if (!options.firmware.disabled) {
+		try {
+			OTAMetadata = createOTAMetadata(path.resolve(options.firmware.directory, FIRMWARE_DESCRIPTOR_FILENAME))
+		}
+		catch(e) {
+			logger.error(`Failed reading firmware metadata: ${e.message}`)	
+		}
 	}
 
 
