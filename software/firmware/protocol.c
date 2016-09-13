@@ -82,6 +82,7 @@ _i16 ProtocolSendWelcome(_i16 sock)
 
 _i16 ProtocolSendSyncResp(_i16 sock, systime_t time)
 {
+	//ConsolePrint("UDPSYNC\n");
 	message_t msg;
 
 	// Prepare the message

@@ -59,7 +59,22 @@ function EPManager(options, logger) {
 	srv.listen(options.port)
     
     // Create sync request
-    setInterval(this._syncAllTcp.bind(this), 1000)
+    if (options.syncMethod == 'tcp')
+        // Set-up cyclic message sending over TCP connection
+        setInterval(this._syncAllTcp.bind(this), options.syncInterval)
+    else {
+        // Create a UDP sync socket
+        this.syncSocket = dgram.createSocket('udp4')
+
+        // Bind it (must be done to enable setBroadcast)
+        this.syncSocket.bind(options.port)
+
+        // Enable broadcast
+        this.syncSocket.setBroadcast(true)
+
+        // Set-up cyclic message sending over UDP
+        setInterval(function() { this._syncAllUdp(options.port) }, options.syncInterval)
+    }
 }
 
 util.inherits(EPManager, EventEmitter)
@@ -100,6 +115,7 @@ EPManager.prototype.handleWelcome = function(addr, parser, ep)
     
     // Emitted by the parser when a sync response message is received
 	parser.on('sync_resp', timestamp => {
+        console.info(`SYNC %d`, timestamp)
 			uentry.offset = timestamp
 	})
     
@@ -136,6 +152,13 @@ EPManager.prototype._getUnitByAddress = function(addr)
 EPManager.prototype._syncAllTcp = function()
 {
     this.units.forEach(value => { value.syncReq() })
+}
+
+EPManager.prototype._syncAllUdp = function(port)
+{
+    msg = new Buffer(4);
+    msg.fill(0)
+    this.syncSocket.send(msg, 0, 4, port, '255.255.255.255')
 }
 
 
