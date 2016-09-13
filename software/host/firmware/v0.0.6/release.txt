@@ -1,0 +1,4 @@
+v0.0.6
+  - Fix advertising of TFTP port through discovery response
+  - Rewrite hit detection mechanism
+  - Split the unit ID/WLAN credentials to two separate files.

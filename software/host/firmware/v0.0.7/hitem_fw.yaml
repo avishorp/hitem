@@ -1,0 +1,5 @@
+---
+  version: "0.0.7"
+  files:
+   - hitem_firmware.bin => /sys/mcuimg.bin
+   
