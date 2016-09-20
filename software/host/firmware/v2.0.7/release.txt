@@ -1,8 +1,9 @@
+v2.0.7
+  - Add UDP console facility
+  - Rewrite and tune hit detection mechanism
+
 v0.0.6
   - Fix advertising of TFTP port through discovery response
   - Rewrite hit detection mechanism
   - Split the unit ID/WLAN credentials to two separate files.
 
-v0.0.7
-  - Add UDP console facility
-  - Rewrite and tune hit detection mechanism
