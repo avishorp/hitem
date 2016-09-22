@@ -4,8 +4,8 @@ const stream = require('stream')
 const util = require('util')
 const SRBuffer = require('./shiftreg')
 
-const MESSAGE_LENGTH = 7
-const MSG_PROLOG = 0x85
+const MESSAGE_LENGTH = 10
+const MSG_PROLOG = "HTEM"
 
 const MESSAGE_TYPE_WELCOME = 1
 const MESSAGE_TYPE_SET_COLOR = 2
@@ -15,12 +15,12 @@ const MESSAGE_TYPE_SYNC_REQ = 5
 const MESSAGE_TYPE_HIT      = 6
 const MESSAGE_TYPE_BATTERY  = 7
 
-const MESSAGE_OFFSET_TYPE = 1
-const MESSAGE_OFFSET_WELCOME_NUM = 2
-const MESSAGE_OFFSET_WELCOME_PERSONALITY = 3
-const MESSAGE_OFFSET_SYNC_TIMESTAMP = 2
-const MESSAGE_OFFSET_HIT_TIMESTAMP = 2
-const MESSAGE_OFFSET_BATTERY = 2
+const MESSAGE_OFFSET_TYPE = 4
+const MESSAGE_OFFSET_WELCOME_NUM = 5
+const MESSAGE_OFFSET_WELCOME_PERSONALITY = 6
+const MESSAGE_OFFSET_SYNC_TIMESTAMP = 5
+const MESSAGE_OFFSET_HIT_TIMESTAMP = 5
+const MESSAGE_OFFSET_BATTERY = 5
 
 const PERSONALITY_HAT = 1
 const PERSONALITY_HAMMER = 2
@@ -48,18 +48,17 @@ const Indications = {
 
 function ProtocolParser() {
 	stream.Writable.call(this)
-	this.msg = new SRBuffer(7)
+	this.msg = new SRBuffer(MESSAGE_LENGTH)
 }
 
 util.inherits(ProtocolParser, stream.Writable)
 
 ProtocolParser.prototype._write = function(chunk, encoding, done) {
-	//console.log(chunk)
 	for(let b of chunk) {
 		this.msg.lshift(b)
-	}	
+	
 		// Check the validity of the message
-		if (this.msg.buffer[0]==MSG_PROLOG) {
+		if (this.msg.buffer.slice(0,4).toString()===MSG_PROLOG) {
 			const checksum = this._checksum(this.msg.buffer)
 			if (this.msg.buffer[MESSAGE_LENGTH-1] != checksum)
 				this.emit('parse_error', {
@@ -69,7 +68,7 @@ ProtocolParser.prototype._write = function(chunk, encoding, done) {
 			else 
 				this._doMessageParsing(this.msg.buffer)
 		}	
-	//}
+	}
 	
 	done()
 }
@@ -108,7 +107,7 @@ ProtocolParser.prototype._doMessageParsing = function(message) {
 ProtocolParser.prototype._checksum = function(buf) {
 	let i
 	let checksum = 0
-	for(i=0; i < buf.length-1; i++)
+	for(i=0; i < MESSAGE_LENGTH-1; i++)
 		checksum += buf[i]
 		
 	return (checksum & 0xff)

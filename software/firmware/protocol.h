@@ -23,7 +23,7 @@
 #include <simplelink.h>
 #include "time.h"
 
-#define MSG_PROLOG 0x85
+#define MSG_PROLOG "HTEM"
 #define MSG_TYPE_WELCOME    1
 #define MSG_TYPE_SET_COLOR  2
 #define MSG_TYPE_INDICATE   3
@@ -33,7 +33,7 @@
 #define MSG_TYPE_BAT_REPORT 7
 
 typedef struct  {
-	_u8 prolog;
+	_u8 prolog[4];
 	_u8 type;
 	union {
 		// Raw data

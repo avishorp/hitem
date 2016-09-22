@@ -25,10 +25,20 @@ const color_t g_iColorTable[] = {
 // Local Forwards
 _u8 _CalcChecksum(const message_t* msg);
 void _ProcessIngressMessage(const message_t* msg);
+void _InitMessage(message_t* msg);
 
 // Globals
 static _u8 g_cMessageBuffer[MESSAGE_LENGTH];
 static systime_t g_iSyncTime;
+
+const message_t empty_message = {
+		"HTEM", // prolog
+		0,      // type
+		0,      // payload[0]
+		0,      // payload[1]
+		0,      // payload[2]
+		0       // payload[3]
+};
 
 void ProtocolInit()
 {
@@ -69,8 +79,7 @@ _i16 ProtocolSendWelcome(_i16 sock)
 	const appConfig_t* config = ConfigGet();
 
 	// Prepare the message
-	memset(&msg, 0, sizeof(message_t));
-	msg.prolog = MSG_PROLOG;
+	_InitMessage(&msg);
 	msg.type = MSG_TYPE_WELCOME;
 	msg.payload.welcome.endpoint_id = config->board.lBoardNumber;
 	msg.payload.welcome.endpoint_personality = config->board.lPersonality;
@@ -86,8 +95,7 @@ _i16 ProtocolSendSyncResp(_i16 sock, systime_t time)
 	message_t msg;
 
 	// Prepare the message
-	memset(&msg, 0, sizeof(message_t));
-	msg.prolog = MSG_PROLOG;
+	_InitMessage(&msg);
 	msg.type = MSG_TYPE_SYNC_RSP;
 	msg.payload.timestamp = time;
 	msg.checksum = _CalcChecksum(&msg);
@@ -101,8 +109,7 @@ _i16 ProtocolSendHit(_i16 sock, systime_t time)
 	message_t msg;
 
 	// Prepare the message
-	memset(&msg, 0, sizeof(message_t));
-	msg.prolog = MSG_PROLOG;
+	_InitMessage(&msg);
 	msg.type = MSG_TYPE_HIT;
 	msg.payload.timestamp = time;
 	msg.checksum = _CalcChecksum(&msg);
@@ -116,8 +123,7 @@ _i16 ProtocolSendBatReport(_i16 sock, int voltage)
 	message_t msg;
 
 	// Prepare the message
-	memset(&msg, 0, sizeof(message_t));
-	msg.prolog = MSG_PROLOG;
+	_InitMessage(&msg);
 	msg.type = MSG_TYPE_BAT_REPORT;
 	msg.payload.bat_report.battery_voltage = voltage;
 	msg.checksum = _CalcChecksum(&msg);
@@ -171,4 +177,8 @@ void _ProcessIngressMessage(const message_t* msg)
 		ConsolePrintf("Invalid message type received: %d\n\r", msg->type);
 }
 
+void _InitMessage(message_t* msg)
+{
+	memcpy(msg, &empty_message, sizeof(message_t));
+}
 
