@@ -8,6 +8,7 @@ s = socket(AF_INET, SOCK_DGRAM)
 s.bind(('', PORT))
 
 while(True):
-	t = s.recv(200)
-	print t.strip()
+	t, addr = s.recvfrom(200)
+	print "[%s] %s" % (addr[0], t.strip())
+
 
