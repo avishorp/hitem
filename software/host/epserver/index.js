@@ -135,6 +135,12 @@ EPManager.prototype.handleWelcome = function(addr, parser, ep)
     
    
     this.units.set(id, uentry)
+
+    // Emit a "join" event
+    this.emit('join', {
+        id: id,
+        personality: personality
+    })
 }
 
 EPManager.prototype._getUnitByAddress = function(addr)
