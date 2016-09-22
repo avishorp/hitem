@@ -22,9 +22,11 @@
 #define HIT_DEBOUNCE_B  500
 
 
-#define DISCOVERY_TIMEOUT    1000  // The period, in mS, in which repeated discovery
-								   // messages are sent
-#define WLAN_TIMEOUT         40000 // The time, in mS, the unit waits for WLAN connection
+#define DISCOVERY_TIMEOUT     1000  // The period, in mS, in which repeated discovery
+								    // messages are sent
+#define WLAN_TIMEOUT          40000 // The time, in mS, the unit waits for WLAN connection
+
+#define BATTERY_REPORT_PERIOD 5000  // The period (in mS) between battery level updates
 
 //#define NO_UDP_SYNC_REQ
 

@@ -24,7 +24,7 @@ typedef struct {
 
 typedef struct {
 	board_config_t     board;
-	wlan_config_t      wlan
+	wlan_config_t      wlan;
 } appConfig_t;
 
 long ConfigInit();

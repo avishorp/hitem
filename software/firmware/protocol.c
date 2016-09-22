@@ -111,6 +111,22 @@ _i16 ProtocolSendHit(_i16 sock, systime_t time)
 	return sl_Send(sock, &msg, sizeof(message_t), 0);
 }
 
+_i16 ProtocolSendBatReport(_i16 sock, int voltage)
+{
+	message_t msg;
+
+	// Prepare the message
+	memset(&msg, 0, sizeof(message_t));
+	msg.prolog = MSG_PROLOG;
+	msg.type = MSG_TYPE_BAT_REPORT;
+	msg.payload.bat_report.battery_voltage = voltage;
+	msg.checksum = _CalcChecksum(&msg);
+
+	// Send it
+	return sl_Send(sock, &msg, sizeof(message_t), 0);
+}
+
+
 
 systime_t ProtocolGetSyncTime()
 {

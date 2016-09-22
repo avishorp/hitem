@@ -8,6 +8,10 @@
 #include "rom_map.h"
 #include "adc.h"
 
+#define ADC_FULLSCALE    1460  // ADC Fullscale Voltage [mV]
+#define VBAT_DIVIDER     3     // Hardware volated divider between battery input and pin
+#define VBAT_AVERAGE_LEN 512
+
 typedef enum {
 	HIT_MODE_IDLE,
 	HIT_MODE_THRESH,
@@ -22,6 +26,8 @@ static struct {
 	hit_mode_e mode;
 	systime_t timestamp;
 } g_tHitDetect;
+static int g_iBatteryAcc;
+static int g_iBatteryAccCnt;
 
 
 void AnalogInit()
@@ -32,15 +38,21 @@ void AnalogInit()
 	g_tHitDetect.timestamp = NULL_TIME;
 	g_tHitDetect.mode = HIT_MODE_IDLE;
 
+	// Battery voltage averaging
+	g_iBatteryAcc = 0;
+	g_iBatteryAccCnt = 0;
+
 	// Enable the PIEZO & VSENSE channels
 	MAP_ADCChannelEnable(ADC_BASE, ADC_CHANNEL_PIEZO);
+	MAP_ADCChannelEnable(ADC_BASE, ADC_CHANNEL_VSENSE);
+
 
 	// Enable the ADC block
 	MAP_ADCEnable(ADC_BASE);
 
 }
 
-int g;
+int g = 0;
 void AnalogTask()
 {
 	// Hit sensor (Piezo)
@@ -89,6 +101,35 @@ void AnalogTask()
 		}
 
 	}
+
+	// Battery Level
+	////////////////
+	level = MAP_ADCFIFOLvlGet(ADC_BASE, ADC_CHANNEL_VSENSE);
+	if (level > 0) {
+		int value = (MAP_ADCFIFORead(ADC_BASE, ADC_CHANNEL_VSENSE) >> 2) & 0xfff;
+
+		g_iBatteryAcc += value;
+		g_iBatteryAccCnt++;
+
+		if (g_iBatteryAccCnt == VBAT_AVERAGE_LEN) {
+			// Calculate the battery voltage in mV
+			// Note: After calculating, there still remains an unknown factor of 1.33. This can be either
+			//       due to imput impedance of the ADC pin or lack of capacitor on that input. Anyway, wer'e
+			//       only intersted at "battery low" indication so we just fix the measurment.
+			int voltage = ((ADC_FULLSCALE*g_iBatteryAcc/4096)/VBAT_AVERAGE_LEN)*VBAT_DIVIDER*1333/1000;
+			g_iBatteryLevel = voltage;
+
+			g_iBatteryAcc = 0;
+			g_iBatteryAccCnt = 0;
+		}
+
+
+		//int z = g_iBatteryAcc/g_iBatteryAccCnt;
+		//g = (g + 1) % 2000;
+		//if (g == 0)
+		//	ConsolePrintf("VBAT=%d RAW=%d \n\r", g_iBatteryLevel, z);
+	}
+
 }
 
 systime_t AnalogGetHitTime()
@@ -97,4 +138,9 @@ systime_t AnalogGetHitTime()
 	g_tHitDetect.timestamp = NULL_TIME;
 
 	return t;
+}
+
+int AnalogGetBatteryVoltage()
+{
+	return g_iBatteryLevel;
 }

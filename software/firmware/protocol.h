@@ -24,12 +24,13 @@
 #include "time.h"
 
 #define MSG_PROLOG 0x85
-#define MSG_TYPE_WELCOME   1
-#define MSG_TYPE_SET_COLOR 2
-#define MSG_TYPE_INDICATE  3
-#define MSG_TYPE_SYNC_RSP  4
-#define MSG_TYPE_SYNC_REQ  5
-#define MSG_TYPE_HIT       6
+#define MSG_TYPE_WELCOME    1
+#define MSG_TYPE_SET_COLOR  2
+#define MSG_TYPE_INDICATE   3
+#define MSG_TYPE_SYNC_RSP   4
+#define MSG_TYPE_SYNC_REQ   5
+#define MSG_TYPE_HIT        6
+#define MSG_TYPE_BAT_REPORT 7
 
 typedef struct  {
 	_u8 prolog;
@@ -60,6 +61,12 @@ typedef struct  {
 
 		// SYNC_RSP/HIT payload
 		_u32 timestamp;
+
+		// BAT_REPORT payload
+		struct {
+			_u16 battery_voltage;
+			_u8 padding[2];
+		} bat_report;
 	} payload;
 	_u8 checksum;
 } __attribute__((packed)) message_t;
@@ -71,6 +78,7 @@ void ProtocolParse(const char* buf, int len);
 _i16 ProtocolSendWelcome(_i16 sock);
 _i16 ProtocolSendSyncResp(_i16 sock, systime_t stime);
 _i16 ProtocolSendHit(_i16 sock, systime_t time);
+_i16 ProtocolSendBatReport(_i16 sock, int voltage);
 systime_t ProtocolGetSyncTime();
 
 

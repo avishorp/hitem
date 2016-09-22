@@ -88,6 +88,8 @@ static SlSockAddrIn_t g_tServerAddr;
 systime_t g_iSyncTime;
 systime_t g_iSyncTimeSched;
 
+systime_t g_iLastBatteryReportTime;
+
 // Local forwards
 void SocketCleanup();
 void PinInterruptHandler();
@@ -103,6 +105,8 @@ void MainLoopInit(const appConfig_t* config)
 	g_iCmdSocket = -1;
 	g_iSyncSocket = -1;
 	g_iDiscoverySocket = -1;
+
+	g_iLastBatteryReportTime = 0;
 
 	// Initialize static broadcast address
 	g_tBroadcastAddr.sin_family = SL_AF_INET;
@@ -427,6 +431,15 @@ STATE_HANDLER(READY)
 	systime_t hitTime = AnalogGetHitTime();
 	if (hitTime != NULL_TIME) {
 		ProtocolSendHit(g_iCmdSocket, hitTime);
+	}
+
+	// Periodic Battery Report
+	systime_t now = TimeGetSystime();
+	if ((now - g_iLastBatteryReportTime) > BATTERY_REPORT_PERIOD) {
+		int bat = AnalogGetBatteryVoltage();
+		ProtocolSendBatReport(g_iCmdSocket, bat);
+
+		g_iLastBatteryReportTime = now;
 	}
 
 

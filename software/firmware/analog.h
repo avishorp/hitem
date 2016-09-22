@@ -8,5 +8,6 @@
 void AnalogInit();
 void AnalogTask();
 systime_t AnalogGetHitTime();
+int AnalogGetBatteryVoltage();
 
 #endif
