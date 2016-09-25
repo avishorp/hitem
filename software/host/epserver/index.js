@@ -212,18 +212,13 @@ EPManager.prototype.setColor = function(id, color, intensity) {
     if (!unit) {
         this.logger.warn(util.format("setColor to unknown ID (%d)", id))
     }
-    else
-        unit.setColor(color, intensity)
-}
-
-EPManager.prototype.setIndication = function(id, indication) 
-{
-    const unit = this.units.get(id)
-    if (!unit) {
-        this.logger.warn(util.format("setIndication to unknown ID (%d)", id))
+    else {
+        if (ProtocolParser.pureColors.indexOf(color) >= 0)
+            unit.setColor(color, intensity)
+        else
+            unit.setIndication(color)
     }
-    else
-        unit.setIndication(indication)
+     
 }
 
 

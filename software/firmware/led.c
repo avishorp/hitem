@@ -45,17 +45,12 @@ const pattern_point_t g_tPatternRedGreen[] = {
 };
 
 const pattern_point_t g_tPatternRedPulse[] = {
-		{ COLOR_RED, 100 },
-		{ COLOR_NONE, 150 },
-		{ COLOR_RED, 100 },
+		{ COLOR_RED, 200 },
 		{ COLOR_NONE, 200 }
-
 };
 
 const pattern_point_t g_tPatternGreenPulse[] = {
-		{ COLOR_GREEN, 100 },
-		{ COLOR_NONE, 150 },
-		{ COLOR_GREEN, 100 },
+		{ COLOR_GREEN, 200 },
 		{ COLOR_NONE, 200 }
 };
 
@@ -110,14 +105,14 @@ const pattern_t g_tLEDPatterns[] = {
 		{
 				g_tPatternRedPulse,	      // schedule
 				PLEN(g_tPatternRedPulse), // length
-				0,                        // repetitive
+				1,                        // repetitive
 				70                        // intensity
 		},
 		// PATTERN_GREEN_PULSE
 		{
 				g_tPatternGreenPulse,	    // schedule
 				PLEN(g_tPatternGreenPulse), // length
-				0,                          // repetitive
+				1,                          // repetitive
 				70                          // intensity
 		},
 		// PATTERN_BLIMP

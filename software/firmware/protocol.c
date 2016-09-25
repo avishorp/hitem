@@ -24,13 +24,18 @@ const color_entry_t g_iColorTable[] = {
 	{ COLOR_YELLOW, "Yellow" },
 	{ COLOR_WHITE, "White" },
 	{ COLOR_PINK, "Pink"}
-
-
-//    PATTERN_RED_PULSE   2  // Two short pulses of red
-//#define PATTERN_GREEN_PULSE 3  // Two short pulses of green
-//#define PATTERN_BLIMP       4  // Multiple short pulses of various colors, with spacing
-//#define PATTERN_COLOR_CHIRP 5  // 1-sec roll of multiple colors
 };
+
+const char* g_sPatternNames[] = {
+		0,				// Cannot be set by setPattern
+		0,              // Cannot be set by setPattern
+		"RED_PULSE",
+		"GREEN_PULSE",
+		"BLIMP",
+		"COLOR_CHIRP"
+
+};
+
 #define NUM_COLORS (sizeof(g_iColorTable)/sizeof(color_entry_t))
 
 static const char g_sProlog[4] = MSG_PROLOG;
@@ -181,8 +186,11 @@ void _ProcessIngressMessage(const message_t* msg)
 	else if (msg->type == MSG_TYPE_INDICATE) {
 		// The only valid values are between 2 and 5
 		_u8 pcd = msg->payload.indicate.indication_code;
-		if ((pcd >= 2) && (pcd <= 5))
+		if ((pcd >= 2) && (pcd <= 5)) {
+			ConsolePrintf("Setting pattern to %s", g_sPatternNames[pcd]);
 			LEDSetPattern(pcd);
+		}
+
 		else
 			ConsolePrintf("Invalid pattern code received: %d\n\r", pcd);
 	}

@@ -36,11 +36,7 @@ const Colors = {
 	'turkiz': 7,
 	'yellow': 8,
 	'white': 9,
-	'pink': 10,
-	'red_pulse': -1,
-	'green_pulse': -2,
-	'blimp': -3,
-	'chirp': -4
+	'pink': 10
 }
 
 const Indications = {
@@ -50,8 +46,10 @@ const Indications = {
 	'chirp': 5
 }
 
-// Create a list of all available colors
-const colorList = Object.keys(Colors)
+// Create a list of all available colors and indication
+const pureColorList = Object.keys(Colors)
+const indicationList = Object.keys(Indications)
+const colorList = pureColorList.concat(indicationList)
 
 function ProtocolParser() {
 	stream.Writable.call(this)
@@ -155,5 +153,7 @@ ProtocolParser.prototype.syncReq = function() {
 
 module.exports = { 
 	parser: ProtocolParser,
-	colors: colorList
+	colors: colorList,
+	pureColors: pureColorList,
+	indications: indicationList
 }
