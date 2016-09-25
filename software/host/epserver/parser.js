@@ -36,7 +36,11 @@ const Colors = {
 	'turkiz': 7,
 	'yellow': 8,
 	'white': 9,
-	'pink': 10
+	'pink': 10,
+	'red_pulse': -1,
+	'green_pulse': -2,
+	'blimp': -3,
+	'chirp': -4
 }
 
 const Indications = {
@@ -45,6 +49,9 @@ const Indications = {
 	'blimp': 4,
 	'chirp': 5
 }
+
+// Create a list of all available colors
+const colorList = Object.keys(Colors)
 
 function ProtocolParser() {
 	stream.Writable.call(this)
@@ -115,10 +122,11 @@ ProtocolParser.prototype._checksum = function(buf) {
 
 ProtocolParser.prototype.setColor = function(color, intensity) {
 	let msg = new Buffer(MESSAGE_LENGTH)
-	msg[0] = MSG_PROLOG
-	msg[1] = MESSAGE_TYPE_SET_COLOR
-	msg[2] = Colors[color]
-	msg[3] = intensity
+	msg.fill(0)
+	msg.write(MSG_PROLOG)
+	msg[4] = MESSAGE_TYPE_SET_COLOR
+	msg[5] = Colors[color]
+	msg[6] = intensity
 	msg[MESSAGE_LENGTH-1] = this._checksum(msg)
 	
 	this.emit('send_command', msg)
@@ -126,9 +134,10 @@ ProtocolParser.prototype.setColor = function(color, intensity) {
 
 ProtocolParser.prototype.setIndication = function(indication) {
 	let msg = new Buffer(MESSAGE_LENGTH)
-	msg[0] = MSG_PROLOG
-	msg[1] = MESSAGE_TYPE_INDICATE
-	msg[2] = Indications[indication]
+	msg.fill(0)
+	msg.write(MSG_PROLOG)
+	msg[4] = MESSAGE_TYPE_INDICATE
+	msg[5] = Indications[indication]
 	msg[MESSAGE_LENGTH-1] = this._checksum(msg)
 	
 	this.emit('send_command', msg)
@@ -136,11 +145,15 @@ ProtocolParser.prototype.setIndication = function(indication) {
 
 ProtocolParser.prototype.syncReq = function() {
 	let msg = new Buffer(MESSAGE_LENGTH)
-	msg[0] = MSG_PROLOG
-	msg[1] = MESSAGE_TYPE_SYNC_REQ
+	msg.fill(0)
+	msg.write(MSG_PROLOG)
+	msg[4] = MESSAGE_TYPE_SYNC_REQ
 	msg[MESSAGE_LENGTH-1] = this._checksum(msg)
 	
 	this.emit('send_command', msg)
 }
 
-module.exports = ProtocolParser
+module.exports = { 
+	parser: ProtocolParser,
+	colors: colorList
+}

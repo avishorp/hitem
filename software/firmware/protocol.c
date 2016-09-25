@@ -7,20 +7,33 @@
 #include "time.h"
 
 // Color table
-const color_t g_iColorTable[] = {
-	COLOR_NONE,
-	COLOR_RED,
-	COLOR_GREEN,
-	COLOR_BLUE,
-	COLOR_ORANGE,
-	COLOR_PURPLE,
-	COLOR_LGTGREEN,
-	COLOR_TURKIZ,
-	COLOR_YELLOW,
-	COLOR_WHITE,
-	COLOR_PINK
+typedef struct {
+	color_t code;
+	char* name;
+} color_entry_t;
+
+const color_entry_t g_iColorTable[] = {
+	{ COLOR_NONE, "None" },
+	{ COLOR_RED, "Red" },
+	{ COLOR_GREEN, "Green" },
+	{ COLOR_BLUE, "Blue" },
+	{ COLOR_ORANGE, "Orange" },
+	{ COLOR_PURPLE, "Purple" },
+	{ COLOR_LGTGREEN, "LtGreen" },
+	{ COLOR_TURKIZ, "Turkiz" },
+	{ COLOR_YELLOW, "Yellow" },
+	{ COLOR_WHITE, "White" },
+	{ COLOR_PINK, "Pink"}
+
+
+//    PATTERN_RED_PULSE   2  // Two short pulses of red
+//#define PATTERN_GREEN_PULSE 3  // Two short pulses of green
+//#define PATTERN_BLIMP       4  // Multiple short pulses of various colors, with spacing
+//#define PATTERN_COLOR_CHIRP 5  // 1-sec roll of multiple colors
 };
-#define NUM_COLORS (sizeof(g_iColorTable)/sizeof(color_t))
+#define NUM_COLORS (sizeof(g_iColorTable)/sizeof(color_entry_t))
+
+static const char g_sProlog[4] = MSG_PROLOG;
 
 // Local Forwards
 _u8 _CalcChecksum(const message_t* msg);
@@ -55,14 +68,16 @@ void ProtocolParse(const char* buf, int len)
 			g_cMessageBuffer[j] = g_cMessageBuffer[j+1];
 		g_cMessageBuffer[len-1] = buf[i];
 
-		//ConsolePrintf("buf: %2x %2x %2x %2x %2x %2x %2x\n\r",
-		//	g_cMessageBuffer[0], g_cMessageBuffer[1], g_cMessageBuffer[2],
-		//	g_cMessageBuffer[3], g_cMessageBuffer[4], g_cMessageBuffer[5], g_cMessageBuffer[6]);
+#ifdef DUMP_MESSAGE
+		ConsolePrintf("buf: %2x %2x %2x %2x %2x %2x %2x\n\r",
+			g_cMessageBuffer[0], g_cMessageBuffer[1], g_cMessageBuffer[2],
+			g_cMessageBuffer[3], g_cMessageBuffer[4], g_cMessageBuffer[5], g_cMessageBuffer[6]);
+#endif
 
 		// Check the validity of the message
 		message_t* msg = (message_t*)g_cMessageBuffer;
 		_u8 checksum = _CalcChecksum(msg);
-		if (msg->prolog == MSG_PROLOG) {
+		if (memcmp(msg->prolog, g_sProlog, sizeof(g_sProlog)) == 0) {
 			if (msg->checksum == checksum) {
 				// Valid message
 				_ProcessIngressMessage(msg);
@@ -156,8 +171,10 @@ void _ProcessIngressMessage(const message_t* msg)
 {
 	if (msg->type == MSG_TYPE_SET_COLOR) {
 		_u8 cc = msg->payload.set_color.color_code;
-		if (cc <= (NUM_COLORS-1))
-			LEDSetColor(g_iColorTable[cc], msg->payload.set_color.intensity);
+		if (cc <= (NUM_COLORS-1)) {
+			ConsolePrintf("Setting color to %s intensity %d", g_iColorTable[cc].name, msg->payload.set_color.intensity);
+			LEDSetColor(g_iColorTable[cc].code, msg->payload.set_color.intensity);
+		}
 		else
 			ConsolePrintf("Invalid color code received: %d\n\r");
 	}

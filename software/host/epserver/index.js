@@ -25,7 +25,7 @@ function EPManager(options, logger) {
 			logger.info("Unit disconnected")
 		})
 		
-		const parser = new ProtocolParser()
+		const parser = new ProtocolParser.parser()
 
 		
 		// Emitted by the parser when it wants to send a packet to
@@ -59,10 +59,10 @@ function EPManager(options, logger) {
 	srv.listen(options.port)
     
     // Create sync request
-    if (options.syncMethod == 'tcp')
+    if (options.syncMethod === 'tcp')
         // Set-up cyclic message sending over TCP connection
         setInterval(this._syncAllTcp.bind(this), options.syncInterval)
-    else {
+    else if (options.syncMethod === 'udp') {
         // Create a UDP sync socket
         this.syncSocket = dgram.createSocket('udp4')
 
@@ -238,4 +238,7 @@ EPManager.prototype.handleBattery = function(level)
 	this.logger.info(util.format("Battery level is %dmV", level))
 }
 
-module.exports = EPManager
+module.exports = { 
+    server: EPManager,
+    colors: ProtocolParser.colors
+}
