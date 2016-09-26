@@ -31,6 +31,7 @@
 #define MSG_TYPE_SYNC_REQ   5
 #define MSG_TYPE_HIT        6
 #define MSG_TYPE_BAT_REPORT 7
+#define MSG_TYPE_KEEPALIVE  99
 
 typedef struct  {
 	_u8 prolog[4];

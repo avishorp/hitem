@@ -14,6 +14,7 @@ const MESSAGE_TYPE_SYNC_RSP = 4
 const MESSAGE_TYPE_SYNC_REQ = 5
 const MESSAGE_TYPE_HIT      = 6
 const MESSAGE_TYPE_BATTERY  = 7
+const MESSAGE_TYPE_KEEPALIVE = 99
 
 const MESSAGE_OFFSET_TYPE = 4
 const MESSAGE_OFFSET_WELCOME_NUM = 5
@@ -100,6 +101,10 @@ ProtocolParser.prototype._doMessageParsing = function(message) {
 	else if (type === MESSAGE_TYPE_BATTERY) {
 		const level = message.readUInt32LE(MESSAGE_OFFSET_BATTERY);
 		this.emit('battery', level)				
+	}
+	else if (type === MESSAGE_TYPE_KEEPALIVE) {
+		// Do nothing
+		// console.log("Keepalive")
 	}
 	else
 		this.emit('parse_error', {

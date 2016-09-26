@@ -14,6 +14,17 @@ class Store {
     this.units.push(unit)
   }
 
+  @autobind
+  leaveUnit(uid) {
+      const ids = this.units.map(u => u.id)
+      const n = ids.indexOf(uid)
+      if (n === -1) {
+          console.error("Requested removal of non-existing unit")
+          return
+      }
+
+      this.units = this.units.slice(0, n).concat(this.units.slice(n+1))
+  }
 }
 
 let store = new Store()
@@ -23,7 +34,7 @@ class EndpointControllers extends React.Component {
     render() {
         const store = this.props.store
         const units = store.units
-
+ 
         return (<div>
             {units.map(u => <EndpointController 
                 key={u.id} 
@@ -59,6 +70,7 @@ window.onload = function() {
 	const eps = new server(config.endpoint, console)
     const sc = eps.setColor
     eps.on('join', u => store.joinUnit(u))
+    eps.on('leave', u => store.leaveUnit(u))
     
      
   ReactDOM.render(<div>Hello React<EndpointControllers 

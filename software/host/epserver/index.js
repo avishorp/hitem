@@ -21,12 +21,10 @@ function EPManager(options, logger) {
 		const EPAddr = socket.remoteAddress
 		logger.info("New connection from " + EPAddr)
 		
-		socket.on('end', () => {
-			logger.info("Unit disconnected")
-		})
-		
+        // Enable keepalive to detect endpoind disconnection
+        socket.setTimeout(1000);
+            
 		const parser = new ProtocolParser.parser()
-
 		
 		// Emitted by the parser when it wants to send a packet to
 		// the endpoint
@@ -50,6 +48,19 @@ function EPManager(options, logger) {
 		parser.on('battery', level => this.handleBattery(level))
 				
 		socket.on('error', err => this.handleError(socket, err))
+
+        socket.on('timeout', _ => { this.removeUnit(this._getUnitByAddress(EPAddr)) })
+
+		socket.on('end', () => {
+			logger.log("Unit disconnected")
+            this.removeUnit(this._getUnitByAddress(EPAddr))
+		})
+		
+		socket.on('close', () => {
+			logger.log("socket closed")
+            this.removeUnit(this._getUnitByAddress(EPAddr))
+		})
+		
 
 		// Pipe all the traffic to the parser
 		socket.pipe(parser)				
@@ -79,6 +90,22 @@ function EPManager(options, logger) {
 
 util.inherits(EPManager, EventEmitter)
 
+EPManager.prototype.removeUnit = function(uid) {
+    console.log(`RemoveUnit %d`, uid)
+    // Make sure the unit exists in the list
+    const unit = this.units.get(uid)
+    if (!unit) {
+        this.logger.warning(util.format("Trying to delete non-existing unit (%d)", uid))
+        return
+    }
+
+    // Delete it
+    this.units.delete(uid)
+
+    // Notify
+    this.emit("leave", uid)
+}
+
 EPManager.prototype.handleWelcome = function(addr, parser, ep)
 {
 	const id = ep.boardNum
@@ -92,7 +119,7 @@ EPManager.prototype.handleWelcome = function(addr, parser, ep)
     // Check if the id is already in the unit list
     if (this.units.has(id)) {
         this.logger.warn(util.format("Unit %d re-registered without disconnecting", id))
-        this.units.delete(id)
+        this.removeUnit(id)
     }
     
     // Search through the list of units to see if there is another unit
@@ -100,7 +127,7 @@ EPManager.prototype.handleWelcome = function(addr, parser, ep)
     const k = this._getUnitByAddress(addr)
     if (k) {
         console.warning(util.format("The unit address is already in use, delteing the other (%d)", k))
-        this.units.delete(k)
+        this.remove(k)
     }
     
     // Add the unit to the list

@@ -152,6 +152,19 @@ _i16 ProtocolSendBatReport(_i16 sock, int voltage)
 	return sl_Send(sock, &msg, sizeof(message_t), 0);
 }
 
+_i16 ProtocolSendKeepalive(_i16 sock)
+{
+	message_t msg;
+
+	// Prepare the message
+	_InitMessage(&msg);
+	msg.type = MSG_TYPE_KEEPALIVE;
+	msg.checksum = _CalcChecksum(&msg);
+
+	// Send it
+	return sl_Send(sock, &msg, sizeof(message_t), 0);
+}
+
 
 
 systime_t ProtocolGetSyncTime()

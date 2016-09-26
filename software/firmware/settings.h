@@ -28,6 +28,8 @@
 
 #define BATTERY_REPORT_PERIOD 5000  // The period (in mS) between battery level updates
 
+#define KEEPALIVE_PERIOD      300   // The period (in mS) between keepalive messages
+
 //#define NO_UDP_SYNC_REQ
 
 // Define to enable report messages to be sent over UDP

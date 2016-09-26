@@ -89,6 +89,7 @@ systime_t g_iSyncTime;
 systime_t g_iSyncTimeSched;
 
 systime_t g_iLastBatteryReportTime;
+systime_t g_iLastKeepaliveTime;
 
 // Local forwards
 void SocketCleanup();
@@ -107,6 +108,7 @@ void MainLoopInit(const appConfig_t* config)
 	g_iDiscoverySocket = -1;
 
 	g_iLastBatteryReportTime = 0;
+	g_iLastKeepaliveTime = 0;
 
 	// Initialize static broadcast address
 	g_tBroadcastAddr.sin_family = SL_AF_INET;
@@ -440,6 +442,12 @@ STATE_HANDLER(READY)
 		ProtocolSendBatReport(g_iCmdSocket, bat);
 
 		g_iLastBatteryReportTime = now;
+	}
+
+	// Periodic Keepalive
+	if ((now - g_iLastKeepaliveTime) > KEEPALIVE_PERIOD) {
+		ProtocolSendKeepalive(g_iCmdSocket);
+		g_iLastKeepaliveTime = now;
 	}
 
 
