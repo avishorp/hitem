@@ -255,9 +255,9 @@ EPManager.prototype.handleError = function(socket, err)
 	socket.destroy()
 }
 
-EPManager.prototype.handleBattery = function(level)
+EPManager.prototype.handleBattery = function(data)
 {
-	this.logger.info(util.format("Battery level is %dmV", level))
+	this.logger.info(util.format("Battery level is %dmV (raw=%d)", data.level, data.raw))
 }
 
 module.exports = { 

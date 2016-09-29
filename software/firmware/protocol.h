@@ -66,7 +66,7 @@ typedef struct  {
 		// BAT_REPORT payload
 		struct {
 			_u16 battery_voltage;
-			_u8 padding[2];
+			_u16 battery_raw;
 		} bat_report;
 	} payload;
 	_u8 checksum;
@@ -79,7 +79,8 @@ void ProtocolParse(const char* buf, int len);
 _i16 ProtocolSendWelcome(_i16 sock);
 _i16 ProtocolSendSyncResp(_i16 sock, systime_t stime);
 _i16 ProtocolSendHit(_i16 sock, systime_t time);
-_i16 ProtocolSendBatReport(_i16 sock, int voltage);
+_i16 ProtocolSendBatReport(_i16 sock, int voltage, _u16 raw);
+_i16 ProtocolSendKeepalive(_i16 sock);
 systime_t ProtocolGetSyncTime();
 
 

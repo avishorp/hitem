@@ -78,6 +78,15 @@ int main(void) {
     // Initialize ADC Module
     AnalogInit();
 
+    // Read the battery voltage to make sure it's not below the threshold
+    int vbat = AnalogGetBatteryVoltageBlocking();
+    if (vbat < BATTERY_CRIT_THRESH)
+    	// Turn off silently
+    	DoSleep(TRUE, TRUE);
+    if (vbat < BATTERY_LOW_THRESH)
+    	// Battery low, give warning signal
+    	LEDCriticalSignal(3);
+
     // LED test
     LEDSetColor(COLOR_RED, 70);
     UtilsDelay(3000000);

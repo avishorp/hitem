@@ -4,10 +4,13 @@
 #define __ANALOG_H__
 
 #include "time.h"
+#include <simplelink.h>
 
 void AnalogInit();
 void AnalogTask();
 systime_t AnalogGetHitTime();
-int AnalogGetBatteryVoltage();
+int AnalogGetBatteryVoltage(_u16* raw);
+int AnalogGetBatteryVoltageBlocking();
+
 
 #endif

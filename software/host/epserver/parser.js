@@ -99,8 +99,9 @@ ProtocolParser.prototype._doMessageParsing = function(message) {
 		this.emit('hit', timestamp)		
 	}
 	else if (type === MESSAGE_TYPE_BATTERY) {
-		const level = message.readUInt32LE(MESSAGE_OFFSET_BATTERY);
-		this.emit('battery', level)				
+		const level = message.readUInt16LE(MESSAGE_OFFSET_BATTERY);
+		const raw = message.readUInt16LE(MESSAGE_OFFSET_BATTERY + 2);
+		this.emit('battery', { level: level, raw: raw })				
 	}
 	else if (type === MESSAGE_TYPE_KEEPALIVE) {
 		// Do nothing

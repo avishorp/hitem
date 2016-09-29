@@ -138,7 +138,7 @@ _i16 ProtocolSendHit(_i16 sock, systime_t time)
 	return sl_Send(sock, &msg, sizeof(message_t), 0);
 }
 
-_i16 ProtocolSendBatReport(_i16 sock, int voltage)
+_i16 ProtocolSendBatReport(_i16 sock, int voltage, _u16 raw)
 {
 	message_t msg;
 
@@ -146,6 +146,7 @@ _i16 ProtocolSendBatReport(_i16 sock, int voltage)
 	_InitMessage(&msg);
 	msg.type = MSG_TYPE_BAT_REPORT;
 	msg.payload.bat_report.battery_voltage = voltage;
+	msg.payload.bat_report.battery_raw = raw;
 	msg.checksum = _CalcChecksum(&msg);
 
 	// Send it

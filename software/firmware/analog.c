@@ -20,6 +20,8 @@ typedef enum {
 
 // Global Variables
 static int g_iBatteryLevel;
+static int g_iBatteryRaw;
+
 static struct {
 	int counter;
 	int last_value;
@@ -116,8 +118,10 @@ void AnalogTask()
 			// Note: After calculating, there still remains an unknown factor of 1.33. This can be either
 			//       due to imput impedance of the ADC pin or lack of capacitor on that input. Anyway, wer'e
 			//       only intersted at "battery low" indication so we just fix the measurment.
+			_u16 raw = g_iBatteryAcc/VBAT_AVERAGE_LEN;
 			int voltage = ((ADC_FULLSCALE*g_iBatteryAcc/4096)/VBAT_AVERAGE_LEN)*VBAT_DIVIDER*1333/1000;
 			g_iBatteryLevel = voltage;
+			g_iBatteryRaw = raw;
 
 			g_iBatteryAcc = 0;
 			g_iBatteryAccCnt = 0;
@@ -140,7 +144,26 @@ systime_t AnalogGetHitTime()
 	return t;
 }
 
-int AnalogGetBatteryVoltage()
+int AnalogGetBatteryVoltage(_u16* raw)
 {
+	if (raw)
+		*raw = g_iBatteryRaw;
 	return g_iBatteryLevel;
+}
+
+int AnalogGetBatteryVoltageBlocking()
+{
+	unsigned int acc = 0;
+	int count = 0;
+
+	while (count != VBAT_AVERAGE_LEN) {
+		int level = MAP_ADCFIFOLvlGet(ADC_BASE, ADC_CHANNEL_VSENSE);
+		if (level > 0) {
+			int value = (MAP_ADCFIFORead(ADC_BASE, ADC_CHANNEL_VSENSE) >> 2) & 0xfff;
+			acc += value;
+			count++;
+		}
+	}
+	return (acc/count);
+
 }

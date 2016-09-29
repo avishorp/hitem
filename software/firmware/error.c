@@ -39,23 +39,20 @@ void FatalError(const char *pcFormat, ...)
 
     // Stop the processing and blink the red LED
 	int i;
-   for(i=0; i < 30; i++) {
-    	LEDSetColor(COLOR_RED, 40);
-        UtilsDelay(5000000);
-    	LEDSetColor(COLOR_NONE, 40);
-        UtilsDelay(5000000);
-    }
+	LEDCriticalSignal(30);
 
    // Go to sleep
-   DoSleep();
+   DoSleep(TRUE, FALSE);
 }
 
-void DoSleep()
+void DoSleep(int quite, int final)
 {
-	int i;
-	for(i = 100; i > 0; i -= 10) {
-		LEDSetColor(COLOR_RED, i);
-	    UtilsDelay(1500000);
+	if (!quite) {
+		int i;
+		for(i = 100; i > 0; i -= 10) {
+			LEDSetColor(COLOR_RED, i);
+			UtilsDelay(1500000);
+		}
 	}
 	LEDSetColor(COLOR_NONE, 0);
 
@@ -66,9 +63,11 @@ void DoSleep()
 	MAP_ADCDisable(ADC_BASE);
 
 
-	// Set-up GPIO pin 4 as a wake-up source
-    PRCMHibernateWakeupSourceEnable(PRCM_HIB_GPIO4);
-    PRCMHibernateWakeUpGPIOSelect(PRCM_HIB_GPIO4, PRCM_HIB_RISE_EDGE);
+	if (!final) {
+		// Set-up GPIO pin 4 as a wake-up source
+		PRCMHibernateWakeupSourceEnable(PRCM_HIB_GPIO4);
+		PRCMHibernateWakeUpGPIOSelect(PRCM_HIB_GPIO4, PRCM_HIB_RISE_EDGE);
+	}
 
     ConsolePrintf("Going to sleep...\n\r");
     UtilsDelay(100000);

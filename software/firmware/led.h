@@ -30,3 +30,4 @@ void LEDInit();
 void LEDTask();
 void LEDSetColor(color_t color, int intensity);
 void LEDSetPattern(int pattern);
+void LEDCriticalSignal(int len);

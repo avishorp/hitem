@@ -30,6 +30,11 @@
 
 #define KEEPALIVE_PERIOD      300   // The period (in mS) between keepalive messages
 
+#define BATTERY_CRIT_THRESH   2400  // Battery critical threshold. When this threshold is crossed,
+									// the unit will turn itself off.In RAW ADC units
+
+#define BATTERY_LOW_THRESH    2500  // Battery low threshold. The battery level below which a warning
+                                    // signal
 //#define NO_UDP_SYNC_REQ
 
 // Define to enable report messages to be sent over UDP

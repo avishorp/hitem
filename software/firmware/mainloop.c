@@ -438,8 +438,13 @@ STATE_HANDLER(READY)
 	// Periodic Battery Report
 	systime_t now = TimeGetSystime();
 	if ((now - g_iLastBatteryReportTime) > BATTERY_REPORT_PERIOD) {
-		int bat = AnalogGetBatteryVoltage();
-		ProtocolSendBatReport(g_iCmdSocket, bat);
+		_u16 batraw;
+		int bat = AnalogGetBatteryVoltage(&batraw);
+		ProtocolSendBatReport(g_iCmdSocket, bat, batraw);
+
+		if (batraw < BATTERY_CRIT_THRESH)
+			// Battery very low, sleep ASAP
+			DoSleep(TRUE, TRUE);
 
 		g_iLastBatteryReportTime = now;
 	}
@@ -473,7 +478,7 @@ STATE_HANDLER(SLEEP)
 {
 	SocketCleanup();
 
-	DoSleep();
+	DoSleep(FALSE, FALSE);
 
 	return 0;
 }

@@ -11,6 +11,7 @@
 #include "interrupt.h"
 #include "prcm.h"
 #include "timer.h"
+#include "utils.h"
 
 #define TIMER_INTERVAL_RELOAD   40035 /* =(255*157) */
 #define DUTYCYCLE_GRANULARITY   157
@@ -202,6 +203,17 @@ void LEDSetPattern(int pattern)
 	// Apply the first point
 	_LEDSetColorWorker(g_pCurrentPattern->schedule[g_iCurrentPatternPtr].color, g_pCurrentPattern->intensity);
 	TimeSetTimeout(0, g_pCurrentPattern->schedule[g_iCurrentPatternPtr].period);
+}
+
+void LEDCriticalSignal(int len)
+{
+	int i;
+   	for(i=0; i < len; i++) {
+    	  	LEDSetColor(COLOR_RED, 20);
+    	    UtilsDelay(1000000);
+    	  	LEDSetColor(COLOR_NONE, 20);
+    	    UtilsDelay(1000000);
+   	}
 }
 
 void LEDTask()
