@@ -4,7 +4,7 @@
 		"magic": "HTEM",
 		"firmware": {
 			"disable": false,
-			"directory": "firmware/v0.0.7",
+			"directory": "firmware/v2.1.0",
 			"port": 24335,
 			"fwtab": "fwtab.json"
 		},

@@ -61,7 +61,7 @@ void AnalogTask()
 	/////////////////////
 	int level = MAP_ADCFIFOLvlGet(ADC_BASE, ADC_CHANNEL_PIEZO);
 	if (level > 0) {
-		int value = (MAP_ADCFIFORead(ADC_BASE, ADC_CHANNEL_PIEZO) >> 2);
+		int value = (MAP_ADCFIFORead(ADC_BASE, ADC_CHANNEL_PIEZO) >> 2) & 0xfff;
 
 #if 0
 		g = (g + 1) % 2000;
