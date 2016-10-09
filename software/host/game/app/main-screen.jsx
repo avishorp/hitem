@@ -1,8 +1,10 @@
 'use strict'
 
 import React from 'react';
-import { connect } from 'react-redux' 
 import Slot from './slot'
+import { observer, computed } from "mobx-react";
+import { GAME_STATE } from './store'
+
 
 const fontSize = "150px"
 
@@ -33,38 +35,41 @@ const messageAreaStyle = {
 }
 
 
-
-class JoinPlayScreen extends React.Component {
+@observer
+export default class MainScreen extends React.Component {
     constructor(props) {
         super(props)
     }
     
     render() {
+        const store = this.props.store
+
+
         const slot = id => <Slot 
             key={id}
-            color={this.props.slots[id].assignedColor}
-            state={this.props.slots[id].state}
-            score={this.props.slots[id].score}
-            hitState={this.props.slots[id].hitState}
+            color={store.slots[id].color}
+            state={store.slots[id].state}
+            score={store.slots[id].score}
+            hitState='none'
             />
             
         let message
-        switch(this.props.major) {
-            case 'join':
+        switch(store.gameState) {
+            case GAME_STATE.JOIN:
                 message = (<div>HIT YOUR OWN HAT TO JOIN THE GAME</div>)
                 if (this.props.ready)
                     message = (<div><div>{message}</div><div style={{ fontSize: "80px", marginTop: "20px" }}>HIT START TO PLAY</div></div>)
                 break
                 
-            case 'countdown':
+            case GAME_STATE.COUNTDOWN:
                 message = (<div>Game starts in {this.props.countdownVal}</div>)
                 break
                 
-            case 'game':
+            case GAME_STATE.GAME:
                 message = (<div style={{ fontSize: "170px" }}>Hit'em!</div>)
                 break
                 
-            case 'gameOver':
+            case GAME_STATE.GAME_OVER:
                 message = (<div style={{ fontSize: "170px" }}>We have a winner</div>)
         }
             
@@ -85,17 +90,3 @@ class JoinPlayScreen extends React.Component {
     }
 }
 
-function mapStateToProps(state) {
-    return {
-        major: state.get('major'),
-        slots: state.get('slots').toJS(),
-        ready: state.get('ready'),
-        countdownVal: state.get('countdownVal')
-    }
-}
-
-function mapDispatchToProps(dispatch) {
-    return {}
-}
-
-export default connect(mapStateToProps, mapDispatchToProps)(JoinPlayScreen)

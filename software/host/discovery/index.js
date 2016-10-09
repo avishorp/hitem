@@ -2,7 +2,6 @@
 
 const dgram = require('dgram')
 const util = require('util')
-const struct = require('python-struct')
 const tftp = require('tftp')
 const fileExists = require('file-exists')
 const fs = require('fs')

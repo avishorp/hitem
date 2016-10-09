@@ -1,18 +1,21 @@
 'use strict'
 
 import React from 'react'
-import { connect } from 'react-redux'
 import MainScreen from './main-screen'
+import { Store } from './store'
 
 export default class Game extends React.Component {
     constructor(props) {
         super(props)
+
+        this.store = new Store()
     }
     
     render() {
-        return <MainScreen />
+        return <MainScreen store={this.store}/>
     }
 }
+
 
 
 

@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "node . | ./node_modules/.bin/bunyan",
-    "eptest": "./node_modules/.bin/electron test/endpoints/index.js",
+    "eptest": "electron test/endpoints/index.js",
     "start": "electron game"
   },
   "repository": {
@@ -46,13 +46,6 @@
     "python-struct": "^1.0.2",
     "react": "^15.0.1",
     "react-dom": "^15.0.1",
-    "react-redux": "^4.4.2",
-    "redux": "^3.4.0",
-    "redux-act": "^0.4.0",
-    "redux-immutable": "^3.0.6",
-    "redux-logger": "^2.6.1",
-    "redux-promise": "^0.5.3",
-    "redux-thunk": "^2.0.1",
     "tftp": "^0.1.2",
     "yaml": "^0.3.0"
   },
