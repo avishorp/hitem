@@ -32,8 +32,22 @@ function makeSlot(color) {
 
 const colors = 	['blue', 'orange', 'purple', 'lgtgreen', 'turkiz', 'yellow', 'white', 'pink']
 
+
 export class Store {
   @observable slots = colors.map(c => makeSlot(c))
-  @observable gameState = 'join'
+  @observable gameState = GAME_STATE.JOIN
+  currentSlot = 0
+
+  onHit(e) {
+      if (gameState == GAME_STATE.JOIN)
+        onHitJoin(e)
+  }
+
+  onHitJoin(e) {
+      s = this.slots[this.currentSlot]
+      s.hammerId = e.hammerId
+      s.hatId = e.hatId
+      s.state = SLOT_STATE_ASSIGNED
+  }
 }
 
