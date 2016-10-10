@@ -14,12 +14,9 @@ export default class HitEmulator extends EventEmitter {
 
     run() {
         this.emulateJoinHits(() => {console.log("Emulation done")})
-
     }
 
     emulateJoinHits(done) {
-        this.emit('hit', {hatId:0, hammerId: 1})
-
         const doEmit = i => () => {
             if (i > this.hats.length-1)
                 done()
