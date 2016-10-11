@@ -37,6 +37,7 @@ const colors = 	['blue', 'orange', 'purple', 'lgtgreen', 'turkiz', 'yellow', 'wh
 export class Store {
   @observable slots = colors.map(c => makeSlot(c))
   @observable gameState = GAME_STATE.JOIN
+  @observable countdownValue = null
   currentSlot = 0
 
   actionHit(e) {
@@ -53,6 +54,35 @@ export class Store {
       s.hatId = e.hatId
       s.state = SLOT_STATE.ASSIGNED
       this.currentSlot += 1
+  }
+
+  actionCountdown() {
+      console.log('countdown')
+      // Set the initial countdown value and set the game mode to COUNTDOWN
+      this.countdownValue = 3
+      this.gameState = GAME_STATE.COUNTDOWN
+
+      // Decrement countdown after constant time
+      const COUNTDOWN_DELAY = 1000
+      setTimeout(() => { this.countdownValue = 2 }, COUNTDOWN_DELAY)
+      setTimeout(() => { this.countdownValue = 1 }, COUNTDOWN_DELAY*2)
+      setTimeout(() => { this.countdownValue = 'go' }, COUNTDOWN_DELAY*3)
+      setTimeout(() => { this.actionStartGame() }, COUNTDOWN_DELAY*4)
+
+  }
+
+  actionStartGame() {
+      this.gameState = GAME_STATE.GAME
+  }
+
+  actionStartButton() {
+      console.log('start')
+      if ((this.gameState === GAME_STATE.JOIN) && (this.currentSlot > 4))
+        this.actionCountdown()
+  }
+
+  actionStopButton() {
+
   }
 }
 

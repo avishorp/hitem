@@ -42,35 +42,28 @@ export default class MainScreen extends React.Component {
     }
     
     render() {
-        const store = this.props.store
-
+        const slots = this.props.slots
 
         const slot = id => <Slot 
             key={id}
-            color={store.slots[id].color}
-            state={store.slots[id].state}
-            score={store.slots[id].score}
+            color={slots[id].color}
+            state={slots[id].state}
+            score={slots[id].score}
             hitState='none'
             />
             
         let message
-        switch(store.gameState) {
-            case GAME_STATE.JOIN:
+        switch(this.props.mode) {
+            case 'join':
                 message = (<div>HIT YOUR OWN HAT TO JOIN THE GAME</div>)
                 if (this.props.ready)
                     message = (<div><div>{message}</div><div style={{ fontSize: "80px", marginTop: "20px" }}>HIT START TO PLAY</div></div>)
                 break
-                
-            case GAME_STATE.COUNTDOWN:
-                message = (<div>Game starts in {this.props.countdownVal}</div>)
-                break
-                
-            case GAME_STATE.GAME:
+                              
+            case 'game':
                 message = (<div style={{ fontSize: "170px" }}>Hit'em!</div>)
                 break
                 
-            case GAME_STATE.GAME_OVER:
-                message = (<div style={{ fontSize: "170px" }}>We have a winner</div>)
         }
             
         return (
