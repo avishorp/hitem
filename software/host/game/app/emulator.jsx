@@ -1,6 +1,8 @@
 import EventEmitter from 'events'
 import { knuthShuffle } from 'knuth-shuffle'
 
+const selectRandom = a => a[Math.floor(Math.random()*a.length)]
+const NUM_HITS = 50
 
 export default class HitEmulator extends EventEmitter {
     constructor() {
@@ -13,7 +15,13 @@ export default class HitEmulator extends EventEmitter {
     }
 
     run() {
-        this.emulateJoinHits(() => {console.log("Emulation done")})
+        console.log("Emulation: Starting")
+        this.emulateJoinHits(() => {
+            console.log("Emulation: Join hits done")
+            this.emulateGameHits(() => {
+                console.log("Emulation: Game hits done")
+            })
+        })
     }
 
     emulateJoinHits(done) {
@@ -31,4 +39,31 @@ export default class HitEmulator extends EventEmitter {
         
         setTimeout(doEmit(0), 2000)
     }
+
+    emulateGameHits(done) {
+        const doEmit = i => () => {
+            if (i > 0)
+                done()
+
+            else {
+                // Select a hat+hammer pair randomally
+                const hatId = selectRandom(this.hats)
+                const hammerId = selectRandom(this.hammerId)
+
+                // Emit a hit event
+                this.emit('hit', {
+                    hatId: this.hats[i],
+                    hammerId: this.hammers[i]
+                })
+
+                // Schedule next event
+                const nextEventTime = Math.floor(Math.random()*2000) + 200
+                setTimeout(doEmit(i-1), nextEventTime)
+
+            }
+        }
+
+        doEmit(NUM_HITS)
+    }
+
 }

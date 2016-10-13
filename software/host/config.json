@@ -19,6 +19,7 @@
     "game": {
         "minPlayers": 4,
         "startingScore": 5,
+		"shufflePeriod": 1000,
 		"gracePeriod": 3000,
 		"penalty": 2
     }

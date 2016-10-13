@@ -49,6 +49,7 @@ export default class MainScreen extends React.Component {
             color={slots[id].color}
             state={slots[id].state}
             score={slots[id].score}
+            hatColor={slots[id].hatColor}
             hitState='none'
             />
             

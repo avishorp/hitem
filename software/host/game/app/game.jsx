@@ -6,6 +6,7 @@ import CountdownScreen from './countdown-screen'
 import { Store, GAME_STATE } from './store'
 import Emulator from './emulator'
 import { observer } from "mobx-react";
+import config from '../../config.json'
 
 const KEY_START = 13  // ENTER
 const KEY_STOP  = 96  // ~
@@ -16,7 +17,7 @@ export default class Game extends React.Component {
         super(props)
 
         // Instantiate a store
-        this.store = new Store()
+        this.store = new Store(config.game)
 
         // Instantiate an EPServer/emulator
         const emulate = true

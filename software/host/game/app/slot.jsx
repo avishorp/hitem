@@ -32,6 +32,22 @@ const slotDataStyle = {
     transform: "translate(-50%, -50%)"
 }
 
+const hatColorTranslation = {
+    'blue': 'sample_blue.png',
+    'orange': 'sample_orange.png',
+    'purple': 'sample_purple.png',
+    'lgtgreen': 'sample_lgtgreen.png',
+    'turkiz': 'sample_turkiz.png',
+    'yellow': 'sample_yellow.png',
+    'white': 'sample_white.png',
+    'pink': 'sample_pink.png',
+    'chirp': 'sample_chirp.gif',
+    'red_pulse': 'sample_red_pulse.gif',
+    'green_pulse': 'sample_green_pulse.gif',
+    'none': 'sample_none.png',
+    'blimp': 'sample_none.png'
+}
+
 export default class Slot extends React.Component {
     constructor(props) {
         super(props)
@@ -84,12 +100,10 @@ export default class Slot extends React.Component {
                 computedAreaStyle.margin = "32px"
         }
              
-        
         return (
             <div style={computedAreaStyle}>
-                <span style={slotDataStyle}>{content}</span>
+                <span style={slotDataStyle}>{content}</span><img src={hatColorTranslation[this.props.hatColor]}/>
             </div>
         )
     }
-
 }
