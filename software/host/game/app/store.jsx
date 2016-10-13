@@ -66,7 +66,7 @@ export class Store {
       const COUNTDOWN_DELAY = 1000
       setTimeout(() => { this.countdownValue = 2 }, COUNTDOWN_DELAY)
       setTimeout(() => { this.countdownValue = 1 }, COUNTDOWN_DELAY*2)
-      setTimeout(() => { this.countdownValue = 'go' }, COUNTDOWN_DELAY*3)
+      setTimeout(() => { this.countdownValue = 0 }, COUNTDOWN_DELAY*3)
       setTimeout(() => { this.actionStartGame() }, COUNTDOWN_DELAY*4)
 
   }
