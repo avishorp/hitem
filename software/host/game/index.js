@@ -10,6 +10,7 @@ const hitemConfig = require('../config.json')
 const discoveryServer = require('../discovery')
 const EPServer = require('../epserver')
 const pickRandom = require('pick-random')
+const config = require('../config.js')
 
 const app = electron.app;  // Module to control application life.
 const BrowserWindow = electron.BrowserWindow;  // Module to create native browser window.
@@ -35,7 +36,7 @@ let logger = bunyan.createLogger({
 ////////////////
 
 // Start Discovery Server
-discoveryServer(hitemConfig.discovery, console/*logger.child({'component': 'Discovery'})*/)
+discoveryServer(hitemConfig.discovery, config.endpoint.port, logger.child({'component': 'Discovery'}))
 	
 // Quit when all windows are closed.
 app.on('window-all-closed', function() {
