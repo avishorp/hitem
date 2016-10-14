@@ -50,7 +50,8 @@ export default class MainScreen extends React.Component {
             state={slots[id].state}
             score={slots[id].score}
             hatColor={slots[id].hatColor}
-            hitState='none'
+            hammerColor={slots[id].hammerColor}
+            hitState={slots[id].hitState}
             />
             
         let message

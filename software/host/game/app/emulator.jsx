@@ -42,19 +42,20 @@ export default class HitEmulator extends EventEmitter {
 
     emulateGameHits(done) {
         const doEmit = i => () => {
-            if (i > 0)
+            if (i === 0)
                 done()
 
             else {
                 // Select a hat+hammer pair randomally
                 const hatId = selectRandom(this.hats)
-                const hammerId = selectRandom(this.hammerId)
+                const hammerId = selectRandom(this.hammers)
 
                 // Emit a hit event
                 this.emit('hit', {
-                    hatId: this.hats[i],
-                    hammerId: this.hammers[i]
+                    hatId: hatId,
+                    hammerId: hammerId
                 })
+                console.log("Hit: " + hatId + " by " + hammerId)
 
                 // Schedule next event
                 const nextEventTime = Math.floor(Math.random()*2000) + 200
@@ -62,8 +63,9 @@ export default class HitEmulator extends EventEmitter {
 
             }
         }
+    
+        setTimeout(doEmit(NUM_HITS), 4000)
 
-        doEmit(NUM_HITS)
     }
 
 }

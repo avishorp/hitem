@@ -3,6 +3,8 @@
 import React from 'react'
 import { SLOT_STATE } from './store'
 
+const DEBUG = false
+
 const colorTranslateTable = {
 	'blue': 'Blue',
 	'orange': 'DarkOrange',
@@ -45,7 +47,9 @@ const hatColorTranslation = {
     'red_pulse': 'sample_red_pulse.gif',
     'green_pulse': 'sample_green_pulse.gif',
     'none': 'sample_none.png',
-    'blimp': 'sample_none.png'
+    'blimp': 'sample_none.png',
+    'red': 'sample_red.png',
+    'green': 'sample_green.png'
 }
 
 export default class Slot extends React.Component {
@@ -99,10 +103,20 @@ export default class Slot extends React.Component {
                 computedAreaStyle.border = "8px solid " + this.props.hitState
                 computedAreaStyle.margin = "32px"
         }
+
+        let debugContent
+        if (DEBUG) 
+            debugContent = <div>
+                <img src={hatColorTranslation[this.props.hatColor]}/>
+                <img src={hatColorTranslation[this.props.hammerColor]} style={{ marginLeft: '4px'}}/>
+                <div>{this.props.state}</div>
+            </div>
+        else
+            debugContent = ''
              
         return (
             <div style={computedAreaStyle}>
-                <span style={slotDataStyle}>{content}</span><img src={hatColorTranslation[this.props.hatColor]}/>
+                <span style={slotDataStyle}>{content}</span>{debugContent}
             </div>
         )
     }
