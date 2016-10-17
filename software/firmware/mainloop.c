@@ -422,7 +422,7 @@ STATE_HANDLER(READY)
 		g_iSyncTime = syncTime;
 		g_iSyncTimeSched = TimeGetSystime() + 10;
 
-		ConsolePrintf("Now is %d scheduled to %d\n\r", TimeGetSystime(), g_iSyncTimeSched);
+		//ConsolePrintf("Now is %d scheduled to %d\n\r", TimeGetSystime(), g_iSyncTimeSched);
 	}
 	if (TimeGetSystime() > g_iSyncTimeSched) {
 		if (ProtocolSendSyncResp(g_iCmdSocket, g_iSyncTime) >= 0)
