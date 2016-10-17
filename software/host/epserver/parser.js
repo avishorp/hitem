@@ -14,6 +14,7 @@ const MESSAGE_TYPE_SYNC_RSP = 4
 const MESSAGE_TYPE_SYNC_REQ = 5
 const MESSAGE_TYPE_HIT      = 6
 const MESSAGE_TYPE_BATTERY  = 7
+const MESSAGE_TYPE_SET_THRESHOLD  = 8
 const MESSAGE_TYPE_KEEPALIVE = 99
 
 const MESSAGE_OFFSET_TYPE = 4
@@ -142,6 +143,22 @@ ProtocolParser.prototype.setIndication = function(indication) {
 	msg.write(MSG_PROLOG)
 	msg[4] = MESSAGE_TYPE_INDICATE
 	msg[5] = Indications[indication]
+	msg[MESSAGE_LENGTH-1] = this._checksum(msg)
+	
+	this.emit('send_command', msg)
+}
+
+ProtocolParser.prototype.setThreshold = function(threshold, debounce) {
+	let msg = new Buffer(MESSAGE_LENGTH)
+	msg.fill(0)
+	msg.write(MSG_PROLOG)
+	msg[4] = MESSAGE_TYPE_SET_THRESHOLD
+	if (threshold)
+		msg.writeUInt16LE(threshold, 5)
+
+	if (debounce)
+		msg.writeUInt16LE(debounce, 7)
+
 	msg[MESSAGE_LENGTH-1] = this._checksum(msg)
 	
 	this.emit('send_command', msg)

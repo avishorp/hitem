@@ -212,6 +212,12 @@ void _ProcessIngressMessage(const message_t* msg)
 		// Sync request - generate sync response
 		g_iSyncTime = TimeGetSystime();
 	}
+	else if (msg->type == MSG_TYPE_SET_THRESH) {
+		_u16 threshold = msg->payload.set_threshold.threshold;
+		_u16 debounce = msg->payload.set_threshold.debounce_power;
+		AnalogSetThreshold(threshold, debounce);
+		ConsolePrintf("Set hit threshold: threshold=%d debounce=%d\n\r", threshold, debounce);
+	}
 	else
 		ConsolePrintf("Invalid message type received: %d\n\r", msg->type);
 }

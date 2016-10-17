@@ -31,6 +31,7 @@
 #define MSG_TYPE_SYNC_REQ   5
 #define MSG_TYPE_HIT        6
 #define MSG_TYPE_BAT_REPORT 7
+#define MSG_TYPE_SET_THRESH 8
 #define MSG_TYPE_KEEPALIVE  99
 
 typedef struct  {
@@ -68,6 +69,12 @@ typedef struct  {
 			_u16 battery_voltage;
 			_u16 battery_raw;
 		} bat_report;
+
+		// SET_THRESH payload
+		struct {
+			_u16 threshold;
+			_u16 debounce_power;
+		} set_threshold;
 	} payload;
 	_u8 checksum;
 } __attribute__((packed)) message_t;

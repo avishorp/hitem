@@ -21,6 +21,8 @@ typedef enum {
 // Global Variables
 static int g_iBatteryLevel;
 static int g_iBatteryRaw;
+static int g_iThreshold;
+static int g_iDebouncePower;
 
 static struct {
 	int counter;
@@ -44,10 +46,12 @@ void AnalogInit()
 	g_iBatteryAcc = 0;
 	g_iBatteryAccCnt = 0;
 
+	// Set the threshold & debounce power to the global settings
+	AnalogSetThreshold(HIT_THRESHOLD, HIT_DEBOUNCE_B);
+
 	// Enable the PIEZO & VSENSE channels
 	MAP_ADCChannelEnable(ADC_BASE, ADC_CHANNEL_PIEZO);
 	MAP_ADCChannelEnable(ADC_BASE, ADC_CHANNEL_VSENSE);
-
 
 	// Enable the ADC block
 	MAP_ADCEnable(ADC_BASE);
@@ -72,7 +76,7 @@ void AnalogTask()
 		switch(g_tHitDetect.mode) {
 
 		case HIT_MODE_IDLE:
-			if (value > HIT_THRESHOLD) {
+			if (value > g_iThreshold) {
 				// Initial hit level threshold has been crossed
 				g_tHitDetect.mode = HIT_MODE_THRESH;
 				g_tHitDetect.last_value = value;
@@ -89,7 +93,7 @@ void AnalogTask()
 				// measured value, the pulse has passed its peak
 				g_tHitDetect.mode = HIT_MODE_HOLD;
 				g_tHitDetect.timestamp = TimeGetSystime();
-				g_tHitDetect.counter = HIT_DEBOUNCE_B;
+				g_tHitDetect.counter = g_iDebouncePower;
 			}
 			break;
 
@@ -166,4 +170,13 @@ int AnalogGetBatteryVoltageBlocking()
 	}
 	return (acc/count);
 
+}
+
+void AnalogSetThreshold(_u16 threshold, _u16 debounce)
+{
+	if (threshold > 0)
+		g_iThreshold = threshold;
+
+	if (debounce > 0)
+		g_iDebouncePower = debounce;
 }

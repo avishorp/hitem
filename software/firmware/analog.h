@@ -11,6 +11,8 @@ void AnalogTask();
 systime_t AnalogGetHitTime();
 int AnalogGetBatteryVoltage(_u16* raw);
 int AnalogGetBatteryVoltageBlocking();
+void AnalogSetThreshold(_u16 threshold, _u16 debounce);
+
 
 
 #endif

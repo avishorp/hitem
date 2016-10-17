@@ -2,7 +2,7 @@
 
 const config = require('./config.json')
 const discovery = require('./discovery')
-const EPServer = require('./epserver')
+const EPServer = require('./epserver').server
 const bunyan = require('bunyan')
 
 // Main

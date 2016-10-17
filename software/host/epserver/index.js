@@ -137,6 +137,7 @@ EPManager.prototype.handleWelcome = function(addr, parser, ep)
         offset: 0,
         setColor: (color, intensity) => parser.setColor(color, intensity),
         setIndication: indication => parser.setIndication(indication),
+        setThreshold: (threshold, debounce) => parser.setThreshold(threshold, debounce),
         syncReq: () => parser.syncReq()
     }
     
@@ -209,23 +210,20 @@ EPManager.prototype.handleHit = function(id1, id2)
         this.logger.error(util.format("Hit received by unknow unit ID %d", id2))
         return
     }
-
-    // Make sure it's a hat-by-hammer hit
-    if (unit1.personality === unit2.personality) {
-        this.logger.warn(util.format("Hammer-to-hammer or hat-to-hat hit (%d, %d)", id1, id2))
-        return
-    }
-    
+  
     // Find who is who
     let hammerId, hatId
-    if (unit1.personality === 'hammer') {
+    if (unit1.personality === 'hammer' && unit2.personality === 'hat') {
         hammerId = id1
         hatId = id2
     }
-    else {
+    else if (unit1.personality === 'hat' && unit2.personality === 'hammer'){
         hammerId = id2
         hatId = id1
     }
+    else
+        // Hat-by-Hat or Hammer-by-Hammer, ignore
+        return
     
     // Finally, generate an event
     this.emit('hit', {
@@ -244,8 +242,16 @@ EPManager.prototype.setColor = function(id, color, intensity) {
             unit.setColor(color, intensity)
         else
             unit.setIndication(color)
+    }   
+}
+
+EPManager.prototype.setThreshold = function(id, threshold) {
+    const unit = this.units.get(id)
+    if (!unit) {
+        this.logger.warn(util.format("setThreshold to unknown ID (%d)", id))
     }
-     
+
+    unit.setThreshold(threshold)   
 }
 
 

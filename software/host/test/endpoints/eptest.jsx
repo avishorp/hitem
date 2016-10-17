@@ -5,6 +5,9 @@ import {observable} from "mobx"
 import autobind from 'autobind'
 import config from '../../config.json'
 import {server, colors} from '../../epserver'
+import Slider from 'rc-slider';
+
+
 
 class Store {
   @observable units = []  
@@ -40,24 +43,54 @@ class EndpointControllers extends React.Component {
                 key={u.id} 
                 epid={u.id} 
                 personality={u.personality}
-                setColor={color => this.props.setColor(u.id, color, 70)}/>)}
+                setColor={color => this.props.setColor(u.id, color, 70)}
+                setThreshold={thresh => this.props.setThreshold(u.id, thresh)}
+                />)}
+
             </div>)
     }
 }
 
 @observer
 class EndpointController extends React.Component {
+    constructor(props) {
+        super(props)
+
+        this.state = { hitThreshold: 2400 }
+    }
+
+    @autobind
+    onThresholdSliderChange(value) {
+      this.setState({ hitThreshold: value })
+    }
+
+    @autobind
+    onThresholdAfterChange(value) {
+        console.log(`New threshold value for unit %d: %d`, this.props.epid, value)
+        this.props.setThreshold(value)
+    }
+
+
   render() {
       const epid = this.props.epid
 
-    return (<div>
+    return (<div style={{ bottomMargin: '15px' }}>
         <span className='unit-id'>ID: {epid}</span>
         <span className='unit-personality'>Type: {this.props.personality}</span>
         {colors.map(c => <a href="#" key={c} onClick={_ => this.props.setColor(c)}> {c}</a>)}
+        <span style={{width: '150px', background: 'red'}}>
+        <Slider 
+            min={2000} 
+            max={3000} 
+            value={this.state.hitThreshold} 
+            style={{width: '50px', display: 'inline'}}
+            onChange={this.onThresholdSliderChange}
+            onAfterChange={this.onThresholdAfterChange}
+            /></span>
         </div>)
   }
 }
-
+//
 
 
 
@@ -73,9 +106,11 @@ window.onload = function() {
     eps.on('leave', u => store.leaveUnit(u))
     
      
-  ReactDOM.render(<div>Hello React<EndpointControllers 
+  ReactDOM.render(<div><h1>Hit'em Test Application</h1><EndpointControllers 
         store={store} 
-        setColor={(id, color, intensity) => eps.setColor(id, color, intensity)}/>
+        setColor={(id, color, intensity) => eps.setColor(id, color, intensity)}
+        setThreshold={(id, threshold) => eps.setThreshold(id, threshold)}
+        />
     </div>,
     document.getElementById("app"));
 }
