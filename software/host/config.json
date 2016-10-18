@@ -12,7 +12,7 @@
 	},
 	"endpoint": {
 		"port": 24334,
-        "syncMethod": "tcp",
+        "syncMethod": "udp",
 		"syncInterval": 1000,
         "hitWindow": 25
 	},

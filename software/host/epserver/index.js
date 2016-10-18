@@ -77,14 +77,13 @@ function EPManager(options, logger) {
         // Create a UDP sync socket
         this.syncSocket = dgram.createSocket('udp4')
 
-        // Bind it (must be done to enable setBroadcast)
-        this.syncSocket.bind(options.port)
-
-        // Enable broadcast
-        this.syncSocket.setBroadcast(true)
+        // Bind it (must be done to enable setBroadcast), and enable broadcast when
+        // binding has completed
+        this.syncSocket.bind(options.port, () => { this.syncSocket.setBroadcast(true) })
 
         // Set-up cyclic message sending over UDP
-        setInterval(function() { this._syncAllUdp(options.port) }, options.syncInterval)
+        const syncAllUdpBinded = this._syncAllUdp.bind(this)
+        setInterval(function() { syncAllUdpBinded(options.port) }, options.syncInterval)
     }
 }
 
@@ -132,6 +131,7 @@ EPManager.prototype.handleWelcome = function(addr, parser, ep)
     
     // Add the unit to the list
     let uentry = {
+        id: id,
         addr: addr,
         personality: personality,
         offset: 0,
@@ -143,7 +143,7 @@ EPManager.prototype.handleWelcome = function(addr, parser, ep)
     
     // Emitted by the parser when a sync response message is received
 	parser.on('sync_resp', timestamp => {
-        //console.info(`SYNC %d`, timestamp)
+        //console.info(`ID %d SYNC %d delta %d`, id, timestamp, timestamp-uentry.offset)
 		uentry.offset = timestamp
 	})
     
@@ -190,9 +190,10 @@ EPManager.prototype._syncAllTcp = function()
 
 EPManager.prototype._syncAllUdp = function(port)
 {
-    msg = new Buffer(4);
+    const msg = new Buffer(4);
     msg.fill(0)
-    this.syncSocket.send(msg, 0, 4, port, '255.255.255.255')
+    // TODO: Detect broadcast address somehow
+    this.syncSocket.send(msg, 0, 4, port, '10.42.0.255')// '255.255.255.255')
 }
 
 

@@ -104,6 +104,7 @@ window.onload = function() {
     const sc = eps.setColor
     eps.on('join', u => store.joinUnit(u))
     eps.on('leave', u => store.leaveUnit(u))
+    eps.on('hit', u => { console.log(`HIT: hammer=%d hat=%d`, u.hammerId, u.hatId)} )
     
      
   ReactDOM.render(<div><h1>Hit'em Test Application</h1><EndpointControllers 
