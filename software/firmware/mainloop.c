@@ -264,8 +264,12 @@ STATE_HANDLER(WAITDISCOVERY)
 		if ((lRet == sizeof(discovery_resp_t)) && (strncmp(rbuf.magic, DISCOVERY_MAGIC, DISCOVERY_MAGIC_LEN)==0)) {
 			// Return packet is valid
 			ConsolePrintf("Got discovery response\n\r");
+			ConsolePrintf("Server Port: %d\n\rTFTP Port: %d\n\r", rbuf.srv_port, rbuf.tftp_port);
 
-			// Adjust server port
+			// Set the server port
+			g_iSrvPort = rbuf.srv_port;
+
+			// Adjust server port in the server address
 			g_tServerAddr.sin_port = sl_Htons(g_iSrvPort);
 
 			char server_version_str[20];
@@ -284,9 +288,6 @@ STATE_HANDLER(WAITDISCOVERY)
 				if (OTAExec(ntohl(g_tServerAddr.sin_addr.s_addr), rbuf.tftp_port, rbuf.fw_filename))
 					return STATE_SLEEP;
 			}
-
-			// Set the server port
-			g_iSrvPort = rbuf.srv_port;
 
 			return STATE_DOCONNECTSRV;
 		}
@@ -454,7 +455,6 @@ STATE_HANDLER(READY)
 		ProtocolSendKeepalive(g_iCmdSocket);
 		g_iLastKeepaliveTime = now;
 	}
-
 
 	return 0;
 }
