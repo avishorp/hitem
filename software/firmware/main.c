@@ -78,6 +78,7 @@ int main(void) {
     // Initialize ADC Module
     AnalogInit();
 
+#ifndef PREVENT_BATTERY_LOW_DETECTION
     // Read the battery voltage to make sure it's not below the threshold
     int vbat = AnalogGetBatteryVoltageBlocking();
     if (vbat < BATTERY_CRIT_THRESH)
@@ -86,6 +87,7 @@ int main(void) {
     if (vbat < BATTERY_LOW_THRESH)
     	// Battery low, give warning signal
     	LEDCriticalSignal(3);
+#endif
 
     // LED test
     LEDSetColor(COLOR_RED, 70);

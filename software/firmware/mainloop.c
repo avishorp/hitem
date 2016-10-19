@@ -443,9 +443,11 @@ STATE_HANDLER(READY)
 		int bat = AnalogGetBatteryVoltage(&batraw);
 		ProtocolSendBatReport(g_iCmdSocket, bat, batraw);
 
+#ifndef PREVENT_BATTERY_LOW_DETECTION
 		if (batraw < BATTERY_CRIT_THRESH)
 			// Battery very low, sleep ASAP
 			DoSleep(TRUE, TRUE);
+#endif
 
 		g_iLastBatteryReportTime = now;
 	}

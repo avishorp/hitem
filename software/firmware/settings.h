@@ -40,5 +40,8 @@
 // Define to enable report messages to be sent over UDP
 //#define DEBUG_UDP_PORT  24600
 
+// Define to disable battery low detection (for debugging)
+//#define PREVENT_BATTERY_LOW_DETECTION
+
 #endif
 
