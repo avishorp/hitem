@@ -38,7 +38,7 @@
 //#define NO_UDP_SYNC_REQ
 
 // Define to enable report messages to be sent over UDP
-#define DEBUG_UDP_PORT  24600
+//#define DEBUG_UDP_PORT  24600
 
 #endif
 
