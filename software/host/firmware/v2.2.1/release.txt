@@ -1,0 +1,24 @@
+v2.2.1
+  - BUGFIX: server port number assignment
+  - Disable UDP logging (debugging feature)
+  - Install service pack 1.0.1.6-2.6.0.5
+  
+v2.2.0
+  - Add hit threshold host control
+
+v2.1.0
+  - Implement battery level measurment & cutoff
+  - Apply UDP sync mechanism
+  - Modify TCP message format with extended prolog
+  - Make all indications repetitive
+  - Keepalive messages
+
+v2.0.7
+  - Add UDP console facility
+  - Rewrite and tune hit detection mechanism
+
+v0.0.6
+  - Fix advertising of TFTP port through discovery response
+  - Rewrite hit detection mechanism
+  - Split the unit ID/WLAN credentials to two separate files.
+

@@ -1,0 +1,6 @@
+---
+  version: "2.2.1"
+  files:
+   - hitem_firmware.bin => /sys/mcuimg.bin
+   - ota_1.0.1.6-2.7.0.0.ucf => /sys/servicepack.ucf
+   
