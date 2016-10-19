@@ -230,12 +230,21 @@ void SimpleLinkInit()
     	FatalError("Could not get device version");
 
     ConsolePrintf("Host Driver Version: %s\n\r", SL_DRIVER_VERSION);
-    ConsolePrintf("Build Version %d.%d.%d.%d.31.%d.%d.%d.%d.%d.%d.%d.%d\n\r",
-    ver.NwpVersion[0],ver.NwpVersion[1],ver.NwpVersion[2],ver.NwpVersion[3],
-    ver.ChipFwAndPhyVersion.FwVersion[0],ver.ChipFwAndPhyVersion.FwVersion[1],
-    ver.ChipFwAndPhyVersion.FwVersion[2],ver.ChipFwAndPhyVersion.FwVersion[3],
-    ver.ChipFwAndPhyVersion.PhyVersion[0],ver.ChipFwAndPhyVersion.PhyVersion[1],
-    ver.ChipFwAndPhyVersion.PhyVersion[2],ver.ChipFwAndPhyVersion.PhyVersion[3]);
+    ConsolePrintf("NWP Version: %d.%d.%d.%d\n\r",
+    		ver.NwpVersion[0],
+			ver.NwpVersion[1],
+			ver.NwpVersion[2],
+			ver.NwpVersion[3]);
+    ConsolePrintf("MAC Version: %d.%d.%d.%d\n\r",
+    		ver.ChipFwAndPhyVersion.FwVersion[0],
+			ver.ChipFwAndPhyVersion.FwVersion[1],
+			ver.ChipFwAndPhyVersion.FwVersion[2],
+			ver.ChipFwAndPhyVersion.FwVersion[3]);
+    ConsolePrintf("PHY Version: %d.%d.%d.%d\n\r",
+    		ver.ChipFwAndPhyVersion.PhyVersion[0],
+			ver.ChipFwAndPhyVersion.PhyVersion[1],
+			ver.ChipFwAndPhyVersion.PhyVersion[2],
+			ver.ChipFwAndPhyVersion.PhyVersion[3]);
 
     // Set connection policy to Auto + SmartConfig
     //      (Device's default connection policy)
