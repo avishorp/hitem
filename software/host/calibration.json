@@ -1,8 +1,23 @@
 {
-    "17": {
-        "hitThreshold": 2450
+    "1": {
+        "hitThreshold": 2240
+    },
+    "3": {
+        "hitThreshold": 2350
+    },
+    "5": {
+        "hitThreshold": 2300
+    },
+    "8": {
+        "hitThreshold": 2330
+    },
+    "9": {
+        "hitThreshold": 2250
     },
     "14": {
-        "hitThreshold": 2450
+        "hitThreshold": 2360
+    },
+    "17": {
+        "hitThreshold": 2350
     }
 }
