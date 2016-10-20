@@ -8,13 +8,18 @@ const EventEmitter = require('events').EventEmitter
 const util = require('util')
 const ProtocolParser = require('./parser')
 
-function EPManager(options, logger) {
+const defaultCalibration = {
+    hitThreshold: 2400
+}
+
+function EPManager(options, calibration, logger) {
 	logger.info("Starting")
 
 	this.units = new Map()
 	this.lastHit = { time: 0, id: undefined }
 	this.logger = logger
     this.hitWindow = options.hitWindow
+    this.calibration = calibration
 	
 	// Create a server object
 	const srv = net.createServer(socket => {
@@ -114,6 +119,14 @@ EPManager.prototype.handleWelcome = function(addr, parser, ep)
 	   personality==='hammer' ? "HAMMER" : "HAT"))
      
     parser.setIndication('blimp')
+
+    // Apply unit level calibration
+    let threshold
+    if ((this.calibration[id]) && (this.calibration[id].hitThreshold))
+        threshold = this.calibration[id].hitThreshold
+    else
+        threshold = defaultCalibration.hitThreshold
+    parser.setThreshold(threshold)
     
     // Check if the id is already in the unit list
     if (this.units.has(id)) {

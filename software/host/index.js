@@ -1,6 +1,7 @@
 'use strict'
 
-const config = require('./config.json')
+const config = require('./config')
+const calibration = require('./calibration.json')
 const discovery = require('./discovery')
 const EPServer = require('./epserver').server
 const bunyan = require('bunyan')
@@ -17,5 +18,5 @@ const bunyan = require('bunyan')
 	discovery(config.discovery, config.endpoint.port, logger.child({'component': 'Discovery'}))
 	
 	// Endpoint server
-	const eps = new EPServer(config.endpoint, logger.child({'component': 'EPServer'}))
+	const eps = new EPServer(config.endpoint, calibration, logger.child({'component': 'EPServer'}))
 //})()

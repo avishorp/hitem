@@ -3,7 +3,8 @@ import ReactDOM from 'react-dom';
 import {observer, computed} from "mobx-react";
 import {observable} from "mobx"
 import autobind from 'autobind'
-import config from '../../config.json'
+import config from '../../config'
+import calibration from '../../calibration'
 import {server, colors} from '../../epserver'
 import Slider from 'rc-slider';
 
@@ -100,7 +101,7 @@ window.onload = function() {
 	//discovery(config.discovery, config.endpoint.port, console)
 	
 	// Endpoint server
-	const eps = new server(config.endpoint, console)
+	const eps = new server(config.endpoint, calibration, console)
     const sc = eps.setColor
     eps.on('join', u => store.joinUnit(u))
     eps.on('leave', u => store.leaveUnit(u))
