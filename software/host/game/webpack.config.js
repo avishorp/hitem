@@ -9,6 +9,7 @@ var TARGET = process.env.npm_lifecycle_event;
 process.env.BABEL_ENV = TARGET;
 
 module.exports = {
+    target: 'node',
     context: __dirname,
     entry: [
         path.resolve(CLIENT_PATH, 'app/index.jsx')
@@ -35,6 +36,13 @@ module.exports = {
                 include: CLIENT_PATH
             },
 
+            // JS
+            {
+                test: /\.js$/,
+                loader: 'babel',
+                exclude: 'node_modules'
+            },
+
             // JSX
             {
                 test: /\.jsx$/,
@@ -52,7 +60,9 @@ module.exports = {
             {
                 test: /\.json$/,
                 loader: 'json'
-            }            
+            }
+
+  
         ]
     },
     

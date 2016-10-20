@@ -3,13 +3,19 @@
 import React from 'react'
 import MainScreen from './main-screen'
 import CountdownScreen from './countdown-screen'
+import EndpointController from './endpoint-controller'
 import { Store, GAME_STATE } from './store'
 import Emulator from './emulator'
 import { observer } from "mobx-react";
-import config from '../../config.json'
+import config from '../../config.json'  // TODO: find a way to use config.js
+import calibration from '../../calibration.json'
+import EPServer from '../../epserver'
 
 const KEY_START = 13  // ENTER
 const KEY_STOP  = 96  // ~
+
+// Instantiate an EPServer/emulator
+const emulate = false; //true
 
 @observer
 export default class Game extends React.Component {
@@ -19,14 +25,11 @@ export default class Game extends React.Component {
         // Instantiate a store
         this.store = new Store(config.game)
 
-        // Instantiate an EPServer/emulator
-        const emulate = true
-
         let endpoints
         if (emulate)
             endpoints = new Emulator()
         else {
-            // TODO: Instantiate an EPServer
+            endpoints = new EPServer.server(config.endpoint, calibration, console)
         }
 
         // Tie the EPServer events to store actions
@@ -47,6 +50,8 @@ export default class Game extends React.Component {
         // In case of emulated endpoints, the emulator must be started
         if (emulate)
             setTimeout(() => endpoints.run(), 4000)
+
+        this.epserver = endpoints
 
     }
     
@@ -71,7 +76,15 @@ export default class Game extends React.Component {
                 console.error("Unknow game state")
         }
 
-        return screen
+        let endpointController;
+        if (emulate) {
+            endpointController = <div/>
+        }
+        else {
+            endpointController = <EndpointController slots={store.slots} setColor={this.epserver.setColor.bind(this.epserver)}/>
+        }
+
+        return <div>{screen}{endpointController}</div> 
     }
 }
 
