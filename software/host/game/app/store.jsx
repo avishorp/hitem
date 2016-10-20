@@ -67,13 +67,19 @@ export class Store {
   _actionHitJoin(e) {
       // If there are more than 8 hits - ignore them
       if (this.currentSlot <= 7) {
-        let s = this.slots[this.currentSlot]
-        s.hammerId = e.hammerId
-        s.hatId = e.hatId
-        s.hatColor = s.color
-        s.hammerColor = s.color
-        s.state = SLOT_STATE.ASSIGNED
-        this.currentSlot += 1
+          // Check that the hammer or the hat are not already assigned
+          const assignedHats = this.slots.filter(s => s.hatId).map(s => s.hatId)
+          const assignedHammers = this.slots.filter(s => s.hammerId).map(s => s.hammerId)
+          if ((assignedHats.indexOf(e.hatId) === -1) && (assignedHammers.indexOf(e.hammerId) === -1)) {
+              // Do the assignment
+              let s = this.slots[this.currentSlot]
+              s.hammerId = e.hammerId
+              s.hatId = e.hatId
+              s.hatColor = s.color
+              s.hammerColor = s.color
+              s.state = SLOT_STATE.ASSIGNED
+              this.currentSlot += 1
+          }
       }
   }
 
