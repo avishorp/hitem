@@ -3,7 +3,7 @@
 import React from 'react'
 import MainScreen from './main-screen'
 import CountdownScreen from './countdown-screen'
-import Deathmatch from './deathmatch'
+import DeathmatchScreen from './deathmatch'
 import EndpointController from './endpoint-controller'
 import { Store, GAME_STATE } from './store'
 import Emulator from './emulator'
@@ -73,10 +73,13 @@ export default class Game extends React.Component {
                 screen = <MainScreen mode='game' slots={store.slots}/>
                 break;
 
+            case GAME_STATE.DEATHMATCH:
+                screen = <DeathmatchScreen slots={store.deatchmatchSlots}/>
+                break;
+
             default:
                 console.error("Unknow game state")
         }
-        screen = <Deathmatch slots={store.slots}/>
 
         let endpointController;
         if (emulate) {

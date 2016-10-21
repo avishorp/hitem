@@ -1,5 +1,5 @@
-import { observer, computed } from "mobx-react";
-import { observable } from "mobx"
+import { observer } from "mobx-react";
+import { observable, computed } from "mobx"
 import autobind from 'autobind'
 import assert from 'assert'
 import { knuthShuffle } from 'knuth-shuffle'
@@ -43,7 +43,7 @@ function makeSlot(color, index) {
     }
 }
 
-const colors = 	['blue', 'orange', 'purple', 'lgtgreen', 'turkiz', 'yellow', 'white', 'pink']
+const colors = 	['blue', 'orange', 'purple', 'turkiz', 'yellow', 'white', 'pink', 'lgtgreen']
 
 
 export class Store {
@@ -62,6 +62,8 @@ export class Store {
         this._actionHitJoin(e)
       if (this.gameState === GAME_STATE.GAME)
         this._actionHitGame(e)
+      if(this.gameState === GAME_STATE.DEATHMATCH)
+        this._actionHitDeathmatch(e)
   }
 
   _actionHitJoin(e) {
@@ -151,9 +153,45 @@ export class Store {
 
               if (checkGameOver(hammerSlot))
                 this.actionGameShuffle()
+          }
+
+          // Check for "deathmatch" condition
+          const deathmatchSlots = this.deatchmatchSlots
+          if (this.deatchmatchSlots) {
+              // Set the game state
+              this.gameState = GAME_STATE.DEATHMATCH
+
+              // Assign colors
+              deathmatchSlots[0].hatColor = deathmatchSlots[1].color
+              deathmatchSlots[1].hatColor = deathmatchSlots[0].color
 
           }
       }
+  }
+
+  _actionHitDeathmatch(e) {
+      const slots = this.deatchmatchSlots
+      assert(slots)
+
+      const { hatId, hammerId } = e
+
+      console.log(slots[0].hammerId)
+      console.log(slots[0].hatId)
+      console.log(slots[1].hammerId)
+      console.log(slots[1].hatId)
+
+      console.log(e)
+      // Check which one was hit
+      if ((slots[0].hatId === hatId) && (slots[1].hammerId === hammerId)) {
+          console.log("A")
+          slots[0].score -= 1
+      }
+      else if ((slots[0].hammerId = hammerId) && (slots[1].hatId === hatId)) {
+          console.log("B")
+          slots[1].score -= 1
+      }
+
+      // Check game over condition
   }
 
   actionCountdown() {
@@ -253,6 +291,16 @@ export class Store {
               slot.hitState = 'none'
           }
       }, 1500)
+  }
+
+  // In case of a "deathmatch", this will return the two active slots
+  @computed get deatchmatchSlots() {
+      const active = this.slots.filter(s => s.state === SLOT_STATE.ACTIVE)
+      if (active.length !== 2)
+        // This should not happen
+        return null
+      else
+        return active
   }
 }
 

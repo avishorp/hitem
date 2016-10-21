@@ -34,7 +34,7 @@ const messageAreaStyle = {
 
 
 @observer
-export default class Deathmatch extends React.Component {
+export default class DeathmatchScreen extends React.Component {
     constructor(props) {
         super(props)
     }
