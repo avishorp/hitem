@@ -8,6 +8,11 @@
     src: url(BALLSONTHERAMPAGE.ttf)
 }
 
+@font-face {
+    font-family: vinque;
+    src: url(vinque.regular.ttf);
+}
+
 body {
     background: url(ivory-off-white-painted-wall-texture.jpg);
     background-size: cover;
