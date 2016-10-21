@@ -11,6 +11,7 @@ import { observer } from "mobx-react";
 import config from '../../config.json'  // TODO: find a way to use config.js
 import calibration from '../../calibration.json'
 import EPServer from '../../epserver'
+import Fireworks from './fireworks.js'
 
 const KEY_START = 13  // ENTER
 const KEY_STOP  = 96  // ~
@@ -22,6 +23,8 @@ const emulate = false; //true
 export default class Game extends React.Component {
     constructor(props) {
         super(props)
+
+        //const fireworks = new Fireworks()
 
         // Instantiate a store
         this.store = new Store(config.game)

@@ -99,7 +99,7 @@ EPManager.prototype.removeUnit = function(uid) {
     // Make sure the unit exists in the list
     const unit = this.units.get(uid)
     if (!unit) {
-        this.logger.warning(util.format("Trying to delete non-existing unit (%d)", uid))
+        this.logger.warn(util.format("Trying to delete non-existing unit (%d)", uid))
         return
     }
 
