@@ -40,8 +40,12 @@
 // Define to enable report messages to be sent over UDP
 //#define DEBUG_UDP_PORT  24600
 
+// Define to enable direct (network) access to the Piezo analog samples.
+// the unit is not functional in this state
+//#define ANALOG_SAMPLE_DEBUG
+
 // Define to disable battery low detection (for debugging)
-//#define PREVENT_BATTERY_LOW_DETECTION
+#define PREVENT_BATTERY_LOW_DETECTION
 
 #endif
 
