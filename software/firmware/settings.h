@@ -17,7 +17,7 @@
 #define ADC_CHANNEL_VSENSE   ADC_CH_3
 
 // The sensitivity to hit
-#define HIT_THRESHOLD 2400
+#define HIT_THRESHOLD 1000
 #define HIT_DEBOUNCE_A  2
 #define HIT_DEBOUNCE_B  500
 
@@ -45,7 +45,7 @@
 //#define ANALOG_SAMPLE_DEBUG
 
 // Define to disable battery low detection (for debugging)
-#define PREVENT_BATTERY_LOW_DETECTION
+//#define PREVENT_BATTERY_LOW_DETECTION
 
 #endif
 

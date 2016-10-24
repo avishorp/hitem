@@ -76,9 +76,11 @@ void AnalogTask()
 		switch(g_tHitDetect.mode) {
 
 		case HIT_MODE_IDLE:
-			if (value > g_iThreshold) {
+			if (value < g_iThreshold) {
 				// Initial hit level threshold has been crossed
-				g_tHitDetect.mode = HIT_MODE_THRESH;
+				g_tHitDetect.mode = HIT_MODE_HOLD;
+				g_tHitDetect.timestamp = TimeGetSystime();
+				g_tHitDetect.counter = g_iDebouncePower;
 				g_tHitDetect.last_value = value;
 				ConsolePrintf("value=%d\n", value);
 			}
