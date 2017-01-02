@@ -36,7 +36,7 @@
 //
 //*****************************************************************************
 
-// This file was automatically generated on 3/30/2016 at 12:13:05 PM
+// This file was automatically generated on 1/2/2017 at 11:06:31 PM
 // by TI PinMux version 
 //
 //*****************************************************************************
@@ -59,10 +59,6 @@ void PinMuxConfig(void)
     //
     // Set unused pins to PIN_MODE_0 with the exception of JTAG pins 16,17,19,20
     //
-    MAP_PinModeSet(PIN_05, PIN_MODE_0);
-    MAP_PinModeSet(PIN_06, PIN_MODE_0);
-    MAP_PinModeSet(PIN_07, PIN_MODE_0);
-    MAP_PinModeSet(PIN_08, PIN_MODE_0);
     MAP_PinModeSet(PIN_03, PIN_MODE_0);
     MAP_PinModeSet(PIN_04, PIN_MODE_0);
     MAP_PinModeSet(PIN_15, PIN_MODE_0);
@@ -80,6 +76,7 @@ void PinMuxConfig(void)
     MAP_PRCMPeripheralClkEnable(PRCM_TIMERA3, PRCM_RUN_MODE_CLK);
     MAP_PRCMPeripheralClkEnable(PRCM_ADC, PRCM_RUN_MODE_CLK);
     MAP_PRCMPeripheralClkEnable(PRCM_GPIOA0, PRCM_RUN_MODE_CLK);
+    MAP_PRCMPeripheralClkEnable(PRCM_GSPI, PRCM_RUN_MODE_CLK);
     MAP_PRCMPeripheralClkEnable(PRCM_UARTA0, PRCM_RUN_MODE_CLK);
 
     //
@@ -117,6 +114,26 @@ void PinMuxConfig(void)
     //
     MAP_PinTypeGPIO(PIN_50, PIN_MODE_0, false);
     MAP_GPIODirModeSet(GPIOA0_BASE, 0x1, GPIO_DIR_MODE_OUT);
+
+    //
+    // Configure PIN_08 for SPI0 GSPI_CS
+    //
+    MAP_PinTypeSPI(PIN_08, PIN_MODE_7);
+
+    //
+    // Configure PIN_05 for SPI0 GSPI_CLK
+    //
+    MAP_PinTypeSPI(PIN_05, PIN_MODE_7);
+
+    //
+    // Configure PIN_06 for SPI0 GSPI_MISO
+    //
+    MAP_PinTypeSPI(PIN_06, PIN_MODE_7);
+
+    //
+    // Configure PIN_07 for SPI0 GSPI_MOSI
+    //
+    MAP_PinTypeSPI(PIN_07, PIN_MODE_7);
 
     //
     // Configure PIN_55 for UART0 UART0_TX

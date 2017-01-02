@@ -11,7 +11,7 @@
 			"warningText": "",
 			"errorDetailsText": [],
 			"warningDetailsText": [],
-			"gpioPinsUsed": 9,
+			"gpioPinsUsed": 13,
 			"gpioPinsTotal": 25
 		},
 		"devicePinMap": {
@@ -36,6 +36,50 @@
 				"requirementName": "LED2",
 				"requirementId": "MyTimerPWM8",
 				"interfacePin": "GT_PWM"
+			},
+			"5": {
+				"nameDecoratorText": "5",
+				"assignedToName": "GSPI_CLK",
+				"errorText": "",
+				"warningText": "",
+				"warningDetailsText": [],
+				"errorDetailsText": [],
+				"requirementName": "MySPI1",
+				"requirementId": "MySPI1",
+				"interfacePin": "CLK"
+			},
+			"6": {
+				"nameDecoratorText": "6",
+				"assignedToName": "GSPI_MISO",
+				"errorText": "",
+				"warningText": "",
+				"warningDetailsText": [],
+				"errorDetailsText": [],
+				"requirementName": "MySPI1",
+				"requirementId": "MySPI1",
+				"interfacePin": "MISO"
+			},
+			"7": {
+				"nameDecoratorText": "7",
+				"assignedToName": "GSPI_MOSI",
+				"errorText": "",
+				"warningText": "",
+				"warningDetailsText": [],
+				"errorDetailsText": [],
+				"requirementName": "MySPI1",
+				"requirementId": "MySPI1",
+				"interfacePin": "MOSI"
+			},
+			"8": {
+				"nameDecoratorText": "8",
+				"assignedToName": "GSPI_CS",
+				"errorText": "",
+				"warningText": "",
+				"warningDetailsText": [],
+				"errorDetailsText": [],
+				"requirementName": "MySPI1",
+				"requirementId": "MySPI1",
+				"interfacePin": "CS"
 			},
 			"44": {
 				"nameDecoratorText": "44",
@@ -997,12 +1041,109 @@
 					"warningText": "",
 					"errorDetailsText": [],
 					"warningDetailsText": [],
-					"gpioPinsUsed": 0
+					"gpioPinsUsed": 4
 				},
 				"name": "SPI",
 				"id": "SPI",
-				"requirements": [],
-				"requirementsNameIndex": 1
+				"requirements": [
+					{
+						"used": true,
+						"solution": {
+							"nameDecoratorText": "",
+							"assignedToName": "",
+							"errorText": "",
+							"warningText": "",
+							"errorDetailsText": [],
+							"warningDetailsText": [],
+							"gpioPinsUsed": 4
+						},
+						"id": "MySPI1",
+						"name": "MySPI1",
+						"selectedInstance": "Any",
+						"selectedVoltage": "Any",
+						"selectedUseCase": "SPI",
+						"pinRequirements": [
+							{
+								"used": true,
+								"solution": {
+									"nameDecoratorText": "GSPI_CS",
+									"assignedToName": "8",
+									"errorText": "",
+									"warningText": "",
+									"errorDetailsText": [],
+									"warningDetailsText": []
+								},
+								"assignedToName": "8",
+								"type": "Single",
+								"name": "CS",
+								"interfacePinName": "CS"
+							},
+							{
+								"used": true,
+								"solution": {
+									"nameDecoratorText": "GSPI_CLK",
+									"assignedToName": "5",
+									"errorText": "",
+									"warningText": "",
+									"errorDetailsText": [],
+									"warningDetailsText": []
+								},
+								"assignedToName": "5",
+								"type": "Single",
+								"name": "CLK",
+								"interfacePinName": "CLK"
+							},
+							{
+								"used": true,
+								"solution": {
+									"nameDecoratorText": "GSPI_MISO",
+									"assignedToName": "6",
+									"errorText": "",
+									"warningText": "",
+									"errorDetailsText": [],
+									"warningDetailsText": []
+								},
+								"assignedToName": "6",
+								"type": "Single",
+								"name": "MISO",
+								"interfacePinName": "MISO"
+							},
+							{
+								"used": true,
+								"solution": {
+									"nameDecoratorText": "GSPI_MOSI",
+									"assignedToName": "7",
+									"errorText": "",
+									"warningText": "",
+									"errorDetailsText": [],
+									"warningDetailsText": []
+								},
+								"assignedToName": "7",
+								"type": "Single",
+								"name": "MOSI",
+								"interfacePinName": "MOSI"
+							}
+						],
+						"peripheralSolution": {
+							"nameDecoratorText": "",
+							"assignedToName": "SPI0",
+							"errorText": "",
+							"warningText": "",
+							"errorDetailsText": [],
+							"warningDetailsText": []
+						},
+						"voltageSolution": {
+							"nameDecoratorText": "",
+							"assignedToName": "",
+							"errorText": "",
+							"warningText": "",
+							"errorDetailsText": [],
+							"warningDetailsText": []
+						},
+						"interfaceName": "SPI"
+					}
+				],
+				"requirementsNameIndex": 2
 			},
 			"UART": {
 				"used": true,
