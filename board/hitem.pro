@@ -1,4 +1,4 @@
-update=Wed 24 Feb 2016 06:36:15 PM IST
+update=Mon 06 Feb 2017 11:03:26 PM IST
 version=1
 last_client=kicad
 [pcbnew]
@@ -25,19 +25,9 @@ version=1
 NetIExt=net
 [general]
 version=1
-[schematic_editor]
-version=1
-PageLayoutDescrFile=
-PlotDirectoryName=
-SubpartIdSeparator=0
-SubpartFirstId=65
-NetFmtName=Pcbnew
-SpiceForceRefPrefix=0
-SpiceUseNetNumbers=0
-LabSize=60
 [eeschema]
 version=1
-LibDir=/home/local/projects/kicad_libs/lib
+LibDir=lib
 [eeschema/libraries]
 LibName1=power
 LibName2=device
@@ -70,3 +60,19 @@ LibName28=contrib
 LibName29=valves
 LibName30=avishay
 LibName31=hitem
+LibName32=lib/lis3dh
+LibName33=lib/lmv324
+LibName34=lib/sparkfun_lis3dh
+LibName35=lib/xc6120
+LibName36=lib/mic5255
+LibName37=lib/ws2812b
+[schematic_editor]
+version=1
+PageLayoutDescrFile=
+PlotDirectoryName=
+SubpartIdSeparator=0
+SubpartFirstId=65
+NetFmtName=Pcbnew
+SpiceForceRefPrefix=0
+SpiceUseNetNumbers=0
+LabSize=60
