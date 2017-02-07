@@ -36,6 +36,7 @@
 #include "adc.h"
 #include "protocol.h"
 #include "error.h"
+#include "accel.h"
 
 extern void (* const g_pfnVectors[])(void);
 
@@ -102,7 +103,7 @@ int main(void) {
     SimpleLinkInit();
 
     // Load configuration
-    ConfigInit();
+//    ConfigInit();
 
     // Get and display the firmware version
     version_t ver;
@@ -110,6 +111,8 @@ int main(void) {
     VersionGet(&ver);
     VersionToString(&ver, verStr);
     ConsolePrintf("\n\rFirmware version: %s\n\r", verStr);
+
+    AccelInit();
 
     // All initialization done! Start running.
     MainLoopInit(ConfigGet());
