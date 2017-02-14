@@ -42,9 +42,9 @@ EELAYER END
 $Descr A4 11693 8268
 encoding utf-8
 Sheet 1 1
-Title "hit'em Main Board"
+Title "hit'em Main Board - VER 2"
 Date ""
-Rev "B"
+Rev ""
 Comp ""
 Comment1 "https://creativecommons.org/licenses/by-sa/4.0/"
 Comment2 "Attribution Share-Alike 4.0 License"
@@ -756,7 +756,7 @@ A3 A6 70 D9 BF 4A 33 52 0B EB FA 06 1F 6E 35 8C 6C B6 92 6E 29 00 30 B8 4C C6 60
 68 35 8E 7C 55 8B 13 05 30 D5 BB DA 01 E0 7C 69 46 8A AA A6 30 F7 69 2B E9 4E 6D 35 9A A9 39 C9 
 7C 87 17 6E 00 50 C3 D4 30 09 60 2A 65 E7 BC 16 A7 CA C5 E9 9F 9C BD F7 96 D2 06 ED D9 9B 9A 75 
 A6 7B D5 D8 F8 1A 00 F8 12 4C F5 FC 66 94 CD EA AF 90 8A 5A B6 E6 89 5F 09 94 2F 21 5C FC 3F 42 
-69 C5 EF EA F3 3C 51 00 00 00 00 49 45 4E 44 AE 42 60 82 18 
+69 C5 EF EA F3 3C 51 00 00 00 00 49 45 4E 44 AE 42 60 82 5C 
 EndData
 $EndBitmap
 $Comp
