@@ -36,8 +36,8 @@
 //
 //*****************************************************************************
 
-// This file was automatically generated on 3/30/2016 at 12:13:05 PM
-// by TI PinMux version 
+// This file was automatically generated on 24.2.2017 at 23:06:17
+// by TI PinMux version 4.0.1482 
 //
 //*****************************************************************************
 
@@ -50,7 +50,6 @@
 #include "prcm.h"
 #include "rom.h"
 #include "rom_map.h"
-
 //*****************************************************************************
 void PinMuxConfig(void)
 {
@@ -80,49 +79,46 @@ void PinMuxConfig(void)
     MAP_PRCMPeripheralClkEnable(PRCM_TIMERA3, PRCM_RUN_MODE_CLK);
     MAP_PRCMPeripheralClkEnable(PRCM_ADC, PRCM_RUN_MODE_CLK);
     MAP_PRCMPeripheralClkEnable(PRCM_GPIOA0, PRCM_RUN_MODE_CLK);
+    MAP_PRCMPeripheralClkEnable(PRCM_GPIOA3, PRCM_RUN_MODE_CLK);
     MAP_PRCMPeripheralClkEnable(PRCM_UARTA0, PRCM_RUN_MODE_CLK);
-
     //
     // Configure PIN_64 for TimerPWM5 GT_PWM05
     //
     MAP_PinTypeTimer(PIN_64, PIN_MODE_3);
-
     //
     // Configure PIN_02 for TimerPWM7 GT_PWM07
     //
     MAP_PinTypeTimer(PIN_02, PIN_MODE_3);
-
     //
     // Configure PIN_01 for TimerPWM6 GT_PWM06
     //
     MAP_PinTypeTimer(PIN_01, PIN_MODE_3);
-
     //
     // Configure PIN_58 for ADC0 ADC_CH1
     //
     MAP_PinTypeADC(PIN_58, PIN_MODE_255);
-
     //
     // Configure PIN_59 for ADC0 ADC_CH2
     //
     MAP_PinTypeADC(PIN_59, PIN_MODE_255);
-
     //
     // Configure PIN_60 for ADC0 ADC_CH3
     //
     MAP_PinTypeADC(PIN_60, PIN_MODE_255);
-
     //
     // Configure PIN_50 for GPIO Output
     //
     MAP_PinTypeGPIO(PIN_50, PIN_MODE_0, false);
     MAP_GPIODirModeSet(GPIOA0_BASE, 0x1, GPIO_DIR_MODE_OUT);
-
+    //
+    // Configure PIN_17 for GPIO Output
+    //
+    MAP_PinTypeGPIO(PIN_17, PIN_MODE_0, false);
+    MAP_GPIODirModeSet(GPIOA3_BASE, 0x1, GPIO_DIR_MODE_OUT);
     //
     // Configure PIN_55 for UART0 UART0_TX
     //
     MAP_PinTypeUART(PIN_55, PIN_MODE_3);
-
     //
     // Configure PIN_57 for UART0 UART0_RX
     //

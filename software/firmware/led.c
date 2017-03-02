@@ -12,9 +12,14 @@
 #include "prcm.h"
 #include "timer.h"
 #include "utils.h"
+#include "gpio.h"
+
+#include <simplelink.h>
 
 #define TIMER_INTERVAL_RELOAD   40035 /* =(255*157) */
 #define DUTYCYCLE_GRANULARITY   157
+
+#define LED_GPIO_SET(v) GPIOPinWrite(LED_GPIO_BASE, LED_GPIO_MASK, v*LED_GPIO_MASK)
 
 ///// LED Pattern definitions
 typedef struct {
@@ -146,40 +151,76 @@ void _UpdateDutyCycle(unsigned long ulBase, unsigned long ulTimer,
                      unsigned char ucLevel);
 
 
+void _LEDTransmit(_u32* raw, int repeat)
+{
+    // Reset
+    LED_GPIO_SET(1);
+    UtilsDelay(800);
+    LED_GPIO_SET(0);
+    UtilsDelay(800);
+
+    int j, k, r;
+    _u32 v;
+    for(r = 0; r < repeat; r++) {
+        for (k=0; k < 3; k++) {
+            v = raw[k];
+
+            for(j=0; j < 32; j++) {
+                GPIOPinWrite(0x40007000, 0x1, v & 0x01);
+                v >>= 1;
+            }
+        }
+    }
+}
+
+void _LEDPrepareData(_u8 r, _u8 g, _u8 b)
+{
+    _u32 raw[3];
+    _u32 grb = (g << 16) + (r << 8) + b;
+
+    int j, k;
+    for(k=0; k < 3; k++) {
+        raw[k] = 0;
+
+        for(j = 0; j < 8; j++) {
+            if (grb & 0x800000)
+                // 1
+                raw[k] |= (0b0111) << (j*4);
+            else
+                // 0
+                raw[k] |= (0b0001) << (j*4);
+
+            grb <<= 1;
+        }
+
+    }
+
+    _LEDTransmit(raw, 8);
+}
 
 
 void LEDInit()
 {
-	// Initialize globals
-	g_iForegroundColor = COLOR_NONE;
-	g_iForegroundIntensity = 0;
-	g_pCurrentPattern = 0;
+    LED_GPIO_SET(1);
+    UtilsDelay(1000);
 
-	// Green - PWM5 (Timer2/B)
-	// THE GREEN TIMER IS SHARED WITH THE SYSTEM TIMER, AND CONFIGURED BY THAT MODULE
-    //MAP_TimerConfigure(TIMERA2_BASE, (TIMER_CFG_SPLIT_PAIR | TIMER_CFG_B_PWM));
-    MAP_TimerPrescaleSet(TIMERA2_BASE, TIMER_B, 0);
-    MAP_TimerLoadSet(TIMERA2_BASE, TIMER_B, TIMER_INTERVAL_RELOAD);
-    MAP_TimerMatchSet(TIMERA2_BASE, TIMER_B, TIMER_INTERVAL_RELOAD);
-    MAP_TimerControlLevel(TIMERA2_BASE, TIMER_B, 1);
+    int i = 0;
+    while(1) {
 
-	//MAP_TimerEnable(TIMERA2_BASE, TIMER_B);
+        _LEDPrepareData((i & 0x03)*6, ((i & 0x0c) >> 2)*6, ((i & 0x30) >> 4) *6);
+        //_LEDPrepareData((i & 0x01)*6, ((i & 0x02) >> 1)*6, ((i & 0x04) >> 2) *6);
 
-	//  Blue - PWM6 (Timer3/A) & Red - PWM7 (Timer3/B)
-    MAP_TimerConfigure(TIMERA3_BASE, (TIMER_CFG_SPLIT_PAIR | TIMER_CFG_B_PWM | TIMER_CFG_A_PWM));
-    MAP_TimerPrescaleSet(TIMERA3_BASE, TIMER_A, 0);
-    MAP_TimerPrescaleSet(TIMERA3_BASE, TIMER_B, 0);
-    MAP_TimerLoadSet(TIMERA3_BASE, TIMER_A, TIMER_INTERVAL_RELOAD);
-    MAP_TimerLoadSet(TIMERA3_BASE, TIMER_B, TIMER_INTERVAL_RELOAD);
-    MAP_TimerMatchSet(TIMERA3_BASE, TIMER_A, TIMER_INTERVAL_RELOAD);
-    MAP_TimerMatchSet(TIMERA3_BASE, TIMER_B, TIMER_INTERVAL_RELOAD);
-    MAP_TimerControlLevel(TIMERA3_BASE, TIMER_A, 1);
-    MAP_TimerControlLevel(TIMERA3_BASE, TIMER_B, 1);
+        i++;
 
+        if ((i&0x07)==1)
+            UtilsDelay(3000000*5);
 
-	MAP_TimerEnable(TIMERA3_BASE, TIMER_A);
-	MAP_TimerEnable(TIMERA3_BASE, TIMER_B);
+    UtilsDelay(3000000*5);
+
+    }
+
 }
+
 
 void LEDSetColor(color_t color, int intensity)
 {

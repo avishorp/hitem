@@ -1,4 +1,5 @@
 {
+	"boardId": "undefined",
 	"deviceId": "CC3200",
 	"partId": "ID_500",
 	"packageId": "ID_1",
@@ -11,8 +12,9 @@
 			"warningText": "",
 			"errorDetailsText": [],
 			"warningDetailsText": [],
-			"gpioPinsUsed": 9,
-			"gpioPinsTotal": 25
+			"gpioPinsUsed": 10,
+			"gpioPinsTotal": 25,
+			"errorCount": 0
 		},
 		"devicePinMap": {
 			"3": {
@@ -20,8 +22,11 @@
 				"assignedToName": "GT_PWM06",
 				"errorText": "",
 				"warningText": "",
-				"warningDetailsText": [],
 				"errorDetailsText": [],
+				"warningDetailsText": [],
+				"errorCount": 0,
+				"warningCount": 0,
+				"nonSolverErrorCount": 0,
 				"requirementName": "LED3",
 				"requirementId": "MyTimerPWM9",
 				"interfacePin": "GT_PWM"
@@ -31,19 +36,39 @@
 				"assignedToName": "GT_PWM07",
 				"errorText": "",
 				"warningText": "",
-				"warningDetailsText": [],
 				"errorDetailsText": [],
+				"warningDetailsText": [],
+				"errorCount": 0,
+				"warningCount": 0,
+				"nonSolverErrorCount": 0,
 				"requirementName": "LED2",
 				"requirementId": "MyTimerPWM8",
 				"interfacePin": "GT_PWM"
+			},
+			"18": {
+				"nameDecoratorText": "18",
+				"assignedToName": "GPIO24",
+				"errorText": "",
+				"warningText": "",
+				"errorDetailsText": [],
+				"warningDetailsText": [],
+				"errorCount": 0,
+				"warningCount": 0,
+				"nonSolverErrorCount": 0,
+				"requirementName": "GPIO",
+				"requirementId": "MyGPIO1",
+				"interfacePin": "GPIO24"
 			},
 			"44": {
 				"nameDecoratorText": "44",
 				"assignedToName": "GPIO00",
 				"errorText": "",
 				"warningText": "",
-				"warningDetailsText": [],
 				"errorDetailsText": [],
+				"warningDetailsText": [],
+				"errorCount": 0,
+				"warningCount": 0,
+				"nonSolverErrorCount": 0,
 				"requirementName": "GPIO",
 				"requirementId": "MyGPIO1",
 				"interfacePin": "GPIO00"
@@ -53,8 +78,11 @@
 				"assignedToName": "UART0_TX",
 				"errorText": "",
 				"warningText": "",
-				"warningDetailsText": [],
 				"errorDetailsText": [],
+				"warningDetailsText": [],
+				"errorCount": 0,
+				"warningCount": 0,
+				"nonSolverErrorCount": 0,
 				"requirementName": "CONSOLE",
 				"requirementId": "MyUART1",
 				"interfacePin": "TX"
@@ -64,8 +92,11 @@
 				"assignedToName": "UART0_RX",
 				"errorText": "",
 				"warningText": "",
-				"warningDetailsText": [],
 				"errorDetailsText": [],
+				"warningDetailsText": [],
+				"errorCount": 0,
+				"warningCount": 0,
+				"nonSolverErrorCount": 0,
 				"requirementName": "CONSOLE",
 				"requirementId": "MyUART1",
 				"interfacePin": "RX"
@@ -75,8 +106,11 @@
 				"assignedToName": "ADC_CH1",
 				"errorText": "",
 				"warningText": "",
-				"warningDetailsText": [],
 				"errorDetailsText": [],
+				"warningDetailsText": [],
+				"errorCount": 0,
+				"warningCount": 0,
+				"nonSolverErrorCount": 0,
 				"requirementName": "ADC",
 				"requirementId": "MyADC1",
 				"interfacePin": "CH1"
@@ -86,8 +120,11 @@
 				"assignedToName": "ADC_CH2",
 				"errorText": "",
 				"warningText": "",
-				"warningDetailsText": [],
 				"errorDetailsText": [],
+				"warningDetailsText": [],
+				"errorCount": 0,
+				"warningCount": 0,
+				"nonSolverErrorCount": 0,
 				"requirementName": "ADC",
 				"requirementId": "MyADC1",
 				"interfacePin": "CH2"
@@ -97,8 +134,11 @@
 				"assignedToName": "ADC_CH3",
 				"errorText": "",
 				"warningText": "",
-				"warningDetailsText": [],
 				"errorDetailsText": [],
+				"warningDetailsText": [],
+				"errorCount": 0,
+				"warningCount": 0,
+				"nonSolverErrorCount": 0,
 				"requirementName": "ADC",
 				"requirementId": "MyADC1",
 				"interfacePin": "CH3"
@@ -108,8 +148,11 @@
 				"assignedToName": "GT_PWM05",
 				"errorText": "",
 				"warningText": "",
-				"warningDetailsText": [],
 				"errorDetailsText": [],
+				"warningDetailsText": [],
+				"errorCount": 0,
+				"warningCount": 0,
+				"nonSolverErrorCount": 0,
 				"requirementName": "LED1",
 				"requirementId": "MyTimerPWM7",
 				"interfacePin": "GT_PWM"
@@ -127,7 +170,8 @@
 					"warningText": "",
 					"errorDetailsText": [],
 					"warningDetailsText": [],
-					"gpioPinsUsed": 3
+					"gpioPinsUsed": 3,
+					"errorCount": 0
 				},
 				"name": "TimerPWM",
 				"id": "TimerPWM",
@@ -141,7 +185,8 @@
 							"warningText": "",
 							"errorDetailsText": [],
 							"warningDetailsText": [],
-							"gpioPinsUsed": 1
+							"gpioPinsUsed": 1,
+							"errorCount": 0
 						},
 						"id": "MyTimerPWM7",
 						"name": "LED1",
@@ -181,7 +226,20 @@
 							"errorDetailsText": [],
 							"warningDetailsText": []
 						},
-						"interfaceName": "TimerPWM"
+						"interfaceName": "TimerPWM",
+						"nonSolverSolution": {
+							"nameDecoratorText": "",
+							"assignedToName": "",
+							"errorText": "",
+							"warningText": "",
+							"errorDetailsText": [],
+							"warningDetailsText": [],
+							"errorCount": 0,
+							"warningCount": 0,
+							"nonSolverErrorCount": 0
+						},
+						"pinConfigurablesHeader": {},
+						"isNameValid": true
 					},
 					{
 						"used": true,
@@ -192,7 +250,8 @@
 							"warningText": "",
 							"errorDetailsText": [],
 							"warningDetailsText": [],
-							"gpioPinsUsed": 1
+							"gpioPinsUsed": 1,
+							"errorCount": 0
 						},
 						"id": "MyTimerPWM8",
 						"name": "LED2",
@@ -232,7 +291,20 @@
 							"errorDetailsText": [],
 							"warningDetailsText": []
 						},
-						"interfaceName": "TimerPWM"
+						"interfaceName": "TimerPWM",
+						"nonSolverSolution": {
+							"nameDecoratorText": "",
+							"assignedToName": "",
+							"errorText": "",
+							"warningText": "",
+							"errorDetailsText": [],
+							"warningDetailsText": [],
+							"errorCount": 0,
+							"warningCount": 0,
+							"nonSolverErrorCount": 0
+						},
+						"pinConfigurablesHeader": {},
+						"isNameValid": true
 					},
 					{
 						"used": true,
@@ -243,7 +315,8 @@
 							"warningText": "",
 							"errorDetailsText": [],
 							"warningDetailsText": [],
-							"gpioPinsUsed": 1
+							"gpioPinsUsed": 1,
+							"errorCount": 0
 						},
 						"id": "MyTimerPWM9",
 						"name": "LED3",
@@ -283,7 +356,20 @@
 							"errorDetailsText": [],
 							"warningDetailsText": []
 						},
-						"interfaceName": "TimerPWM"
+						"interfaceName": "TimerPWM",
+						"nonSolverSolution": {
+							"nameDecoratorText": "",
+							"assignedToName": "",
+							"errorText": "",
+							"warningText": "",
+							"errorDetailsText": [],
+							"warningDetailsText": [],
+							"errorCount": 0,
+							"warningCount": 0,
+							"nonSolverErrorCount": 0
+						},
+						"pinConfigurablesHeader": {},
+						"isNameValid": true
 					}
 				],
 				"requirementsNameIndex": 10
@@ -297,7 +383,8 @@
 					"warningText": "",
 					"errorDetailsText": [],
 					"warningDetailsText": [],
-					"gpioPinsUsed": 0
+					"gpioPinsUsed": 0,
+					"errorCount": 0
 				},
 				"name": "Camera",
 				"id": "Camera",
@@ -313,7 +400,8 @@
 					"warningText": "",
 					"errorDetailsText": [],
 					"warningDetailsText": [],
-					"gpioPinsUsed": 3
+					"gpioPinsUsed": 3,
+					"errorCount": 0
 				},
 				"name": "ADC",
 				"id": "ADC",
@@ -327,7 +415,8 @@
 							"warningText": "",
 							"errorDetailsText": [],
 							"warningDetailsText": [],
-							"gpioPinsUsed": 3
+							"gpioPinsUsed": 3,
+							"errorCount": 0
 						},
 						"id": "MyADC1",
 						"name": "ADC",
@@ -412,7 +501,21 @@
 							"errorDetailsText": [],
 							"warningDetailsText": []
 						},
-						"interfaceName": "ADC"
+						"interfaceName": "ADC",
+						"nonSolverSolution": {
+							"nameDecoratorText": "",
+							"assignedToName": "",
+							"errorText": "",
+							"warningText": "",
+							"errorDetailsText": [],
+							"warningDetailsText": [],
+							"errorCount": 0,
+							"warningCount": 0,
+							"nonSolverErrorCount": 0
+						},
+						"pinConfigurablesHeader": {},
+						"isNameValid": true,
+						"requirementNameErrorMessage": ""
 					}
 				],
 				"requirementsNameIndex": 2
@@ -426,7 +529,8 @@
 					"warningText": "",
 					"errorDetailsText": [],
 					"warningDetailsText": [],
-					"gpioPinsUsed": 0
+					"gpioPinsUsed": 0,
+					"errorCount": 0
 				},
 				"name": "TimerCP",
 				"id": "TimerCP",
@@ -442,7 +546,8 @@
 					"warningText": "",
 					"errorDetailsText": [],
 					"warningDetailsText": [],
-					"gpioPinsUsed": 1
+					"gpioPinsUsed": 2,
+					"errorCount": 0
 				},
 				"name": "GPIO",
 				"id": "GPIO",
@@ -456,7 +561,8 @@
 							"warningText": "",
 							"errorDetailsText": [],
 							"warningDetailsText": [],
-							"gpioPinsUsed": 1
+							"gpioPinsUsed": 2,
+							"errorCount": 0
 						},
 						"id": "MyGPIO1",
 						"name": "GPIO",
@@ -480,7 +586,14 @@
 								"interfacePinName": "GPIO00",
 								"input": false,
 								"output": true,
-								"outputOpenDrain": false
+								"outputOpenDrain": false,
+								"configurables": {
+									"io": {
+										"name": "output",
+										"displayName": "Output",
+										"value": "N/A"
+									}
+								}
 							},
 							{
 								"used": false,
@@ -498,7 +611,14 @@
 								"interfacePinName": "GPIO01",
 								"input": true,
 								"output": false,
-								"outputOpenDrain": false
+								"outputOpenDrain": false,
+								"configurables": {
+									"io": {
+										"name": "input",
+										"displayName": "Input",
+										"value": "N/A"
+									}
+								}
 							},
 							{
 								"used": false,
@@ -516,7 +636,14 @@
 								"interfacePinName": "GPIO02",
 								"input": true,
 								"output": false,
-								"outputOpenDrain": false
+								"outputOpenDrain": false,
+								"configurables": {
+									"io": {
+										"name": "input",
+										"displayName": "Input",
+										"value": "N/A"
+									}
+								}
 							},
 							{
 								"used": false,
@@ -534,7 +661,14 @@
 								"interfacePinName": "GPIO03",
 								"input": true,
 								"output": false,
-								"outputOpenDrain": false
+								"outputOpenDrain": false,
+								"configurables": {
+									"io": {
+										"name": "input",
+										"displayName": "Input",
+										"value": "N/A"
+									}
+								}
 							},
 							{
 								"used": false,
@@ -552,7 +686,14 @@
 								"interfacePinName": "GPIO04",
 								"input": true,
 								"output": false,
-								"outputOpenDrain": false
+								"outputOpenDrain": false,
+								"configurables": {
+									"io": {
+										"name": "input",
+										"displayName": "Input",
+										"value": "N/A"
+									}
+								}
 							},
 							{
 								"used": false,
@@ -570,7 +711,14 @@
 								"interfacePinName": "GPIO05",
 								"input": true,
 								"output": false,
-								"outputOpenDrain": false
+								"outputOpenDrain": false,
+								"configurables": {
+									"io": {
+										"name": "input",
+										"displayName": "Input",
+										"value": "N/A"
+									}
+								}
 							},
 							{
 								"used": false,
@@ -588,7 +736,14 @@
 								"interfacePinName": "GPIO06",
 								"input": true,
 								"output": false,
-								"outputOpenDrain": false
+								"outputOpenDrain": false,
+								"configurables": {
+									"io": {
+										"name": "input",
+										"displayName": "Input",
+										"value": "N/A"
+									}
+								}
 							},
 							{
 								"used": false,
@@ -606,7 +761,14 @@
 								"interfacePinName": "GPIO07",
 								"input": true,
 								"output": false,
-								"outputOpenDrain": false
+								"outputOpenDrain": false,
+								"configurables": {
+									"io": {
+										"name": "input",
+										"displayName": "Input",
+										"value": "N/A"
+									}
+								}
 							},
 							{
 								"used": false,
@@ -624,7 +786,14 @@
 								"interfacePinName": "GPIO08",
 								"input": true,
 								"output": false,
-								"outputOpenDrain": false
+								"outputOpenDrain": false,
+								"configurables": {
+									"io": {
+										"name": "input",
+										"displayName": "Input",
+										"value": "N/A"
+									}
+								}
 							},
 							{
 								"used": false,
@@ -642,7 +811,14 @@
 								"interfacePinName": "GPIO09",
 								"input": true,
 								"output": false,
-								"outputOpenDrain": false
+								"outputOpenDrain": false,
+								"configurables": {
+									"io": {
+										"name": "input",
+										"displayName": "Input",
+										"value": "N/A"
+									}
+								}
 							},
 							{
 								"used": false,
@@ -660,7 +836,14 @@
 								"interfacePinName": "GPIO10",
 								"input": true,
 								"output": false,
-								"outputOpenDrain": false
+								"outputOpenDrain": false,
+								"configurables": {
+									"io": {
+										"name": "input",
+										"displayName": "Input",
+										"value": "N/A"
+									}
+								}
 							},
 							{
 								"used": false,
@@ -678,7 +861,14 @@
 								"interfacePinName": "GPIO11",
 								"input": true,
 								"output": false,
-								"outputOpenDrain": false
+								"outputOpenDrain": false,
+								"configurables": {
+									"io": {
+										"name": "input",
+										"displayName": "Input",
+										"value": "N/A"
+									}
+								}
 							},
 							{
 								"used": false,
@@ -696,7 +886,14 @@
 								"interfacePinName": "GPIO12",
 								"input": true,
 								"output": false,
-								"outputOpenDrain": false
+								"outputOpenDrain": false,
+								"configurables": {
+									"io": {
+										"name": "input",
+										"displayName": "Input",
+										"value": "N/A"
+									}
+								}
 							},
 							{
 								"used": false,
@@ -714,7 +911,14 @@
 								"interfacePinName": "GPIO13",
 								"input": true,
 								"output": false,
-								"outputOpenDrain": false
+								"outputOpenDrain": false,
+								"configurables": {
+									"io": {
+										"name": "input",
+										"displayName": "Input",
+										"value": "N/A"
+									}
+								}
 							},
 							{
 								"used": false,
@@ -732,7 +936,14 @@
 								"interfacePinName": "GPIO14",
 								"input": true,
 								"output": false,
-								"outputOpenDrain": false
+								"outputOpenDrain": false,
+								"configurables": {
+									"io": {
+										"name": "input",
+										"displayName": "Input",
+										"value": "N/A"
+									}
+								}
 							},
 							{
 								"used": false,
@@ -750,7 +961,14 @@
 								"interfacePinName": "GPIO15",
 								"input": true,
 								"output": false,
-								"outputOpenDrain": false
+								"outputOpenDrain": false,
+								"configurables": {
+									"io": {
+										"name": "input",
+										"displayName": "Input",
+										"value": "N/A"
+									}
+								}
 							},
 							{
 								"used": false,
@@ -768,7 +986,14 @@
 								"interfacePinName": "GPIO16",
 								"input": true,
 								"output": false,
-								"outputOpenDrain": false
+								"outputOpenDrain": false,
+								"configurables": {
+									"io": {
+										"name": "input",
+										"displayName": "Input",
+										"value": "N/A"
+									}
+								}
 							},
 							{
 								"used": false,
@@ -786,7 +1011,14 @@
 								"interfacePinName": "GPIO17",
 								"input": true,
 								"output": false,
-								"outputOpenDrain": false
+								"outputOpenDrain": false,
+								"configurables": {
+									"io": {
+										"name": "input",
+										"displayName": "Input",
+										"value": "N/A"
+									}
+								}
 							},
 							{
 								"used": false,
@@ -804,7 +1036,14 @@
 								"interfacePinName": "GPIO22",
 								"input": true,
 								"output": false,
-								"outputOpenDrain": false
+								"outputOpenDrain": false,
+								"configurables": {
+									"io": {
+										"name": "input",
+										"displayName": "Input",
+										"value": "N/A"
+									}
+								}
 							},
 							{
 								"used": false,
@@ -822,13 +1061,20 @@
 								"interfacePinName": "GPIO23",
 								"input": true,
 								"output": false,
-								"outputOpenDrain": false
+								"outputOpenDrain": false,
+								"configurables": {
+									"io": {
+										"name": "input",
+										"displayName": "Input",
+										"value": "N/A"
+									}
+								}
 							},
 							{
-								"used": false,
+								"used": true,
 								"solution": {
-									"nameDecoratorText": "",
-									"assignedToName": "",
+									"nameDecoratorText": "GPIO24",
+									"assignedToName": "18",
 									"errorText": "",
 									"warningText": "",
 									"errorDetailsText": [],
@@ -840,7 +1086,14 @@
 								"interfacePinName": "GPIO24",
 								"input": true,
 								"output": false,
-								"outputOpenDrain": false
+								"outputOpenDrain": false,
+								"configurables": {
+									"io": {
+										"name": "output",
+										"displayName": "Output",
+										"value": "N/A"
+									}
+								}
 							},
 							{
 								"used": false,
@@ -858,7 +1111,14 @@
 								"interfacePinName": "GPIO28",
 								"input": true,
 								"output": false,
-								"outputOpenDrain": false
+								"outputOpenDrain": false,
+								"configurables": {
+									"io": {
+										"name": "input",
+										"displayName": "Input",
+										"value": "N/A"
+									}
+								}
 							},
 							{
 								"used": false,
@@ -876,7 +1136,14 @@
 								"interfacePinName": "GPIO29",
 								"input": true,
 								"output": false,
-								"outputOpenDrain": false
+								"outputOpenDrain": false,
+								"configurables": {
+									"io": {
+										"name": "input",
+										"displayName": "Input",
+										"value": "N/A"
+									}
+								}
 							},
 							{
 								"used": false,
@@ -894,7 +1161,14 @@
 								"interfacePinName": "GPIO25",
 								"input": true,
 								"output": false,
-								"outputOpenDrain": false
+								"outputOpenDrain": false,
+								"configurables": {
+									"io": {
+										"name": "input",
+										"displayName": "Input",
+										"value": "N/A"
+									}
+								}
 							},
 							{
 								"used": false,
@@ -912,7 +1186,14 @@
 								"interfacePinName": "GPIO30",
 								"input": true,
 								"output": false,
-								"outputOpenDrain": false
+								"outputOpenDrain": false,
+								"configurables": {
+									"io": {
+										"name": "input",
+										"displayName": "Input",
+										"value": "N/A"
+									}
+								}
 							},
 							{
 								"used": false,
@@ -930,7 +1211,14 @@
 								"interfacePinName": "GPIO31",
 								"input": true,
 								"output": false,
-								"outputOpenDrain": false
+								"outputOpenDrain": false,
+								"configurables": {
+									"io": {
+										"name": "input",
+										"displayName": "Input",
+										"value": "N/A"
+									}
+								}
 							},
 							{
 								"used": false,
@@ -948,7 +1236,14 @@
 								"interfacePinName": "GPIO32",
 								"input": true,
 								"output": false,
-								"outputOpenDrain": false
+								"outputOpenDrain": false,
+								"configurables": {
+									"io": {
+										"name": "input",
+										"displayName": "Input",
+										"value": "N/A"
+									}
+								}
 							}
 						],
 						"peripheralSolution": {
@@ -967,7 +1262,27 @@
 							"errorDetailsText": [],
 							"warningDetailsText": []
 						},
-						"interfaceName": "GPIO"
+						"interfaceName": "GPIO",
+						"nonSolverSolution": {
+							"nameDecoratorText": "",
+							"assignedToName": "",
+							"errorText": "",
+							"warningText": "",
+							"errorDetailsText": [],
+							"warningDetailsText": [],
+							"errorCount": 0,
+							"warningCount": 0,
+							"nonSolverErrorCount": 0
+						},
+						"pinConfigurablesHeader": {
+							"io": {
+								"name": "input",
+								"displayName": "Input",
+								"value": "N/A"
+							}
+						},
+						"isNameValid": true,
+						"requirementNameErrorMessage": ""
 					}
 				],
 				"requirementsNameIndex": 2
@@ -981,7 +1296,8 @@
 					"warningText": "",
 					"errorDetailsText": [],
 					"warningDetailsText": [],
-					"gpioPinsUsed": 0
+					"gpioPinsUsed": 0,
+					"errorCount": 0
 				},
 				"name": "SDHost",
 				"id": "SDHost",
@@ -997,7 +1313,8 @@
 					"warningText": "",
 					"errorDetailsText": [],
 					"warningDetailsText": [],
-					"gpioPinsUsed": 0
+					"gpioPinsUsed": 0,
+					"errorCount": 0
 				},
 				"name": "SPI",
 				"id": "SPI",
@@ -1013,7 +1330,8 @@
 					"warningText": "",
 					"errorDetailsText": [],
 					"warningDetailsText": [],
-					"gpioPinsUsed": 2
+					"gpioPinsUsed": 2,
+					"errorCount": 0
 				},
 				"name": "UART",
 				"id": "UART",
@@ -1027,7 +1345,8 @@
 							"warningText": "",
 							"errorDetailsText": [],
 							"warningDetailsText": [],
-							"gpioPinsUsed": 2
+							"gpioPinsUsed": 2,
+							"errorCount": 0
 						},
 						"id": "MyUART1",
 						"name": "CONSOLE",
@@ -1112,7 +1431,20 @@
 							"errorDetailsText": [],
 							"warningDetailsText": []
 						},
-						"interfaceName": "UART"
+						"interfaceName": "UART",
+						"nonSolverSolution": {
+							"nameDecoratorText": "",
+							"assignedToName": "",
+							"errorText": "",
+							"warningText": "",
+							"errorDetailsText": [],
+							"warningDetailsText": [],
+							"errorCount": 0,
+							"warningCount": 0,
+							"nonSolverErrorCount": 0
+						},
+						"pinConfigurablesHeader": {},
+						"isNameValid": true
 					}
 				],
 				"requirementsNameIndex": 2
@@ -1126,7 +1458,8 @@
 					"warningText": "",
 					"errorDetailsText": [],
 					"warningDetailsText": [],
-					"gpioPinsUsed": 0
+					"gpioPinsUsed": 0,
+					"errorCount": 0
 				},
 				"name": "I2C",
 				"id": "I2C",
@@ -1142,7 +1475,8 @@
 					"warningText": "",
 					"errorDetailsText": [],
 					"warningDetailsText": [],
-					"gpioPinsUsed": 0
+					"gpioPinsUsed": 0,
+					"errorCount": 0
 				},
 				"name": "McASP",
 				"id": "McASP",
@@ -1150,7 +1484,13 @@
 				"requirementsNameIndex": 2
 			}
 		},
-		"version": "2.0.0"
+		"version": "2.0.0",
+		"isLoad": true
 	},
-	"codeGenOptionsValues": {}
+	"versions": {
+		"data": "2017020309",
+		"timestamp": "2017020309",
+		"tool": "4.0.1482 ",
+		"templates": "2017020309"
+	}
 }

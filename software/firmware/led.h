@@ -2,6 +2,9 @@
 
 typedef unsigned long color_t;
 
+#define LED_GPIO_BASE GPIOA3_BASE
+#define LED_GPIO_MASK 0x1
+
 #define RGB(r, g, b) (r + (g << 8) + (b << 16))
 
 // Predefined colors
