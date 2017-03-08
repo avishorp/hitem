@@ -19,18 +19,41 @@
 #define TIMER_INTERVAL_RELOAD   40035 /* =(255*157) */
 #define DUTYCYCLE_GRANULARITY   157
 
-#define LED_GPIO_SET(v) GPIOPinWrite(LED_GPIO_BASE, LED_GPIO_MASK, v*LED_GPIO_MASK)
+#define LED_GPIO_WRITE(v) GPIOPinWrite(LED_GPIO_BASE, LED_GPIO_MASK, v)
+#define LED_GPIO_SET(v) LED_GPIO_WRITE(v*LED_GPIO_MASK)
+
+///// Color Table
+typedef struct {
+    _u8 r;
+    _u8 g;
+    _u8 b;
+} color_t;
+
+color_t color_table[] = {
+  { 0, 0, 0 },             // COLOR_NONE
+  { 0xff, 0x00, 0x00 },    // COLOR_RED
+  { 0, 0xff, 0 },          // COLOR_GREEN
+  { 0, 0, 0xff },          // COLOR_BLUE
+  { 250, 60, 0 },          // COLOR_ORANGE
+  { 250, 0, 142 },         // COLOR_PURPLE
+  { 110, 250, 73 },        // COLOR_LGTGREEN
+  { 0, 225, 130 },         // COLOR_TURKIZ
+  { 250, 153, 0 },         // COLOR_YELLOW
+  { 250, 191, 102 },       // COLOR_WHITE
+  { 250, 90, 102 }         // COLOR_PINK
+};
+
+#define COLOR_TABLE_LENGTH (sizeof(color_table)/sizeof(color_t))
 
 ///// LED Pattern definitions
 typedef struct {
-	color_t color;
+	unsigned int color;
 	systime_t period;
 } pattern_point_t;
 
 typedef struct {
 	const pattern_point_t* schedule;
 	int length;
-	int repetitive;
 	int intensity;
 } pattern_t;
 
@@ -97,42 +120,36 @@ const pattern_t g_tLEDPatterns[] = {
 		{
 				g_tPatternRedBlue,	      // schedule
 				PLEN(g_tPatternRedBlue),  // length
-				1,                        // repetitive
 				50                        // intensity
 		},
 		// PATTERN_RED_GREEN
 		{
 				g_tPatternRedGreen,	      // schedule
 				PLEN(g_tPatternRedGreen), // length
-				1,                        // repetitive
 				50                        // intensity
 		},
 		// PATTERN_RED_PULSE
 		{
 				g_tPatternRedPulse,	      // schedule
 				PLEN(g_tPatternRedPulse), // length
-				1,                        // repetitive
 				70                        // intensity
 		},
 		// PATTERN_GREEN_PULSE
 		{
 				g_tPatternGreenPulse,	    // schedule
 				PLEN(g_tPatternGreenPulse), // length
-				1,                          // repetitive
 				70                          // intensity
 		},
 		// PATTERN_BLIMP
 		{
 				g_tPatternBlimp,   	        // schedule
 				PLEN(g_tPatternBlimp),      // length
-				1,                          // repetitive
 				70                          // intensity
 		},
 		// PATTERN_COLOR_CHIRP
 		{
 				g_tPatternChirp,   	        // schedule
 				PLEN(g_tPatternChirp),      // length
-				1,                          // repetitive
 				70                          // intensity
 		},
 
@@ -140,17 +157,18 @@ const pattern_t g_tLEDPatterns[] = {
 
 
 // Globals
-color_t g_iForegroundColor;
+unsigned int g_iForegroundColor;
 int g_iForegroundIntensity;
 pattern_t const *g_pCurrentPattern ;
 int g_iCurrentPatternPtr;
 
 // Local Forwards
 void _LEDSetColorWorker(color_t color, int intensity);
-void _UpdateDutyCycle(unsigned long ulBase, unsigned long ulTimer,
-                     unsigned char ucLevel);
 
-
+// Transmits raw encoded bits to the LEDs at constant
+// rate. The data for each LED comprises of 3*32 bits which
+// are shifted out to the data pin. The sequence repeats itself
+// n times to set the color of all the LEDs in the chian.
 void _LEDTransmit(_u32* raw, int repeat)
 {
     // Reset
@@ -166,14 +184,21 @@ void _LEDTransmit(_u32* raw, int repeat)
             v = raw[k];
 
             for(j=0; j < 32; j++) {
-                GPIOPinWrite(0x40007000, 0x1, v & 0x01);
+                LED_GPIO_WRITE(v);
                 v >>= 1;
             }
         }
     }
 }
 
-void _LEDPrepareData(_u8 r, _u8 g, _u8 b)
+// Converts an RGB triplet to a bitstream and transmits
+// it to all LEDs (all LEDs have the same color)
+//
+// Each bit in each color is converted to 4 bits which are
+// shifted out to the DIN input of a WS2812B LED chain. Each
+// 4 bit group encodes a single bit in the NRZ encoding scheme
+// used by the LEDs
+void _LEDSendData(_u8 r, _u8 g, _u8 b, int n)
 {
     _u32 raw[3];
     _u32 grb = (g << 16) + (r << 8) + b;
@@ -195,7 +220,21 @@ void _LEDPrepareData(_u8 r, _u8 g, _u8 b)
 
     }
 
-    _LEDTransmit(raw, 8);
+    _LEDTransmit(raw, n);
+}
+
+void _LEDSetColorImpl(unsigned int index, int intensity)
+{
+    if (index > (COLOR_TABLE_LENGTH-1))
+        // Invalid color
+        return;
+
+    // Calculate the PWM values
+    int red = color_table[index].r * intensity / 100;
+    int green = color_table[index].g * intensity / 100;
+    int blue = color_table[index].b * intensity / 100;
+
+    _LEDSendData(red, green, blue, 8);
 }
 
 
@@ -205,24 +244,20 @@ void LEDInit()
     UtilsDelay(1000);
 
     int i = 0;
+/*
     while(1) {
-
-        _LEDPrepareData((i & 0x03)*6, ((i & 0x0c) >> 2)*6, ((i & 0x30) >> 4) *6);
-        //_LEDPrepareData((i & 0x01)*6, ((i & 0x02) >> 1)*6, ((i & 0x04) >> 2) *6);
-
-        i++;
-
-        if ((i&0x07)==1)
-            UtilsDelay(3000000*5);
-
-    UtilsDelay(3000000*5);
-
-    }
+_LEDSendData((i & 0x03)*6, ((i & 0x0c) >> 2)*6, ((i & 0x30) >> 4) *6, 8);
+i++;
+if ((i&0x07)==1)
+UtilsDelay(3000000*5);
+UtilsDelay(3000000*5);
+}
+*/
 
 }
 
 
-void LEDSetColor(color_t color, int intensity)
+void LEDSetColor(unsigned int color, int intensity)
 {
 	// Set the color
 	g_iForegroundColor = color;
@@ -232,7 +267,7 @@ void LEDSetColor(color_t color, int intensity)
 	g_pCurrentPattern = 0;
 
 	// Set the actual LED drive
-	_LEDSetColorWorker(color, intensity);
+	_LEDSetColorImpl(color, intensity);
 }
 
 void LEDSetPattern(int pattern)
@@ -242,7 +277,7 @@ void LEDSetPattern(int pattern)
 	g_iCurrentPatternPtr = 0;
 
 	// Apply the first point
-	_LEDSetColorWorker(g_pCurrentPattern->schedule[g_iCurrentPatternPtr].color, g_pCurrentPattern->intensity);
+	_LEDSetColorImpl(g_pCurrentPattern->schedule[g_iCurrentPatternPtr].color, g_pCurrentPattern->intensity);
 	TimeSetTimeout(0, g_pCurrentPattern->schedule[g_iCurrentPatternPtr].period);
 }
 
@@ -250,9 +285,9 @@ void LEDCriticalSignal(int len)
 {
 	int i;
    	for(i=0; i < len; i++) {
-    	  	LEDSetColor(COLOR_RED, 20);
+    	  	_LEDSetColorImpl(COLOR_RED, 20);
     	    UtilsDelay(1000000);
-    	  	LEDSetColor(COLOR_NONE, 20);
+    	  	_LEDSetColorImpl(COLOR_NONE, 20);
     	    UtilsDelay(1000000);
    	}
 }
@@ -266,41 +301,12 @@ void LEDTask()
 			g_iCurrentPatternPtr++;
 			if (g_iCurrentPatternPtr >= g_pCurrentPattern->length) {
 				// End of pattern schedure
-				if (g_pCurrentPattern->repetitive)
-					// Repetitive pattern - replay
 					g_iCurrentPatternPtr = 0;
-				else {
-					// Non-repetitive pattern - set to foreground color
-					_LEDSetColorWorker(g_iForegroundColor, g_iForegroundIntensity);
-					return;
-				}
 			}
-
 			// Apply the next point
-			_LEDSetColorWorker(g_pCurrentPattern->schedule[g_iCurrentPatternPtr].color, g_pCurrentPattern->intensity);
+			_LEDSetColorImpl(g_pCurrentPattern->schedule[g_iCurrentPatternPtr].color, g_pCurrentPattern->intensity);
 			TimeSetTimeout(0, g_pCurrentPattern->schedule[g_iCurrentPatternPtr].period);
 		}
 	}
 }
 
-void _LEDSetColorWorker(color_t color, int intensity)
-{
-	// Calculate the PWM values
-	int red = (color & 0xff) * intensity / 100;
-	int green = ((color >> 8) & 0xff) * intensity / 100;
-	int blue = ((color >> 16) & 0xff) * intensity / 100;
-
-	// Set the timers
-    _UpdateDutyCycle(TIMERA2_BASE, TIMER_B, green);
-    _UpdateDutyCycle(TIMERA3_BASE, TIMER_A, blue);
-    _UpdateDutyCycle(TIMERA3_BASE, TIMER_B, red);
-}
-
-void _UpdateDutyCycle(unsigned long ulBase, unsigned long ulTimer,
-                     unsigned char ucLevel)
-{
-    //
-    // Match value is updated to reflect the new dutycycle settings
-    //
-    MAP_TimerMatchSet(ulBase,ulTimer,(ucLevel*DUTYCYCLE_GRANULARITY));
-}

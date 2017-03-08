@@ -8,7 +8,7 @@
 
 // Color table
 typedef struct {
-	color_t code;
+	int code;
 	char* name;
 } color_entry_t;
 
@@ -35,8 +35,6 @@ const char* g_sPatternNames[] = {
 		"COLOR_CHIRP"
 
 };
-
-#define NUM_COLORS (sizeof(g_iColorTable)/sizeof(color_entry_t))
 
 static const char g_sProlog[4] = MSG_PROLOG;
 
