@@ -244,16 +244,6 @@ void LEDInit()
     UtilsDelay(1000);
 
     int i = 0;
-/*
-    while(1) {
-_LEDSendData((i & 0x03)*6, ((i & 0x0c) >> 2)*6, ((i & 0x30) >> 4) *6, 8);
-i++;
-if ((i&0x07)==1)
-UtilsDelay(3000000*5);
-UtilsDelay(3000000*5);
-}
-*/
-
 }
 
 

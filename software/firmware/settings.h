@@ -43,5 +43,8 @@
 // Define to disable battery low detection (for debugging)
 //#define PREVENT_BATTERY_LOW_DETECTION
 
+// Define the following for testing (where no battery is connected)
+#define NO_BATTERY_TEST 1
+
 #endif
 
