@@ -14,6 +14,7 @@
 #include "pin.h"
 #include "gpio.h"
 #include "prcm.h"
+#include "adc.h"
 
 // Local includes
 #include "mainloop.h"
@@ -220,6 +221,39 @@ STATE_HANDLER(WAITFORIP)
 // Send a discovery request packet
 STATE_HANDLER(SENDDISCOVERY)
 {
+#ifdef ANALOG_SAMPLE_DEBUG
+	_i16 analog_socket = sl_Socket(AF_INET, SOCK_STREAM, 0);
+	SlSockAddrIn_t local_addr;
+	memset(&local_addr, 0, sizeof(SlSockAddrIn_t));
+	local_addr.sin_family = AF_INET;
+	local_addr.sin_port = sl_Htons(4567);
+	sl_Bind(analog_socket, (SlSockAddr_t *)&local_addr, sizeof(local_addr));
+	sl_Listen(analog_socket, 0);
+	ConsolePrint("Listening\n\r");
+	SlSockAddrIn_t remote_addr;
+	SlSocklen_t remote_addr_size = sizeof(remote_addr);
+
+	_i16 new_sock = sl_Accept(analog_socket, ( struct SlSockAddr_t *)&remote_addr, (SlSocklen_t*)&remote_addr_size);
+	ConsolePrint("Accepted\n\r");
+
+	while(1) {
+		_i16 analog_buf[64];
+		int level = 0;
+		int p = 0;
+
+		while (p < 64) {
+			level = ADCFIFOLvlGet(ADC_BASE, ADC_CHANNEL_PIEZO);
+			if (level > 0) {
+				analog_buf[p] = (MAP_ADCFIFORead(ADC_BASE, ADC_CHANNEL_PIEZO) >> 2) & 0xfff;
+				p++;
+			}
+		}
+
+		sl_Send(new_sock, &analog_buf, sizeof(analog_buf), 0);
+	}
+
+#endif
+
 	if (!GET_STATUS(STATUS_CONNECTED))
 		return STATE_CLEANUP;
 

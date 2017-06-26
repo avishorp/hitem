@@ -22,6 +22,7 @@
 #include "uart.h"
 #include "analog.h"
 #include "version.h"
+#include "pin.h"
 
 #include "pinmux/pin_mux_config.h"
 #include "hw_memmap.h"
@@ -36,6 +37,7 @@
 #include "adc.h"
 #include "protocol.h"
 #include "error.h"
+#include "accel.h"
 
 extern void (* const g_pfnVectors[])(void);
 
@@ -76,12 +78,13 @@ int main(void) {
     ProtocolInit();
 
     // Initialize ADC Module
+//    PinConfigSet(PIN_59, PIN_STRENGTH_6MA , PIN_TYPE_STD_PD);
+//    PinConfigSet(PIN_58, PIN_STRENGTH_6MA , PIN_TYPE_STD_PD);
+//    GPIOPinWrite(GPIOA0_BASE, 0xff, 0xff );
     AnalogInit();
 
 
 #ifndef PREVENT_BATTERY_LOW_DETECTION
-
-#ifndef NO_BATTERY_TEST
     // Read the battery voltage to make sure it's not below the threshold
     int vbat = AnalogGetBatteryVoltageBlocking();
     if (vbat < BATTERY_CRIT_THRESH)
@@ -92,7 +95,7 @@ int main(void) {
     	LEDCriticalSignal(3);
 #endif
 
-
+while(1) {
     // LED test
     LEDSetColor(COLOR_RED, 70);
     UtilsDelay(3000000);
@@ -101,12 +104,14 @@ int main(void) {
     LEDSetColor(COLOR_BLUE, 70);
     UtilsDelay(3000000);
     LEDSetColor(COLOR_NONE, 70);
+UtilsDelay(9000000);
 
+}
     // Initialize SimpleLink
     SimpleLinkInit();
 
     // Load configuration
-    ConfigInit();
+//    ConfigInit();
 
     // Get and display the firmware version
     version_t ver;
@@ -114,6 +119,8 @@ int main(void) {
     VersionGet(&ver);
     VersionToString(&ver, verStr);
     ConsolePrintf("\n\rFirmware version: %s\n\r", verStr);
+
+    AccelInit();
 
     // All initialization done! Start running.
     MainLoopInit(ConfigGet());

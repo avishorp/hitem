@@ -7,6 +7,8 @@
 #include "hw_memmap.h"
 #include "rom_map.h"
 #include "adc.h"
+#include "utils.h"
+
 
 #define ADC_FULLSCALE    1460  // ADC Fullscale Voltage [mV]
 #define VBAT_DIVIDER     3     // Hardware volated divider between battery input and pin
@@ -56,6 +58,20 @@ void AnalogInit()
 	// Enable the ADC block
 	MAP_ADCEnable(ADC_BASE);
 
+	/*
+	while(1) {
+        int level = MAP_ADCFIFOLvlGet(ADC_BASE, ADC_CHANNEL_PIEZO);
+        if (level > 0) {
+            int value = (MAP_ADCFIFORead(ADC_BASE, ADC_CHANNEL_PIEZO) >> 2) & 0xfff;
+            ConsolePrintf("ADC=%d\n\r", value);
+            UtilsDelay(1000000);
+
+
+        }
+	}
+	*/
+
+
 }
 
 int g = 0;
@@ -76,9 +92,11 @@ void AnalogTask()
 		switch(g_tHitDetect.mode) {
 
 		case HIT_MODE_IDLE:
-			if (value > g_iThreshold) {
+			if (value < g_iThreshold) {
 				// Initial hit level threshold has been crossed
-				g_tHitDetect.mode = HIT_MODE_THRESH;
+				g_tHitDetect.mode = HIT_MODE_HOLD;
+				g_tHitDetect.timestamp = TimeGetSystime();
+				g_tHitDetect.counter = g_iDebouncePower;
 				g_tHitDetect.last_value = value;
 				ConsolePrintf("value=%d\n", value);
 			}

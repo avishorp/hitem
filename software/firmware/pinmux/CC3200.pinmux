@@ -12,7 +12,7 @@
 			"warningText": "",
 			"errorDetailsText": [],
 			"warningDetailsText": [],
-			"gpioPinsUsed": 10,
+			"gpioPinsUsed": 14,
 			"gpioPinsTotal": 25,
 			"errorCount": 0
 		},
@@ -44,6 +44,62 @@
 				"requirementName": "LED2",
 				"requirementId": "MyTimerPWM8",
 				"interfacePin": "GT_PWM"
+			},
+			"5": {
+				"nameDecoratorText": "5",
+				"assignedToName": "GPIO14",
+				"errorText": "",
+				"warningText": "",
+				"errorDetailsText": [],
+				"warningDetailsText": [],
+				"errorCount": 0,
+				"warningCount": 0,
+				"nonSolverErrorCount": 0,
+				"requirementName": "GPIO",
+				"requirementId": "MyGPIO1",
+				"interfacePin": "GPIO14"
+			},
+			"6": {
+				"nameDecoratorText": "6",
+				"assignedToName": "GPIO15",
+				"errorText": "",
+				"warningText": "",
+				"errorDetailsText": [],
+				"warningDetailsText": [],
+				"errorCount": 0,
+				"warningCount": 0,
+				"nonSolverErrorCount": 0,
+				"requirementName": "GPIO",
+				"requirementId": "MyGPIO1",
+				"interfacePin": "GPIO15"
+			},
+			"7": {
+				"nameDecoratorText": "7",
+				"assignedToName": "GPIO16",
+				"errorText": "",
+				"warningText": "",
+				"errorDetailsText": [],
+				"warningDetailsText": [],
+				"errorCount": 0,
+				"warningCount": 0,
+				"nonSolverErrorCount": 0,
+				"requirementName": "GPIO",
+				"requirementId": "MyGPIO1",
+				"interfacePin": "GPIO16"
+			},
+			"8": {
+				"nameDecoratorText": "8",
+				"assignedToName": "GPIO17",
+				"errorText": "",
+				"warningText": "",
+				"errorDetailsText": [],
+				"warningDetailsText": [],
+				"errorCount": 0,
+				"warningCount": 0,
+				"nonSolverErrorCount": 0,
+				"requirementName": "GPIO",
+				"requirementId": "MyGPIO1",
+				"interfacePin": "GPIO17"
 			},
 			"18": {
 				"nameDecoratorText": "18",
@@ -117,7 +173,7 @@
 			},
 			"49": {
 				"nameDecoratorText": "49",
-				"assignedToName": "ADC_CH2",
+				"assignedToName": "GPIO04",
 				"errorText": "",
 				"warningText": "",
 				"errorDetailsText": [],
@@ -125,9 +181,9 @@
 				"errorCount": 0,
 				"warningCount": 0,
 				"nonSolverErrorCount": 0,
-				"requirementName": "ADC",
-				"requirementId": "MyADC1",
-				"interfacePin": "CH2"
+				"requirementName": "GPIO",
+				"requirementId": "MyGPIO1",
+				"interfacePin": "GPIO04"
 			},
 			"50": {
 				"nameDecoratorText": "50",
@@ -400,7 +456,7 @@
 					"warningText": "",
 					"errorDetailsText": [],
 					"warningDetailsText": [],
-					"gpioPinsUsed": 3,
+					"gpioPinsUsed": 2,
 					"errorCount": 0
 				},
 				"name": "ADC",
@@ -415,7 +471,7 @@
 							"warningText": "",
 							"errorDetailsText": [],
 							"warningDetailsText": [],
-							"gpioPinsUsed": 3,
+							"gpioPinsUsed": 2,
 							"errorCount": 0
 						},
 						"id": "MyADC1",
@@ -455,10 +511,10 @@
 								"interfacePinName": "CH1"
 							},
 							{
-								"used": true,
+								"used": false,
 								"solution": {
-									"nameDecoratorText": "ADC_CH2",
-									"assignedToName": "49",
+									"nameDecoratorText": "",
+									"assignedToName": "",
 									"errorText": "",
 									"warningText": "",
 									"errorDetailsText": [],
@@ -546,7 +602,7 @@
 					"warningText": "",
 					"errorDetailsText": [],
 					"warningDetailsText": [],
-					"gpioPinsUsed": 2,
+					"gpioPinsUsed": 7,
 					"errorCount": 0
 				},
 				"name": "GPIO",
@@ -561,7 +617,7 @@
 							"warningText": "",
 							"errorDetailsText": [],
 							"warningDetailsText": [],
-							"gpioPinsUsed": 2,
+							"gpioPinsUsed": 7,
 							"errorCount": 0
 						},
 						"id": "MyGPIO1",
@@ -671,16 +727,16 @@
 								}
 							},
 							{
-								"used": false,
+								"used": true,
 								"solution": {
-									"nameDecoratorText": "",
-									"assignedToName": "",
+									"nameDecoratorText": "GPIO04",
+									"assignedToName": "49",
 									"errorText": "",
 									"warningText": "",
 									"errorDetailsText": [],
 									"warningDetailsText": []
 								},
-								"assignedToName": "Any",
+								"assignedToName": "49",
 								"type": "Single",
 								"name": "GPIO04",
 								"interfacePinName": "GPIO04",
@@ -921,16 +977,16 @@
 								}
 							},
 							{
-								"used": false,
+								"used": true,
 								"solution": {
-									"nameDecoratorText": "",
-									"assignedToName": "",
+									"nameDecoratorText": "GPIO14",
+									"assignedToName": "5",
 									"errorText": "",
 									"warningText": "",
 									"errorDetailsText": [],
 									"warningDetailsText": []
 								},
-								"assignedToName": "Any",
+								"assignedToName": "5",
 								"type": "Single",
 								"name": "GPIO14",
 								"interfacePinName": "GPIO14",
@@ -939,23 +995,23 @@
 								"outputOpenDrain": false,
 								"configurables": {
 									"io": {
-										"name": "input",
-										"displayName": "Input",
+										"name": "output",
+										"displayName": "Output",
 										"value": "N/A"
 									}
 								}
 							},
 							{
-								"used": false,
+								"used": true,
 								"solution": {
-									"nameDecoratorText": "",
-									"assignedToName": "",
+									"nameDecoratorText": "GPIO15",
+									"assignedToName": "6",
 									"errorText": "",
 									"warningText": "",
 									"errorDetailsText": [],
 									"warningDetailsText": []
 								},
-								"assignedToName": "Any",
+								"assignedToName": "6",
 								"type": "Single",
 								"name": "GPIO15",
 								"interfacePinName": "GPIO15",
@@ -971,16 +1027,16 @@
 								}
 							},
 							{
-								"used": false,
+								"used": true,
 								"solution": {
-									"nameDecoratorText": "",
-									"assignedToName": "",
+									"nameDecoratorText": "GPIO16",
+									"assignedToName": "7",
 									"errorText": "",
 									"warningText": "",
 									"errorDetailsText": [],
 									"warningDetailsText": []
 								},
-								"assignedToName": "Any",
+								"assignedToName": "7",
 								"type": "Single",
 								"name": "GPIO16",
 								"interfacePinName": "GPIO16",
@@ -989,23 +1045,23 @@
 								"outputOpenDrain": false,
 								"configurables": {
 									"io": {
-										"name": "input",
-										"displayName": "Input",
+										"name": "output",
+										"displayName": "Output",
 										"value": "N/A"
 									}
 								}
 							},
 							{
-								"used": false,
+								"used": true,
 								"solution": {
-									"nameDecoratorText": "",
-									"assignedToName": "",
+									"nameDecoratorText": "GPIO17",
+									"assignedToName": "8",
 									"errorText": "",
 									"warningText": "",
 									"errorDetailsText": [],
 									"warningDetailsText": []
 								},
-								"assignedToName": "Any",
+								"assignedToName": "8",
 								"type": "Single",
 								"name": "GPIO17",
 								"interfacePinName": "GPIO17",
@@ -1014,8 +1070,8 @@
 								"outputOpenDrain": false,
 								"configurables": {
 									"io": {
-										"name": "input",
-										"displayName": "Input",
+										"name": "output",
+										"displayName": "Output",
 										"value": "N/A"
 									}
 								}
@@ -1318,8 +1374,120 @@
 				},
 				"name": "SPI",
 				"id": "SPI",
-				"requirements": [],
-				"requirementsNameIndex": 1
+				"requirements": [
+					{
+						"used": true,
+						"solution": {
+							"nameDecoratorText": "",
+							"assignedToName": "",
+							"errorText": "",
+							"warningText": "",
+							"errorDetailsText": [],
+							"warningDetailsText": [],
+							"gpioPinsUsed": 0,
+							"errorCount": 0
+						},
+						"id": "MySPI1",
+						"name": "MySPI1",
+						"selectedInstance": "Any",
+						"selectedVoltage": "Any",
+						"selectedUseCase": "SPI",
+						"pinRequirements": [
+							{
+								"used": false,
+								"solution": {
+									"nameDecoratorText": "",
+									"assignedToName": "",
+									"errorText": "",
+									"warningText": "",
+									"errorDetailsText": [],
+									"warningDetailsText": []
+								},
+								"assignedToName": "8",
+								"type": "Single",
+								"name": "CS",
+								"interfacePinName": "CS"
+							},
+							{
+								"used": false,
+								"solution": {
+									"nameDecoratorText": "",
+									"assignedToName": "",
+									"errorText": "",
+									"warningText": "",
+									"errorDetailsText": [],
+									"warningDetailsText": []
+								},
+								"assignedToName": "5",
+								"type": "Single",
+								"name": "CLK",
+								"interfacePinName": "CLK"
+							},
+							{
+								"used": false,
+								"solution": {
+									"nameDecoratorText": "",
+									"assignedToName": "",
+									"errorText": "",
+									"warningText": "",
+									"errorDetailsText": [],
+									"warningDetailsText": []
+								},
+								"assignedToName": "6",
+								"type": "Single",
+								"name": "MISO",
+								"interfacePinName": "MISO"
+							},
+							{
+								"used": false,
+								"solution": {
+									"nameDecoratorText": "",
+									"assignedToName": "",
+									"errorText": "",
+									"warningText": "",
+									"errorDetailsText": [],
+									"warningDetailsText": []
+								},
+								"assignedToName": "7",
+								"type": "Single",
+								"name": "MOSI",
+								"interfacePinName": "MOSI"
+							}
+						],
+						"peripheralSolution": {
+							"nameDecoratorText": "",
+							"assignedToName": "SPI0",
+							"errorText": "",
+							"warningText": "",
+							"errorDetailsText": [],
+							"warningDetailsText": []
+						},
+						"voltageSolution": {
+							"nameDecoratorText": "",
+							"assignedToName": "",
+							"errorText": "",
+							"warningText": "",
+							"errorDetailsText": [],
+							"warningDetailsText": []
+						},
+						"interfaceName": "SPI",
+						"nonSolverSolution": {
+							"nameDecoratorText": "",
+							"assignedToName": "",
+							"errorText": "",
+							"warningText": "",
+							"errorDetailsText": [],
+							"warningDetailsText": [],
+							"errorCount": 0,
+							"warningCount": 0,
+							"nonSolverErrorCount": 0
+						},
+						"pinConfigurablesHeader": {},
+						"isNameValid": true,
+						"requirementNameErrorMessage": ""
+					}
+				],
+				"requirementsNameIndex": 2
 			},
 			"UART": {
 				"used": true,
@@ -1450,6 +1618,50 @@
 				"requirementsNameIndex": 2
 			},
 			"I2C": {
+				"used": true,
+				"solution": {
+					"nameDecoratorText": "",
+					"assignedToName": "",
+					"errorText": "",
+					"warningText": "",
+					"errorDetailsText": [],
+					"warningDetailsText": [],
+					"gpioPinsUsed": 0,
+					"errorCount": 0
+				},
+				"name": "I2C",
+				"id": "I2C",
+				"requirements": [],
+				"requirementsNameIndex": 1
+			},
+			"McASP": {
+				"used": true,
+				"solution": {
+					"nameDecoratorText": "",
+					"assignedToName": "",
+					"errorText": "",
+					"warningText": "",
+					"errorDetailsText": [],
+					"warningDetailsText": [],
+					"gpioPinsUsed": 0,
+					"errorCount": 0
+				},
+				"name": "McASP",
+				"id": "McASP",
+				"requirements": [],
+				"requirementsNameIndex": 2
+			}
+		},
+		"version": "2.0.0",
+		"isLoad": true
+	},
+	"versions": {
+		"data": "2017041816",
+		"timestamp": "2017041816",
+		"tool": "4.0.1484 ",
+		"templates": "2017041816"
+	}
+}
 				"used": true,
 				"solution": {
 					"nameDecoratorText": "",

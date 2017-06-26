@@ -173,9 +173,9 @@ void _LEDTransmit(_u32* raw, int repeat)
 {
     // Reset
     LED_GPIO_SET(1);
-    UtilsDelay(800);
-    LED_GPIO_SET(0);
-    UtilsDelay(800);
+    UtilsDelay(8000);
+    //LED_GPIO_SET(0);
+    //UtilsDelay(800);
 
     int j, k, r;
     _u32 v;
@@ -189,6 +189,12 @@ void _LEDTransmit(_u32* raw, int repeat)
             }
         }
     }
+
+    // Reset at the end of the transmission (why?)
+    LED_GPIO_SET(1);
+    UtilsDelay(8000);
+    LED_GPIO_SET(0);
+
 }
 
 // Converts an RGB triplet to a bitstream and transmits
@@ -201,7 +207,7 @@ void _LEDTransmit(_u32* raw, int repeat)
 void _LEDSendData(_u8 r, _u8 g, _u8 b, int n)
 {
     _u32 raw[3];
-    _u32 grb = (g << 16) + (r << 8) + b;
+    _u32 grb = ((_u32)g << 16) + ((_u32)r << 8) + b;
 
     int j, k;
     for(k=0; k < 3; k++) {
@@ -210,10 +216,10 @@ void _LEDSendData(_u8 r, _u8 g, _u8 b, int n)
         for(j = 0; j < 8; j++) {
             if (grb & 0x800000)
                 // 1
-                raw[k] |= (0b0111) << (j*4);
+                raw[k] |= (0b1000) << (j*4);
             else
                 // 0
-                raw[k] |= (0b0001) << (j*4);
+                raw[k] |= (0b1110) << (j*4);
 
             grb <<= 1;
         }
@@ -234,16 +240,14 @@ void _LEDSetColorImpl(unsigned int index, int intensity)
     int green = color_table[index].g * intensity / 100;
     int blue = color_table[index].b * intensity / 100;
 
-    _LEDSendData(red, green, blue, 8);
+    _LEDSendData(red, green, blue, 4);
 }
 
 
 void LEDInit()
 {
-    LED_GPIO_SET(1);
+    LED_GPIO_SET(0);
     UtilsDelay(1000);
-
-    int i = 0;
 }
 
 
